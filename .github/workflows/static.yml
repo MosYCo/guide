@@ -52,10 +52,10 @@ jobs:
           pnpm install
           pnpm build
 
-      - name: Delete File
+      - name: Copy File
         run: |
           cd /opt/guide-develop/
-          cp -a /opt/guide-develop/dist ${{ github.workspace }}
+          cp -r /opt/guide-develop/dist/* ${{ github.workspace }}
 
       - name: Update html
         run: |
