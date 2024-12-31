@@ -27,7 +27,7 @@ jobs:
     name: Generate HTML
     runs-on: ubuntu-latest
     # 只有仓库作者操作才执行
-    if: ${{ github.event.repository.owner.id == github.event.sender.id }}
+    # if: ${{ github.event.repository.owner.id == github.event.sender.id }}
     permissions: write-all
     steps:
       - name: Checkout
