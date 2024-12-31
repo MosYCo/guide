@@ -66,10 +66,6 @@ jobs:
           git push || echo "nothing to push"
           sleep 3
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
   # Single deploy job since we're just deploying
   deploy:
     environment:
