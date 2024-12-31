@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   build:
-    name: Generate blog
+    name: Generate HTML
     runs-on: ubuntu-latest
     # 只有仓库作者操作才执行
     if: ${{ github.event.repository.owner.id == github.event.sender.id }}
@@ -55,7 +55,7 @@ jobs:
       - name: Delete File
         run: |
           cd /opt/guide-develop/
-          cp -a /opt/guide-develop ${{ github.workspace }}
+          cp -a /opt/guide-develop/dist ${{ github.workspace }}
 
       - name: Update html
         run: |
