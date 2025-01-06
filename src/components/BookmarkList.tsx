@@ -5,13 +5,22 @@ import Cookies from "../utils/cookies";
 import { BOOKMARK_KEY } from "../const";
 
 const getDefaultIconUrl = (bookmark: Bookmark, size = 24) => {
-  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${bookmark.url}&size=${size}`;
+  const origin = new URL(bookmark.url).origin;
+  return `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=${size}`;
 };
 
 const BookmarkList: React.FC = () => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [showOpen, setShowOpen] = useState(false);
   const [currentBookmark, setCurrentBookmark] = useState<Bookmark>();
+
+  let timeoutEvent: NodeJS.Timeout;
+
+  /**
+   * 处理信息变更
+   * @param action
+   * @param bookmark
+   */
   const handleChange = (
     action: "add" | "edit" | "remove",
     bookmark: Bookmark
@@ -51,6 +60,15 @@ const BookmarkList: React.FC = () => {
               setCurrentBookmark(bookmark);
               setShowOpen(true);
             }}
+            onTouchStart={(e) => {
+              timeoutEvent = setTimeout(() => {
+                e.preventDefault();
+                setCurrentBookmark(bookmark);
+                setShowOpen(true);
+              }, 500);
+            }}
+            onTouchMove={() => timeoutEvent && clearTimeout(timeoutEvent)}
+            onTouchEnd={() => timeoutEvent && clearTimeout(timeoutEvent)}
           >
             <div className="flex items-center space-x-3">
               <img
