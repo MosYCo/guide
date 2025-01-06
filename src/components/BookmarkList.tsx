@@ -80,7 +80,7 @@ const BookmarkList: React.FC = () => {
                 alt=""
                 className="w-6 h-6"
               />
-              <span className="font-medium text-gray-700 group-hover:text-blue-500 transition-colors">
+              <span className="text-ellipsis break-words overflow-hidden whitespace-nowrap font-medium text-gray-700 group-hover:text-blue-500 transition-colors">
                 {bookmark.label}
               </span>
             </div>
