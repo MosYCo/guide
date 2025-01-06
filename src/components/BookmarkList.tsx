@@ -57,6 +57,7 @@ const BookmarkList: React.FC = () => {
           <a
             key={bookmark.id}
             href={bookmark.url}
+            target="_blank"
             className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow group"
             onContextMenu={(e) => {
               e.preventDefault();
