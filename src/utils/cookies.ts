@@ -72,14 +72,13 @@ const read = (str: string) => {
 export default class Cookies {
   static set(key: string, val: any, opts: CookiesOpts = {}) {
     let expire: string = "";
-    let expireValue;
     if (opts.expires !== void 0) {
       if (Object.prototype.toString.call(opts.expires) === "[object Date]") {
         expire = (opts.expires as Date).toUTCString();
       } else if (typeof opts.expires === "string") {
         expire = parseExpireString(opts.expires);
       } else {
-        expireValue = parseFloat(opts.expires + "");
+        const expireValue = parseFloat(opts.expires + "");
         expire =
           isNaN(expireValue) === false
             ? getString(expireValue * 864e5)

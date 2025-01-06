@@ -38,7 +38,10 @@ const BookmarkList: React.FC = () => {
         break;
     }
     setBookmarks(newRes);
-    Cookies.set(BOOKMARK_KEY, newRes);
+    Cookies.set(BOOKMARK_KEY, newRes, {
+      expires: 300,
+      path: '/guide'
+    });
   };
 
   useEffect(() => {

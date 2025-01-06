@@ -38,7 +38,10 @@ const SearchBox: React.FC = () => {
     const index = searchEngines.findIndex((i) => i.name === currentEngine.name);
     const newIndex = index >= searchEngines.length - 1 ? 0 : index + 1;
     setCurrentEngine(searchEngines[newIndex]);
-    Cookies.set(SEARCH_ENGINE_KEY, searchEngines[newIndex].name);
+    Cookies.set(SEARCH_ENGINE_KEY, searchEngines[newIndex].name, {
+      expires: 300,
+      path: '/guide'
+    });
   };
 
   useEffect(() => {
