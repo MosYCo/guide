@@ -54,11 +54,13 @@ jobs:
 
       - name: Copy File
         run: |
+          git checkout main
           cd /opt/guide-develop/
           cp -r /opt/guide-develop/dist/* ${{ github.workspace }}
 
       - name: Update html
         run: |
+          git checkout main
           git config --local user.email "$(jq -r ".email" config.json)"
           git config --local user.name "${{ github.repository_owner }}"
           git add .
