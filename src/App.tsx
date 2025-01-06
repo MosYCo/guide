@@ -1,24 +1,22 @@
-import BackGroundImage from "./assets/bg.png";
-import "./App.css";
-import InputContainer from "./components/InputContainer";
-import Bookmarks from "./components/Bookmarks";
-import Cookies from "./utils/cookies";
+import BookmarkList from "./components/BookmarkList"
+import SearchBox from "./components/SearchBox"
+import bg from './assets/bg.png';
 
 function App() {
-  Cookies.set("moss_guide_bookmarks", [
-    { label: "百度", link: "https://www.baidu.com" },
-    { label: "Google", link: "https://google.com" },
-    { label: "Npm", link: "https://npmjs.com" },
-  ]);
+
   return (
     <>
-      <div className="main-box">
-        <img className="bg-image" src={BackGroundImage} alt="background" />
-        <InputContainer />
-        <Bookmarks />
+      <div className="min-h-screen bg-gray-50">
+        <img className="min-h-screen object-cover fixed top-0 left-0 scale-105 blur-sm" src={bg} alt=""/>
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <div className="flex flex-col items-center space-y-32">
+            <SearchBox/>
+            <BookmarkList/>
+          </div>
+        </div>
       </div>
     </>
-  );
+  )
 }
 
-export default App;
+export default App

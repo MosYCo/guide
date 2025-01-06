@@ -1,4 +1,4 @@
-import { CookiesOpts } from "@/types/Cookie";
+import { CookiesOpts } from "../types";
 
 const encode = (url: string): string => {
   return encodeURIComponent(url);
