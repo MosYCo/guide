@@ -6,6 +6,15 @@ on:
       - develop  # 监听 develop 分支的 push 操作
       - main     # 监听 main 分支的 push 操作
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     # 只有仓库作者操作才执行
