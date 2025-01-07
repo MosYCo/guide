@@ -30,6 +30,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        pwd
+        ls
         git checkout main
         git pull origin main
         cp -r dist/* ./  # 将打包后的文件复制到根目录（假设 dist 是构建产物目录）
