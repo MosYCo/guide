@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # 监视 main 分支的变化
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
+    
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      # 设置 Node.js 环境
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # 指定 Node.js 版本
+
+      # 安装 pnpm
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # 安装依赖
+      - name: Install dependencies with pnpm
+        run: pnpm install
+
+      # 打包项目
+      - name: Build project
+        run: pnpm run build
+
+      # 将打包后的文件提交到 gh-pages 分支
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          # 要推送到的分支
+          branch: gh-pages
+          # 打包后的文件夹路径（通常是 `build` 或 `dist`，根据项目设置）
+          folder: dist
+          # GitHub自动生成的访问Token，用于提交更改
+          token: ${{ secrets.GITHUB_TOKEN }}  
