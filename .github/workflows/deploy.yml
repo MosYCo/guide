@@ -41,10 +41,9 @@ jobs:
       run: |
         git clone https://github.com/MosYCo/guide.git /opt/guide-main
         cd /opt/guide-main
-        cp -r ${{ github.workspace }}/dist/* ./
+        cp -r /home/runner/work/guide/guide/dist/* /opt/guide-main/
         git config --local user.email "moseternal@gmail.com"
         git config --local user.name "GithubActions[BOT]"
-        git add .
         git commit -a -m '🎉auto update by Fisheep action' || echo "nothing to commit"
         git push || echo "nothing to push"
 
