@@ -3,25 +3,25 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # 监视 main 分支的变化
+      - main # 监视 main 分支的变化
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # 使用最新的 Ubuntu 环境
-    
+    runs-on: ubuntu-latest # 使用最新的 Ubuntu 环境
+
     steps:
       # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       # 设置 Node.js 环境
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '20'  # 指定 Node.js 版本
+          node-version: '20' # 指定 Node.js 版本
 
       # 安装 pnpm
       - name: Install pnpm
@@ -33,7 +33,7 @@ jobs:
 
       # 打包项目
       - name: Build project
-        run: pnpm run build
+        run: pnpm run build:prod
 
       # 将打包后的文件提交到 gh-pages 分支
       - name: Deploy to gh-pages
