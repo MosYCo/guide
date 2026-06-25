@@ -19,17 +19,19 @@ jobs:
 
       # 设置 Node.js 环境
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '20' # 指定 Node.js 版本
 
       # 安装 pnpm
       - name: Install pnpm
-        run: npm install -g pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       # 安装依赖
       - name: Install dependencies with pnpm
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       # 打包项目
       - name: Build project
@@ -41,5 +43,7 @@ jobs:
         with:
           # 打包后的文件夹路径（通常是 `build` 或 `dist`，根据项目设置）
           folder: dist
+          branch: gh-pages
+          clean: true
           # GitHub自动生成的访问Token，用于提交更改
           token: ${{ secrets.GITHUB_TOKEN }}

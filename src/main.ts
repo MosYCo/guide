@@ -1,5 +1,6 @@
 import 'virtual:uno.css'
 import '@/styles/base.scss'
+import '@/styles/navhub.scss'
 import { createApp } from 'vue'
 import App from './App.vue'
 

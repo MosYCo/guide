@@ -6,7 +6,7 @@ import UnoCSS from 'unocss/vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   return {
-    base: mode === 'production' ? '/guide' : '/',
+    base: mode === 'production' ? '/guide/' : '/',
     plugins: [
       vue(),
       UnoCSS()
