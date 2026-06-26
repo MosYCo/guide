@@ -11,9 +11,11 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
 
   const title = typeof value.title === 'string' ? value.title.trim() : ''
   const url = typeof value.url === 'string' ? parseBookmarkUrl(value.url) : null
+  const faviconUrl =
+    typeof value.faviconUrl === 'string' && value.faviconUrl.trim() ? parseBookmarkUrl(value.faviconUrl) : ''
   const cat = typeof value.cat === 'string' && value.cat.trim() ? value.cat.trim() : '未分类'
 
-  if (!title || !url) return null
+  if (!title || !url || faviconUrl === null) return null
 
   return {
     id: typeof value.id === 'string' && value.id.trim() ? value.id.trim() : createBookmarkId(),
@@ -21,6 +23,7 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
     url,
     cat,
     icon: typeof value.icon === 'string' ? value.icon.trim().slice(0, 8) : '',
+    faviconUrl,
     pin: typeof value.pin === 'boolean' ? value.pin : false,
   }
 }

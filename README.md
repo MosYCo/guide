@@ -44,6 +44,7 @@ Bookmarks are stored in the browser under the `guide_bookmarks` key. Export crea
     "url": "https://github.com/",
     "cat": "开发",
     "icon": "",
+    "faviconUrl": "",
     "pin": true
   }
 ]

@@ -109,7 +109,16 @@ const handleKeydown = (event: KeyboardEvent) => {
       </div>
       <div class="field">
         <label for="bookmark-icon">图标（Emoji，可选）</label>
-        <input id="bookmark-icon" v-model="draft.icon" type="text" placeholder="留空自动获取 favicon" maxlength="4" />
+        <input id="bookmark-icon" v-model="draft.icon" type="text" placeholder="填写后优先显示 Emoji" maxlength="4" />
+      </div>
+      <div class="field">
+        <label for="bookmark-favicon">Favicon URL（可选）</label>
+        <input
+          id="bookmark-favicon"
+          v-model="draft.faviconUrl"
+          type="url"
+          placeholder="留空自动获取 favicon"
+        />
       </div>
       <div class="field">
         <label class="check-field">

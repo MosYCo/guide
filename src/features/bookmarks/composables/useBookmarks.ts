@@ -11,6 +11,7 @@ const createDraft = (): BookmarkDraft => ({
   url: '',
   cat: Object.keys(CATEGORY_ORDER)[0],
   icon: '',
+  faviconUrl: '',
   pin: false,
 })
 
@@ -42,6 +43,7 @@ export const useBookmarks = () => {
       url: bookmark.url,
       cat: bookmark.cat,
       icon: bookmark.icon,
+      faviconUrl: bookmark.faviconUrl,
       pin: bookmark.pin,
     }
     isModalOpen.value = true
@@ -55,10 +57,12 @@ export const useBookmarks = () => {
   const saveDraft = (): { ok: true; bookmark: Bookmark; created: boolean } | { ok: false; reason: string } => {
     const title = draft.value.title.trim()
     const url = parseBookmarkUrl(draft.value.url)
+    const faviconUrl = draft.value.faviconUrl.trim() ? parseBookmarkUrl(draft.value.faviconUrl) : ''
     const cat = draft.value.cat.trim() || '未分类'
 
     if (!title) return { ok: false, reason: '名称不能为空' }
     if (!url) return { ok: false, reason: '请输入有效的 http 或 https 网址' }
+    if (faviconUrl === null) return { ok: false, reason: '请输入有效的 favicon URL' }
 
     const duplicated = bookmarks.value.find((bookmark) => bookmark.url === url && bookmark.id !== editingId.value)
     if (duplicated) return { ok: false, reason: `已存在：${duplicated.title}` }
@@ -74,6 +78,7 @@ export const useBookmarks = () => {
                 url,
                 cat,
                 icon: draft.value.icon.trim().slice(0, 8),
+                faviconUrl,
                 pin: draft.value.pin,
               })
           : bookmark,
@@ -95,6 +100,7 @@ export const useBookmarks = () => {
         url,
         cat,
         icon: draft.value.icon.trim().slice(0, 8),
+        faviconUrl,
         pin: draft.value.pin,
       }
       bookmarks.value = [
@@ -141,6 +147,7 @@ export const useBookmarks = () => {
           existing.title !== bookmark.title ||
           existing.cat !== bookmark.cat ||
           existing.icon !== bookmark.icon ||
+          existing.faviconUrl !== bookmark.faviconUrl ||
           existing.pin !== bookmark.pin
 
         if (!hasChanges) {
@@ -152,6 +159,7 @@ export const useBookmarks = () => {
           title: bookmark.title,
           cat: bookmark.cat,
           icon: bookmark.icon,
+          faviconUrl: bookmark.faviconUrl,
           pin: bookmark.pin,
         })
         result.updated += 1

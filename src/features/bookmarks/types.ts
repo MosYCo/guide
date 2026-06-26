@@ -4,6 +4,7 @@ export interface Bookmark {
   url: string
   cat: string
   icon: string
+  faviconUrl: string
   pin: boolean
 }
 
@@ -12,6 +13,7 @@ export interface BookmarkDraft {
   url: string
   cat: string
   icon: string
+  faviconUrl: string
   pin: boolean
 }
 
