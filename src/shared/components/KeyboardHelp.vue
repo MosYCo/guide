@@ -1,17 +1,42 @@
 <script setup lang="ts">
-defineProps<{
+import { nextTick, ref, watch } from 'vue'
+
+const props = defineProps<{
   open: boolean
 }>()
 
 defineEmits<{
   close: []
 }>()
+
+const panel = ref<HTMLElement>()
+let previousFocus: HTMLElement | null = null
+
+watch(
+  () => props.open,
+  (open) => {
+    if (open) {
+      previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
+      nextTick(() => panel.value?.focus())
+    } else {
+      previousFocus?.focus()
+      previousFocus = null
+    }
+  },
+)
 </script>
 
 <template>
   <div v-if="open" class="kb-help open" @click.self="$emit('close')">
-    <div class="kb-panel">
-      <h3>键盘快捷键</h3>
+    <div
+      ref="panel"
+      class="kb-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="keyboard-help-title"
+      tabindex="-1"
+    >
+      <h3 id="keyboard-help-title">键盘快捷键</h3>
       <div class="kb-row"><span>聚焦搜索</span><div class="kb-keys"><kbd>/</kbd></div></div>
       <div class="kb-row"><span>导航书签</span><div class="kb-keys"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></div></div>
       <div class="kb-row"><span>打开选中</span><div class="kb-keys"><kbd>Enter</kbd></div></div>

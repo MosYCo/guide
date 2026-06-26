@@ -743,7 +743,8 @@
   transition: opacity 0.15s;
 }
 
-.bk:hover .bk-act {
+.bk:hover .bk-act,
+.bk:focus-within .bk-act {
   opacity: 1;
 }
 
@@ -826,6 +827,10 @@ mark {
   border-radius: var(--rl);
   box-shadow: 0 24px 80px var(--modal-shadow);
   animation: scaleIn 0.2s var(--ease-o);
+}
+
+.kb-panel:focus {
+  outline: none;
 }
 
 .kb-panel {

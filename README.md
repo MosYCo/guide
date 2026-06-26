@@ -1,39 +1,64 @@
-# guide
+# NAVHUB Guide
 
-This template should help get you started developing with Vue 3 in Vite.
+NAVHUB Guide is a local-first bookmark dashboard built with Vue 3 and Vite. It supports categories, pinned shortcuts, keyboard navigation, theme switching, JSON export, and JSON import.
 
-## Recommended IDE Setup
+## Features
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- Local bookmark storage through `localStorage`
+- Category filters and grouped bookmark sections
+- Search across title, URL, category, and hostname
+- Pinned shortcuts in the quick-launch dock
+- Keyboard shortcuts for search, navigation, category switching, and theme cycling
+- JSON export and import with validation and duplicate URL merging
 
-## Type Support for `.vue` Imports in TS
+## Keyboard Shortcuts
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- `/`: focus search
+- `Arrow keys`: move bookmark focus
+- `Enter`: open focused bookmark
+- `Esc`: clear search/filter or close dialogs
+- `Ctrl/Cmd + N`: add bookmark
+- `1`-`9`: select category
+- `0`: show all categories
+- `T`: cycle theme
+- `?`: open keyboard help
 
-## Customize configuration
+## Data
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Bookmarks are stored in the browser under the `guide_bookmarks` key. Export creates `navhub-bookmarks.json`; import accepts the same array shape and sanitizes invalid entries before merging by URL.
 
-## Project Setup
+```json
+[
+  {
+    "id": "g1",
+    "title": "GitHub",
+    "url": "https://github.com/",
+    "cat": "开发",
+    "icon": "",
+    "pin": true
+  }
+]
+```
+
+## Development
 
 ```sh
 pnpm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
 pnpm dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Quality Checks
+
+```sh
+pnpm run type-check
+pnpm run build-only
+pnpm run lint
+```
+
+## Build
 
 ```sh
 pnpm build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
+Production builds use `/guide/` as the Vite base path.

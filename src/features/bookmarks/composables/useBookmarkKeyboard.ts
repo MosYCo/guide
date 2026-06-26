@@ -1,9 +1,11 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
+import type { Bookmark } from '../types'
 
 interface KeyboardOptions {
   query: Ref<string>
   activeCategory: Ref<string | null>
   categories: Ref<string[]>
+  bookmarks: Ref<Bookmark[]>
   modalOpen: Ref<boolean>
   helpOpen: Ref<boolean>
   onAdd: () => void
@@ -15,42 +17,61 @@ interface KeyboardOptions {
   onCycleTheme: () => void
 }
 
-const getCards = () => [...document.querySelectorAll<HTMLAnchorElement>('.bk')]
+const getGridColumnCount = () => {
+  const grid = document.querySelector<HTMLElement>('.cat-grid')
+  if (!grid) return 1
+
+  const columns = window.getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean)
+  return Math.max(columns.length, 1)
+}
+
+const scrollBookmarkIntoView = (id: string) => {
+  const card = document.querySelector<HTMLAnchorElement>(`.bk[data-bookmark-id="${CSS.escape(id)}"]`)
+  card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+}
 
 export const useBookmarkKeyboard = (options: KeyboardOptions) => {
   const focusedId = ref<string | null>(null)
 
   const syncFocusedCard = (index: number) => {
-    const cards = getCards()
-    if (!cards.length) {
+    const bookmarks = options.bookmarks.value
+    if (!bookmarks.length) {
       focusedId.value = null
       return
     }
 
-    const nextIndex = Math.max(0, Math.min(index, cards.length - 1))
-    const card = cards[nextIndex]
-    focusedId.value = card.dataset.bookmarkId ?? null
-    card.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    const nextIndex = Math.max(0, Math.min(index, bookmarks.length - 1))
+    focusedId.value = bookmarks[nextIndex].id
+    scrollBookmarkIntoView(bookmarks[nextIndex].id)
   }
 
   const moveFocus = (delta: number) => {
-    const cards = getCards()
-    if (!cards.length) return
+    const bookmarks = options.bookmarks.value
+    if (!bookmarks.length) return
 
-    const currentIndex = cards.findIndex((card) => card.dataset.bookmarkId === focusedId.value)
+    const currentIndex = bookmarks.findIndex((bookmark) => bookmark.id === focusedId.value)
     syncFocusedCard(currentIndex === -1 ? 0 : currentIndex + delta)
   }
 
   const openFocused = () => {
-    const card = getCards().find((item) => item.dataset.bookmarkId === focusedId.value)
-    if (card?.href) {
-      window.open(card.href, '_blank', 'noopener')
+    const bookmark = options.bookmarks.value.find((item) => item.id === focusedId.value)
+    if (bookmark) {
+      window.open(bookmark.url, '_blank', 'noopener')
     }
   }
 
   const clearFocus = () => {
     focusedId.value = null
   }
+
+  watch(
+    () => options.bookmarks.value.map((bookmark) => bookmark.id),
+    (ids) => {
+      if (focusedId.value && !ids.includes(focusedId.value)) {
+        clearFocus()
+      }
+    },
+  )
 
   const handleKeydown = (event: KeyboardEvent) => {
     const searchInput = document.getElementById('bookmark-search') as HTMLInputElement | null
@@ -141,11 +162,11 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
     }
     if (event.key === 'ArrowRight') {
       event.preventDefault()
-      moveFocus(3)
+      moveFocus(getGridColumnCount())
     }
     if (event.key === 'ArrowLeft') {
       event.preventDefault()
-      moveFocus(-3)
+      moveFocus(-getGridColumnCount())
     }
     if (event.key === 'Enter' && focusedId.value && !isSearchFocused) {
       event.preventDefault()

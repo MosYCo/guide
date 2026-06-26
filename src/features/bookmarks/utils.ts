@@ -11,6 +11,18 @@ export const normalizeUrl = (value: string) => {
   return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
 }
 
+export const parseBookmarkUrl = (value: string) => {
+  const normalizedUrl = normalizeUrl(value)
+  if (!normalizedUrl) return null
+
+  try {
+    const url = new URL(normalizedUrl)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : null
+  } catch {
+    return null
+  }
+}
+
 export const getHostname = (url: string) => {
   try {
     return new URL(url).hostname.replace(/^www\./, '')

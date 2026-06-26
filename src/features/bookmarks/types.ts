@@ -19,3 +19,9 @@ export interface BookmarkGroup {
   name: string
   items: Bookmark[]
 }
+
+export interface BookmarkImportResult {
+  added: number
+  updated: number
+  skipped: number
+}

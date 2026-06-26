@@ -58,8 +58,17 @@ const parts = (text: string, query: string) => {
       <polyline points="7 7 17 7 17 17" />
     </svg>
     <div class="bk-act">
-      <button title="编辑" @click.prevent.stop="$emit('edit', bookmark)">✎</button>
-      <button class="del" title="删除" @click.prevent.stop="$emit('delete', bookmark)">✕</button>
+      <button :aria-label="`编辑 ${bookmark.title}`" title="编辑" @click.prevent.stop="$emit('edit', bookmark)">
+        ✎
+      </button>
+      <button
+        class="del"
+        :aria-label="`删除 ${bookmark.title}`"
+        title="删除"
+        @click.prevent.stop="$emit('delete', bookmark)"
+      >
+        ✕
+      </button>
     </div>
   </a>
 </template>

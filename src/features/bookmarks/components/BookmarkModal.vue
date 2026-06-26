@@ -17,12 +17,28 @@ const emit = defineEmits<{
 }>()
 
 const titleInput = ref<HTMLInputElement>()
+const modal = ref<HTMLElement>()
+let previousFocus: HTMLElement | null = null
+
+const getFocusableElements = () => {
+  if (!modal.value) return []
+
+  return [
+    ...modal.value.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    ),
+  ].filter((element) => !element.hasAttribute('disabled') && !element.getAttribute('aria-hidden'))
+}
 
 watch(
   () => props.open,
   (open) => {
     if (open) {
+      previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
       nextTick(() => titleInput.value?.focus())
+    } else {
+      previousFocus?.focus()
+      previousFocus = null
     }
   },
 )
@@ -41,7 +57,32 @@ const handleCategoryChange = () => {
 
 const handleKeydown = (event: KeyboardEvent) => {
   const target = event.target as HTMLElement
-  if (event.key === 'Enter' && target.tagName !== 'SELECT' && (target as HTMLInputElement).type !== 'checkbox') {
+  if (event.key === 'Tab') {
+    const focusable = getFocusableElements()
+    const first = focusable[0]
+    const last = focusable[focusable.length - 1]
+
+    if (!first || !last) return
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault()
+      last.focus()
+      return
+    }
+
+    if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault()
+      first.focus()
+      return
+    }
+  }
+
+  if (
+    event.key === 'Enter' &&
+    !event.isComposing &&
+    target.tagName !== 'SELECT' &&
+    (target as HTMLInputElement).type !== 'checkbox'
+  ) {
     emit('save')
   }
 }
@@ -49,26 +90,26 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
   <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div class="modal" @keydown="handleKeydown">
-      <h3>{{ editing ? '编辑书签' : '添加书签' }}</h3>
+    <div ref="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="bookmark-modal-title" @keydown="handleKeydown">
+      <h3 id="bookmark-modal-title">{{ editing ? '编辑书签' : '添加书签' }}</h3>
       <div class="field">
-        <label>名称</label>
-        <input ref="titleInput" v-model="draft.title" type="text" placeholder="GitHub" />
+        <label for="bookmark-title">名称</label>
+        <input id="bookmark-title" ref="titleInput" v-model="draft.title" type="text" placeholder="GitHub" />
       </div>
       <div class="field">
-        <label>网址</label>
-        <input v-model="draft.url" type="url" placeholder="https://github.com" />
+        <label for="bookmark-url">网址</label>
+        <input id="bookmark-url" v-model="draft.url" type="url" placeholder="https://github.com" />
       </div>
       <div class="field">
-        <label>分类</label>
-        <select v-model="draft.cat" @change="handleCategoryChange">
+        <label for="bookmark-category">分类</label>
+        <select id="bookmark-category" v-model="draft.cat" @change="handleCategoryChange">
           <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
           <option value="__new__">+ 新分类</option>
         </select>
       </div>
       <div class="field">
-        <label>图标（Emoji，可选）</label>
-        <input v-model="draft.icon" type="text" placeholder="留空自动获取 favicon" maxlength="4" />
+        <label for="bookmark-icon">图标（Emoji，可选）</label>
+        <input id="bookmark-icon" v-model="draft.icon" type="text" placeholder="留空自动获取 favicon" maxlength="4" />
       </div>
       <div class="field">
         <label class="check-field">

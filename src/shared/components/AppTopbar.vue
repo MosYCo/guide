@@ -13,6 +13,7 @@ defineProps<{
 
 defineEmits<{
   add: []
+  import: []
   export: []
   toggleHelp: []
   cycleTheme: []
@@ -44,6 +45,14 @@ defineEmits<{
           <rect x="2" y="4" width="20" height="16" rx="2" />
           <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
         </svg>
+      </button>
+      <button class="btn" title="导入 JSON" @click="$emit('import')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <span class="lbl">导入</span>
       </button>
       <button class="btn" title="导出 JSON" @click="$emit('export')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">

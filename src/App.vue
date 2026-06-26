@@ -25,6 +25,7 @@ const {
   openEditModal,
   closeModal,
   saveDraft,
+  importBookmarks,
   removeBookmark,
 } = useBookmarks()
 
@@ -43,17 +44,18 @@ const { currentTheme, cycleTheme } = useTheme()
 const { time } = useClock()
 const { message, isVisible, showToast } = useToast()
 const isHelpOpen = ref(false)
+const importInput = ref<HTMLInputElement | null>(null)
 
 const isEditing = computed(() => Boolean(editingId.value))
 
 const handleSave = () => {
-  const savedTitle = draft.value.title.trim()
-  if (!saveDraft()) {
-    showToast('名称和网址不能为空')
+  const result = saveDraft()
+  if (!result.ok) {
+    showToast(result.reason)
     return
   }
 
-  showToast(isEditing.value ? '已更新' : `已添加 ${savedTitle}`)
+  showToast(result.created ? `已添加 ${result.bookmark.title}` : '已更新')
 }
 
 const handleDelete = (bookmark: Bookmark) => {
@@ -74,6 +76,26 @@ const handleExport = () => {
   showToast(`已导出 ${bookmarks.value.length} 个书签`)
 }
 
+const handleImportClick = () => {
+  importInput.value?.click()
+}
+
+const handleImport = async (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+
+  if (!file) return
+
+  const result = importBookmarks(await file.text())
+  if (!result) {
+    showToast('导入失败：JSON 格式或书签数据无效')
+    return
+  }
+
+  showToast(`导入完成：新增 ${result.added}，更新 ${result.updated}，跳过 ${result.skipped}`)
+}
+
 const addCategory = (category: string) => {
   draft.value.cat = category
 }
@@ -82,6 +104,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
   query,
   activeCategory,
   categories,
+  bookmarks: filteredBookmarks,
   modalOpen: isModalOpen,
   helpOpen: isHelpOpen,
   onAdd: openAddModal,
@@ -110,6 +133,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
       :time="time"
       @add="openAddModal"
       @export="handleExport"
+      @import="handleImportClick"
       @toggle-help="isHelpOpen = !isHelpOpen"
       @cycle-theme="
         cycleTheme();
@@ -139,6 +163,15 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
       @delete="handleDelete"
     />
   </div>
+
+  <input
+    ref="importInput"
+    class="visually-hidden"
+    type="file"
+    accept="application/json,.json"
+    aria-label="导入书签 JSON"
+    @change="handleImport"
+  />
 
   <KeyboardHelp :open="isHelpOpen" @close="isHelpOpen = false" />
   <BookmarkModal
