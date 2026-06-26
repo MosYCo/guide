@@ -9,15 +9,17 @@ export interface ThemeDefinition {
 const THEME_STORAGE_KEY = 'guide_theme'
 
 export const themes: ThemeDefinition[] = [
+  { id: 'light', label: '浅色', icon: 'sunrise' },
   { id: 'dark-amber', label: '深色 · 琥珀', icon: 'sun' },
   { id: 'cyber-teal', label: '赛博 · 青', icon: 'zap' },
   { id: 'ink-mono', label: '墨 · 单色', icon: 'moon' },
-  { id: 'light', label: '浅色', icon: 'sunrise' },
 ]
 
 const getInitialTheme = () => {
   const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
-  return themes.some((theme) => theme.id === savedTheme) ? savedTheme! : themes[0].id
+  if (themes.some((theme) => theme.id === savedTheme)) return savedTheme!
+
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark-amber' : 'light'
 }
 
 export const useTheme = () => {
@@ -27,6 +29,9 @@ export const useTheme = () => {
 
   const applyTheme = () => {
     document.documentElement.setAttribute('data-theme', themeId.value)
+  }
+
+  const saveTheme = () => {
     localStorage.setItem(THEME_STORAGE_KEY, themeId.value)
   }
 
@@ -34,6 +39,7 @@ export const useTheme = () => {
     const currentIndex = themes.findIndex((theme) => theme.id === themeId.value)
     themeId.value = themes[(currentIndex + 1) % themes.length].id
     applyTheme()
+    saveTheme()
   }
 
   applyTheme()

@@ -11,6 +11,7 @@ import type { Bookmark } from '@/features/bookmarks/types'
 import AppTopbar from '@/shared/components/AppTopbar.vue'
 import KeyboardHelp from '@/shared/components/KeyboardHelp.vue'
 import ToastHost from '@/shared/components/ToastHost.vue'
+import { APP_NAME } from '@/shared/config/app'
 import { useClock } from '@/shared/composables/useClock'
 import { useTheme } from '@/shared/composables/useTheme'
 import { useToast } from '@/shared/composables/useToast'
@@ -27,6 +28,7 @@ const {
   saveDraft,
   importBookmarks,
   removeBookmark,
+  unpinBookmark,
 } = useBookmarks()
 
 const {
@@ -48,6 +50,8 @@ const importInput = ref<HTMLInputElement | null>(null)
 
 const isEditing = computed(() => Boolean(editingId.value))
 
+document.title = APP_NAME
+
 const handleSave = () => {
   const result = saveDraft()
   if (!result.ok) {
@@ -63,6 +67,16 @@ const handleDelete = (bookmark: Bookmark) => {
     removeBookmark(bookmark.id)
     showToast(`已删除 ${bookmark.title}`)
   }
+}
+
+const handleUnpin = (bookmark: Bookmark) => {
+  const result = unpinBookmark(bookmark.id)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+
+  showToast(`已从快速启动移除 ${result.bookmark.title}`)
 }
 
 const handleExport = () => {
@@ -128,6 +142,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
   <div class="shell">
     <AppTopbar
       v-model:query="query"
+      :app-name="APP_NAME"
       :theme="currentTheme"
       :result-count="filteredBookmarks.length"
       :time="time"
@@ -141,7 +156,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
       "
     />
 
-    <HeroDock :bookmarks="bookmarks" />
+    <HeroDock :bookmarks="bookmarks" @edit="openEditModal" @unpin="handleUnpin" />
 
     <CategoryFilter
       :bookmarks="bookmarks"

@@ -1,6 +1,6 @@
 # NAVHUB Guide
 
-NAVHUB Guide is a local-first bookmark dashboard built with Vue 3 and Vite. It supports categories, pinned shortcuts, keyboard navigation, theme switching, JSON export, and JSON import.
+NAVHUB Guide is a local-first bookmark dashboard built with Vue 3 and Vite. It supports categories, pinned shortcuts, keyboard navigation, system-aware theme defaults, JSON export, and JSON import.
 
 ## Features
 
@@ -8,8 +8,17 @@ NAVHUB Guide is a local-first bookmark dashboard built with Vue 3 and Vite. It s
 - Category filters and grouped bookmark sections
 - Search across title, URL, category, and hostname
 - Pinned shortcuts in the quick-launch dock
+- Edit pinned shortcuts or remove them from the dock without deleting the bookmark
 - Keyboard shortcuts for search, navigation, category switching, and theme cycling
 - JSON export and import with validation and duplicate URL merging
+
+## Configuration
+
+Set the app name with `VITE_APP_NAME`. The value is used for the browser tab title and topbar brand.
+
+```sh
+VITE_APP_NAME=NAVHUB pnpm dev
+```
 
 ## Keyboard Shortcuts
 

@@ -9,6 +9,11 @@ const props = defineProps<{
   bookmarks: Bookmark[]
 }>()
 
+defineEmits<{
+  edit: [bookmark: Bookmark]
+  unpin: [bookmark: Bookmark]
+}>()
+
 const pinnedBookmarks = computed(() => props.bookmarks.filter((bookmark) => bookmark.pin))
 const keys = '123456789'
 </script>
@@ -50,6 +55,18 @@ const keys = '123456789'
         <BookmarkIcon :bookmark="bookmark" variant="dock" />
         <div class="dc-name" :title="bookmark.title">{{ bookmark.title }}</div>
         <div class="dc-domain">{{ getHostname(bookmark.url) }}</div>
+        <div class="dc-act">
+          <button :aria-label="`编辑 ${bookmark.title}`" title="编辑" @click.prevent.stop="$emit('edit', bookmark)">
+            ✎
+          </button>
+          <button
+            :aria-label="`从快速启动移除 ${bookmark.title}`"
+            title="从快速启动移除"
+            @click.prevent.stop="$emit('unpin', bookmark)"
+          >
+            −
+          </button>
+        </div>
       </a>
     </div>
   </section>

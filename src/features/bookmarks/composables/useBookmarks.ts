@@ -4,6 +4,8 @@ import { loadBookmarks, parseBookmarks, saveBookmarks } from '../storage'
 import type { Bookmark, BookmarkDraft, BookmarkImportResult } from '../types'
 import { createBookmarkId, parseBookmarkUrl } from '../utils'
 
+type BookmarkActionResult = { ok: true; bookmark: Bookmark } | { ok: false; reason: string }
+
 const createDraft = (): BookmarkDraft => ({
   title: '',
   url: '',
@@ -171,6 +173,24 @@ export const useBookmarks = () => {
     persist()
   }
 
+  const unpinBookmark = (id: string): BookmarkActionResult => {
+    const previousBookmarks = bookmarks.value
+    let updatedBookmark: Bookmark | undefined
+
+    bookmarks.value = bookmarks.value.map((bookmark) =>
+      bookmark.id === id ? (updatedBookmark = { ...bookmark, pin: false }) : bookmark,
+    )
+
+    if (!updatedBookmark) return { ok: false, reason: '未找到要移除的书签' }
+
+    if (!persist()) {
+      bookmarks.value = previousBookmarks
+      return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
+    }
+
+    return { ok: true, bookmark: updatedBookmark }
+  }
+
   const resetBookmarks = () => {
     bookmarks.value = parseBookmarks(DEFAULT_BOOKMARKS)
     persist()
@@ -188,6 +208,7 @@ export const useBookmarks = () => {
     saveDraft,
     importBookmarks,
     removeBookmark,
+    unpinBookmark,
     resetBookmarks,
   }
 }

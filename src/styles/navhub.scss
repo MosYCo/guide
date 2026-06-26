@@ -462,6 +462,42 @@
   transform: translateY(0);
 }
 
+.dc-act {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity var(--t);
+}
+
+.dock-card:hover .dc-act,
+.dock-card:focus-within .dc-act {
+  opacity: 1;
+}
+
+.dc-act button {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  background: var(--bg-r);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  transition: all var(--t);
+}
+
+.dc-act button:hover {
+  color: var(--accent);
+  background: var(--accent-d);
+  border-color: var(--accent-d);
+}
+
 .dc-cat-dot {
   position: absolute;
   top: 6px;

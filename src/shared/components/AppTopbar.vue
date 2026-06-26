@@ -6,6 +6,7 @@ import SearchBox from './SearchBox.vue'
 const query = defineModel<string>('query', { required: true })
 
 defineProps<{
+  appName: string
   theme: ThemeDefinition
   resultCount: number
   time: string
@@ -24,7 +25,7 @@ defineEmits<{
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
-      NAV<span>HUB</span>
+      {{ appName }}
     </div>
 
     <ThemeButton :theme="theme" @cycle="$emit('cycleTheme')" />
