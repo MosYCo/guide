@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import type { BookmarkDraft } from '../types'
 
 const draft = defineModel<BookmarkDraft>('draft', { required: true })
@@ -19,6 +19,17 @@ const emit = defineEmits<{
 const titleInput = ref<HTMLInputElement>()
 const modal = ref<HTMLElement>()
 let previousFocus: HTMLElement | null = null
+
+const categoryOptions = computed(() => {
+  const currentCategory = draft.value.cat.trim()
+  const names = new Set(props.categories)
+
+  if (currentCategory && currentCategory !== '__new__') {
+    names.add(currentCategory)
+  }
+
+  return [...names]
+})
 
 const getFocusableElements = () => {
   if (!modal.value) return []
@@ -103,7 +114,7 @@ const handleKeydown = (event: KeyboardEvent) => {
       <div class="field">
         <label for="bookmark-category">分类</label>
         <select id="bookmark-category" v-model="draft.cat" @change="handleCategoryChange">
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+          <option v-for="category in categoryOptions" :key="category" :value="category">{{ category }}</option>
           <option value="__new__">+ 新分类</option>
         </select>
       </div>
