@@ -233,28 +233,39 @@
 }
 
 .bulk-bar {
-  position: sticky;
-  top: 52px;
-  z-index: 90;
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  z-index: 1200;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 24px;
-  background: var(--shell-bg);
-  border-bottom: 1px solid var(--border);
+  max-width: calc(100vw - 32px);
+  padding: 10px;
+  background: var(--bg-r);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 18px 60px var(--modal-shadow);
+  animation: bulkBarIn 0.22s var(--ease-o);
+  transform: translateX(-50%);
+  backdrop-filter: blur(18px) saturate(1.2);
 }
 
 .bulk-bar span {
+  flex-shrink: 0;
   color: var(--fg);
   font: 600 0.76rem var(--fb);
+  padding: 0 4px;
+  white-space: nowrap;
 }
 
 .bulk-bar select {
+  flex-shrink: 0;
   height: 32px;
   color: var(--fg);
   background: var(--sf);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: 10px;
 }
 
 .search-wrap.has-query .rc {
@@ -1435,9 +1446,16 @@ mark {
   }
 
   .bulk-bar {
-    top: 52px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
     flex-wrap: wrap;
-    padding: 8px 14px;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 16px;
+    animation: fadeUp 0.22s var(--ease-o);
+    transform: none;
   }
 
   .manager-row {
