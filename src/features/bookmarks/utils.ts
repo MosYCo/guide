@@ -85,6 +85,7 @@ export const normalizeDockOrder = (bookmarks: Bookmark[]): Bookmark[] => {
         icon: bookmark.icon,
         faviconUrl: bookmark.faviconUrl,
         pin: false,
+        tags: bookmark.tags,
       }
     }
 

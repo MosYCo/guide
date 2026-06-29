@@ -4,7 +4,9 @@ export const BOOKMARK_STORAGE_KEY = 'guide_bookmarks'
 export const COLLAPSED_STORAGE_KEY = 'guide_collapsed_categories'
 export const CATEGORY_STORAGE_KEY = 'guide_categories'
 export const DELETED_CATEGORIES_STORAGE_KEY = 'guide_deleted_categories'
-export const BOOKMARK_EXPORT_VERSION = 2
+export const BACKUP_STORAGE_KEY = 'guide_backups'
+export const BOOKMARK_EXPORT_VERSION = 3
+export const MAX_BACKUPS = 5
 export const UNCATEGORIZED_CATEGORY = '未分类'
 
 export const CATEGORY_ORDER: Record<string, number> = {

@@ -7,6 +7,7 @@ export interface Bookmark {
   faviconUrl: string
   pin: boolean
   dockOrder?: number
+  tags?: string[]
 }
 
 export interface BookmarkDraft {
@@ -16,6 +17,7 @@ export interface BookmarkDraft {
   icon: string
   faviconUrl: string
   pin: boolean
+  tagsText: string
 }
 
 export interface BookmarkGroup {
@@ -23,11 +25,17 @@ export interface BookmarkGroup {
   items: Bookmark[]
 }
 
-export interface BookmarkImportResult {
-  added: number
-  updated: number
-  skipped: number
-}
+export type BookmarkImportResult =
+  | {
+      ok: true
+      added: number
+      updated: number
+      skipped: number
+    }
+  | {
+      ok: false
+      reason: string
+    }
 
 export type DockDropPlacement = 'before' | 'after'
 
@@ -39,10 +47,32 @@ export interface CategoryMeta {
   hidden?: boolean
 }
 
-export interface BookmarkExportData {
-  version: 2
+export interface CategorySummary extends CategoryMeta {
+  count: number
+}
+
+export interface BookmarkBackup {
+  id: string
+  createdAt: string
+  label: string
   bookmarks: Bookmark[]
   categories: CategoryMeta[]
 }
 
+export interface BookmarkExportData {
+  version: 3
+  bookmarks: Bookmark[]
+  categories: CategoryMeta[]
+  backups?: BookmarkBackup[]
+}
+
 export type BookmarkImportData = Bookmark[] | Partial<BookmarkExportData>
+
+export interface BulkOperationResult {
+  ok: true
+  count: number
+}
+
+export type BookmarkActionResult = { ok: true; bookmark: Bookmark } | { ok: false; reason: string }
+
+export type MutationResult = { ok: true } | { ok: false; reason: string }

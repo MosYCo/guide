@@ -2,7 +2,9 @@
 import { computed, ref } from 'vue'
 import BookmarkModal from '@/features/bookmarks/components/BookmarkModal.vue'
 import BookmarkSection from '@/features/bookmarks/components/BookmarkSection.vue'
+import BackupPanel from '@/features/bookmarks/components/BackupPanel.vue'
 import CategoryFilter from '@/features/bookmarks/components/CategoryFilter.vue'
+import CategoryManager from '@/features/bookmarks/components/CategoryManager.vue'
 import HeroDock from '@/features/bookmarks/components/HeroDock.vue'
 import { useBookmarkFilter } from '@/features/bookmarks/composables/useBookmarkFilter'
 import { useBookmarkKeyboard } from '@/features/bookmarks/composables/useBookmarkKeyboard'
@@ -20,6 +22,8 @@ import { useToast } from '@/shared/composables/useToast'
 const {
   bookmarks,
   categories,
+  categorySummaries,
+  backups,
   draft,
   editingId,
   isModalOpen,
@@ -30,20 +34,35 @@ const {
   importBookmarks,
   removeBookmark,
   deleteCategory,
+  bulkMoveCategory,
+  bulkSetPinned,
+  bulkDelete,
+  renameCategory,
+  mergeCategory,
+  moveCategory,
+  setCategoryHidden,
   unpinBookmark,
+  toggleBookmarkPin,
   reorderPinnedBookmarks,
   movePinnedBookmarkByDirection,
   exportBookmarks,
+  exportSelectedBookmarks,
+  restoreBackup,
 } = useBookmarks()
 
 const {
   query,
   activeCategory,
+  searchScope,
+  searchCurrentCategoryOnly,
+  searchHistory,
   collapsedCategories,
   filteredBookmarks,
   groupedBookmarks,
   setCategory,
   clearFilters,
+  commitSearch,
+  clearSearchHistory,
   toggleCategoryCollapsed,
 } = useBookmarkFilter(bookmarks)
 
@@ -51,10 +70,15 @@ const { currentTheme, cycleTheme } = useTheme()
 const { time } = useClock()
 const { message, isVisible, showToast } = useToast()
 const isHelpOpen = ref(false)
+const isCategoryManagerOpen = ref(false)
+const isBackupPanelOpen = ref(false)
 const importInput = ref<HTMLInputElement | null>(null)
+const selectedIds = ref<string[]>([])
 const dialog = ref<
   | { type: 'deleteBookmark'; bookmark: Bookmark }
   | { type: 'deleteCategory'; category: string; count: number }
+  | { type: 'bulkDelete'; count: number }
+  | { type: 'restoreBackup'; id: string }
   | { type: 'addCategory' }
   | null
 >(null)
@@ -64,11 +88,15 @@ const dialogTitle = computed(() => {
   if (!dialog.value) return ''
   if (dialog.value.type === 'deleteBookmark') return `删除 ${dialog.value.bookmark.title}`
   if (dialog.value.type === 'deleteCategory') return `删除分类 ${dialog.value.category}`
+  if (dialog.value.type === 'bulkDelete') return `删除 ${dialog.value.count} 个书签`
+  if (dialog.value.type === 'restoreBackup') return '恢复备份'
   return '新建分类'
 })
 const dialogMessage = computed(() => {
   if (!dialog.value) return ''
   if (dialog.value.type === 'deleteBookmark') return '该书签会从本地列表中移除。'
+  if (dialog.value.type === 'bulkDelete') return '选中的书签会从本地列表中移除，操作前会自动创建备份。'
+  if (dialog.value.type === 'restoreBackup') return '当前数据会先自动备份，然后恢复所选快照。'
   if (dialog.value.type === 'deleteCategory') {
     return dialog.value.count > 0
       ? `该分类下 ${dialog.value.count} 个书签会移动到「未分类」。`
@@ -91,6 +119,16 @@ const handleSave = () => {
 
 const handleDelete = (bookmark: Bookmark) => {
   dialog.value = { type: 'deleteBookmark', bookmark }
+}
+
+const toggleSelect = (bookmark: Bookmark) => {
+  selectedIds.value = selectedIds.value.includes(bookmark.id)
+    ? selectedIds.value.filter((id) => id !== bookmark.id)
+    : [...selectedIds.value, bookmark.id]
+}
+
+const clearSelection = () => {
+  selectedIds.value = []
 }
 
 const handleUnpin = (bookmark: Bookmark) => {
@@ -122,15 +160,55 @@ const handleDockMove = (bookmark: Bookmark, direction: DockMoveDirection) => {
   }
 }
 
+const handleTogglePin = (bookmark: Bookmark) => {
+  const result = toggleBookmarkPin(bookmark.id)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  showToast(result.bookmark.pin ? `已固定 ${result.bookmark.title}` : `已取消固定 ${result.bookmark.title}`)
+}
+
+const handleBulkMove = (category: string) => {
+  if (!category) return
+
+  const result = bulkMoveCategory(selectedIds.value, category)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  showToast(`已移动 ${result.count} 个书签`)
+  clearSelection()
+}
+
+const handleBulkPin = (pin: boolean) => {
+  const result = bulkSetPinned(selectedIds.value, pin)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  showToast(pin ? `已固定 ${result.count} 个书签到 Dock` : `已取消 ${result.count} 个 Dock 固定`)
+  clearSelection()
+}
+
 const handleExport = () => {
-  const blob = new Blob([JSON.stringify(exportBookmarks(), null, 2)], { type: 'application/json' })
+  downloadBookmarks(exportBookmarks())
+  showToast(`已导出 ${bookmarks.value.length} 个书签`)
+}
+
+const downloadBookmarks = (data: unknown, filename = 'navhub-bookmarks.json') => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = 'navhub-bookmarks.json'
+  link.download = filename
   link.click()
   URL.revokeObjectURL(url)
-  showToast(`已导出 ${bookmarks.value.length} 个书签`)
+}
+
+const handleExportSelected = () => {
+  downloadBookmarks(exportSelectedBookmarks(selectedIds.value), 'navhub-selected-bookmarks.json')
+  showToast(`已导出 ${selectedIds.value.length} 个选中书签`)
 }
 
 const handleImportClick = () => {
@@ -145,8 +223,8 @@ const handleImport = async (event: Event) => {
   if (!file) return
 
   const result = importBookmarks(await file.text())
-  if (!result) {
-    showToast('导入失败：JSON 格式或书签数据无效')
+  if (!result.ok) {
+    showToast(`导入失败：${result.reason}`)
     return
   }
 
@@ -165,8 +243,24 @@ const handleDialogConfirm = (value?: string) => {
   if (!dialog.value) return
 
   if (dialog.value.type === 'deleteBookmark') {
-    removeBookmark(dialog.value.bookmark.id)
+    const result = removeBookmark(dialog.value.bookmark.id)
+    if (!result.ok) {
+      showToast(result.reason)
+      dialog.value = null
+      return
+    }
     showToast(`已删除 ${dialog.value.bookmark.title}`)
+  }
+
+  if (dialog.value.type === 'bulkDelete') {
+    const result = bulkDelete(selectedIds.value)
+    if (!result.ok) {
+      showToast(result.reason)
+      dialog.value = null
+      return
+    }
+    showToast(`已删除 ${result.count} 个书签`)
+    clearSelection()
   }
 
   if (dialog.value.type === 'deleteCategory') {
@@ -196,6 +290,18 @@ const handleDialogConfirm = (value?: string) => {
     addCategory(category)
   }
 
+  if (dialog.value.type === 'restoreBackup') {
+    const result = restoreBackup(dialog.value.id)
+    if (!result.ok) {
+      showToast(result.reason)
+      dialog.value = null
+      return
+    }
+    showToast('已恢复备份')
+    isBackupPanelOpen.value = false
+    clearSelection()
+  }
+
   dialog.value = null
 }
 
@@ -220,26 +326,83 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
     cycleTheme()
     showToast(`主题：${currentTheme.value.label}`)
   },
+  onEdit: openEditModal,
+  onDelete: handleDelete,
+  onTogglePin: handleTogglePin,
+  onMoveDock: (bookmark, direction) => {
+    handleDockMove(bookmark, direction)
+  },
 })
+
+const handleCategoryAction = (action: () => { ok: true } | { ok: false; reason: string }, success: string) => {
+  const result = action()
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  showToast(success)
+}
+
+const handleCategoryRename = (from: string, to: string) => {
+  handleCategoryAction(() => renameCategory(from, to), '已重命名分类')
+}
+
+const handleCategoryMerge = (from: string, to: string) => {
+  handleCategoryAction(() => mergeCategory(from, to), '已合并分类')
+}
+
+const handleCategoryMove = (category: string, direction: DockMoveDirection) => {
+  handleCategoryAction(() => moveCategory(category, direction), '已调整分类顺序')
+}
+
+const handleCategoryHidden = (category: string, hidden: boolean) => {
+  handleCategoryAction(() => setCategoryHidden(category, hidden), '已更新分类状态')
+}
 </script>
 
 <template>
   <div class="shell">
     <AppTopbar
       v-model:query="query"
+      v-model:search-scope="searchScope"
+      v-model:search-current-only="searchCurrentCategoryOnly"
       :app-name="APP_NAME"
       :theme="currentTheme"
       :result-count="filteredBookmarks.length"
       :time="time"
+      :search-history="searchHistory"
+      :has-active-category="activeCategory !== null"
       @add="openAddModal"
+      @manage-categories="isCategoryManagerOpen = true"
+      @open-backups="isBackupPanelOpen = true"
       @export="handleExport"
       @import="handleImportClick"
+      @commit-search="commitSearch"
+      @clear-search-history="clearSearchHistory"
       @toggle-help="isHelpOpen = !isHelpOpen"
       @cycle-theme="
         cycleTheme();
         showToast(`主题：${currentTheme.label}`)
       "
     />
+
+    <div v-if="selectedIds.length" class="bulk-bar">
+      <span>已选择 {{ selectedIds.length }} 个</span>
+      <select
+        @change="
+          handleBulkMove(($event.target as HTMLSelectElement).value);
+          ($event.target as HTMLSelectElement).value = ''
+        "
+      >
+        <option value="">移动到分类...</option>
+        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+      </select>
+      <button class="btn" @click="handleBulkPin(true)">固定 Dock</button>
+      <button class="btn" @click="handleBulkPin(false)">取消 Dock</button>
+      <button class="btn" @click="handleExportSelected">导出选中</button>
+      <button class="btn btn-danger" @click="dialog = { type: 'bulkDelete', count: selectedIds.length }">删除</button>
+      <button class="btn" @click="clearSelection">取消选择</button>
+    </div>
 
     <HeroDock
       :bookmarks="bookmarks"
@@ -265,9 +428,13 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
       :collapsed-categories="collapsedCategories"
       :focused-id="focusedId"
       :query="query"
+      :selected-ids="selectedIds"
+      :active-category="activeCategory"
       @toggle="toggleCategoryCollapsed"
+      @toggle-select="toggleSelect"
       @edit="openEditModal"
       @delete="handleDelete"
+      @add="openAddModal"
     />
   </div>
 
@@ -281,6 +448,22 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
   />
 
   <KeyboardHelp :open="isHelpOpen" @close="isHelpOpen = false" />
+  <CategoryManager
+    :open="isCategoryManagerOpen"
+    :categories="categorySummaries"
+    @close="isCategoryManagerOpen = false"
+    @rename="handleCategoryRename"
+    @merge="handleCategoryMerge"
+    @move="handleCategoryMove"
+    @hide="handleCategoryHidden"
+    @delete="handleDeleteCategory"
+  />
+  <BackupPanel
+    :open="isBackupPanelOpen"
+    :backups="backups"
+    @close="isBackupPanelOpen = false"
+    @restore="dialog = { type: 'restoreBackup', id: $event }"
+  />
   <BookmarkModal
     v-model:draft="draft"
     :open="isModalOpen"
@@ -294,8 +477,12 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
     :open="Boolean(dialog)"
     :title="dialogTitle"
     :message="dialogMessage"
-    :tone="dialog?.type === 'deleteBookmark' || dialog?.type === 'deleteCategory' ? 'danger' : 'default'"
-    :confirm-label="dialog?.type === 'addCategory' ? '创建' : '删除'"
+    :tone="
+      dialog?.type === 'deleteBookmark' || dialog?.type === 'deleteCategory' || dialog?.type === 'bulkDelete'
+        ? 'danger'
+        : 'default'
+    "
+    :confirm-label="dialog?.type === 'addCategory' ? '创建' : dialog?.type === 'restoreBackup' ? '恢复' : '删除'"
     :input-label="dialog?.type === 'addCategory' ? '分类名称' : ''"
     input-placeholder="例如：阅读"
     @cancel="dialog = null"

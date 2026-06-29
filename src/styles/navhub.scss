@@ -126,7 +126,7 @@
 .search-wrap input {
   width: 100%;
   height: 36px;
-  padding: 0 84px 0 36px;
+  padding: 0 224px 0 36px;
   color: var(--fg);
   font: 500 0.84rem var(--fb);
   background: var(--sf);
@@ -138,6 +138,48 @@
     box-shadow var(--t),
     background var(--t),
     color 0.35s;
+}
+
+.search-scope,
+.search-current,
+.search-clear {
+  position: absolute;
+  top: 50%;
+  height: 24px;
+  color: var(--muted);
+  font: 500 0.62rem var(--fm);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  transform: translateY(-50%);
+}
+
+.search-scope {
+  right: 112px;
+  width: 60px;
+  padding: 0 4px;
+}
+
+.search-current {
+  right: 58px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+}
+
+.search-current input {
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+
+.search-clear {
+  right: 32px;
+  display: grid;
+  width: 22px;
+  place-items: center;
+  cursor: pointer;
 }
 
 .search-wrap input::placeholder {
@@ -181,13 +223,38 @@
 .search-wrap .rc {
   position: absolute;
   top: 50%;
-  right: 62px;
+  right: 178px;
   color: var(--accent);
   font: 500 0.65rem var(--fm);
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--t);
   transform: translateY(-50%);
+}
+
+.bulk-bar {
+  position: sticky;
+  top: 52px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  background: var(--shell-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.bulk-bar span {
+  color: var(--fg);
+  font: 600 0.76rem var(--fb);
+}
+
+.bulk-bar select {
+  height: 32px;
+  color: var(--fg);
+  background: var(--sf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
 }
 
 .search-wrap.has-query .rc {
@@ -759,6 +826,17 @@
     box-shadow var(--t);
 }
 
+.bk-select {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+.bk-select input {
+  accent-color: var(--accent);
+}
+
 .bk:hover {
   background: var(--card-h);
   border-color: var(--border-h);
@@ -854,6 +932,19 @@
   font: 400 0.63rem var(--fm);
   letter-spacing: 0.02em;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bk-tags {
+  display: flex;
+  gap: 4px;
+  margin-top: 3px;
+  overflow: hidden;
+}
+
+.bk-tags span {
+  color: var(--muted2);
+  font: 500 0.58rem var(--fm);
   white-space: nowrap;
 }
 
@@ -1061,6 +1152,81 @@ mark {
   line-height: 1.6;
 }
 
+.manager-modal {
+  width: 760px;
+  max-width: 94vw;
+}
+
+.manager-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(62vh, 520px);
+  overflow: auto;
+}
+
+.manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  background: var(--sf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+}
+
+.manager-main {
+  display: grid;
+  min-width: 120px;
+}
+
+.manager-name {
+  color: var(--fg);
+  font: 600 0.82rem var(--fb);
+}
+
+.manager-meta,
+.manager-empty {
+  color: var(--muted);
+  font: 400 0.68rem var(--fm);
+}
+
+.manager-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.mini-btn,
+.mini-input,
+.mini-select {
+  height: 28px;
+  color: var(--fg);
+  font: 500 0.66rem var(--fb);
+  background: var(--bg-r);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.mini-btn {
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+.mini-btn.danger {
+  color: var(--danger);
+}
+
+.mini-input {
+  width: 92px;
+  padding: 0 7px;
+}
+
+.mini-select {
+  width: 104px;
+}
+
 .field {
   margin-bottom: 12px;
 }
@@ -1189,11 +1355,39 @@ mark {
     max-width: none;
   }
 
+  .search-wrap input {
+    padding-right: 96px;
+  }
+
   .search-wrap .sb,
   .search-wrap .rc,
+  .search-current,
   .clock,
   .dot-sep {
     display: none;
+  }
+
+  .search-scope {
+    right: 36px;
+  }
+
+  .search-clear {
+    right: 8px;
+  }
+
+  .bulk-bar {
+    top: 52px;
+    flex-wrap: wrap;
+    padding: 8px 14px;
+  }
+
+  .manager-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .manager-controls {
+    justify-content: flex-start;
   }
 
   .cat-grid {

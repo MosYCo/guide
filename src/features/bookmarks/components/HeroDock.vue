@@ -21,6 +21,7 @@ const keys = '123456789'
 const draggedId = ref<string | null>(null)
 const dragTargetId = ref<string | null>(null)
 const dropPlacement = ref<DockDropPlacement>('after')
+const pointerDraggedId = ref<string | null>(null)
 
 const handleDragStart = (event: DragEvent, bookmark: Bookmark) => {
   draggedId.value = bookmark.id
@@ -57,8 +58,36 @@ const handleDrop = (event: DragEvent, bookmark: Bookmark) => {
 
 const clearDragState = () => {
   draggedId.value = null
+  pointerDraggedId.value = null
   dragTargetId.value = null
   dropPlacement.value = 'after'
+}
+
+const handlePointerDown = (event: PointerEvent, bookmark: Bookmark) => {
+  if (event.pointerType === 'mouse') return
+  pointerDraggedId.value = bookmark.id
+  draggedId.value = bookmark.id
+}
+
+const handlePointerMove = (event: PointerEvent) => {
+  if (!pointerDraggedId.value) return
+
+  const card = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('.dock-card')
+  const targetId = card?.dataset.bookmarkId
+  if (!card || !targetId || targetId === pointerDraggedId.value) return
+
+  const target = card
+  const rect = target.getBoundingClientRect()
+  dragTargetId.value = targetId
+  dropPlacement.value = event.clientX < rect.left + rect.width / 2 ? 'before' : 'after'
+}
+
+const handlePointerUp = () => {
+  if (pointerDraggedId.value && dragTargetId.value && pointerDraggedId.value !== dragTargetId.value) {
+    emit('reorder', pointerDraggedId.value, dragTargetId.value, dropPlacement.value)
+  }
+
+  clearDragState()
 }
 </script>
 
@@ -96,6 +125,7 @@ const clearDragState = () => {
           },
         ]"
         :href="bookmark.url"
+        :data-bookmark-id="bookmark.id"
         target="_blank"
         rel="noopener"
         draggable="true"
@@ -105,6 +135,10 @@ const clearDragState = () => {
         @dragleave="dragTargetId === bookmark.id && (dragTargetId = null)"
         @drop="handleDrop($event, bookmark)"
         @dragend="clearDragState"
+        @pointerdown="handlePointerDown($event, bookmark)"
+        @pointermove="handlePointerMove"
+        @pointerup="handlePointerUp"
+        @pointercancel="clearDragState"
       >
         <div class="dc-shimmer"></div>
         <span class="dc-cat-dot" :style="{ background: CATEGORY_COLORS[bookmark.cat] || 'var(--muted2)' }"></span>

@@ -1,4 +1,5 @@
 import {
+  BACKUP_STORAGE_KEY,
   BOOKMARK_STORAGE_KEY,
   BOOKMARK_EXPORT_VERSION,
   CATEGORY_ORDER,
@@ -8,7 +9,7 @@ import {
   DELETED_CATEGORIES_STORAGE_KEY,
   UNCATEGORIZED_CATEGORY,
 } from './constants'
-import type { Bookmark, BookmarkExportData, CategoryMeta } from './types'
+import type { Bookmark, BookmarkBackup, BookmarkExportData, CategoryMeta } from './types'
 import { createBookmarkId, normalizeDockOrder, parseBookmarkUrl } from './utils'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -34,6 +35,9 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
     icon: typeof value.icon === 'string' ? value.icon.trim().slice(0, 8) : '',
     faviconUrl,
     pin: typeof value.pin === 'boolean' ? value.pin : false,
+    tags: Array.isArray(value.tags)
+      ? value.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean)
+      : [],
   }
 
   if (typeof value.dockOrder === 'number' && Number.isFinite(value.dockOrder)) {
@@ -143,10 +147,12 @@ export const saveCategories = (categories: CategoryMeta[]) => {
   }
 }
 
-export const parseImportData = (value: unknown): { bookmarks: Bookmark[]; categories: CategoryMeta[] } | null => {
+export const parseImportData = (
+  value: unknown,
+): { bookmarks: Bookmark[]; categories: CategoryMeta[]; backups: BookmarkBackup[] } | null => {
   const legacyBookmarks = parseBookmarks(value)
   if (legacyBookmarks.length) {
-    return { bookmarks: legacyBookmarks, categories: [] }
+    return { bookmarks: legacyBookmarks, categories: [], backups: [] }
   }
 
   if (!isRecord(value)) return null
@@ -157,14 +163,68 @@ export const parseImportData = (value: unknown): { bookmarks: Bookmark[]; catego
   return {
     bookmarks,
     categories: parseCategoryMeta(value.categories),
+    backups: parseBackups(value.backups),
   }
 }
 
-export const createExportData = (bookmarks: Bookmark[], categories: CategoryMeta[]): BookmarkExportData => {
+export const createExportData = (
+  bookmarks: Bookmark[],
+  categories: CategoryMeta[],
+  backups: BookmarkBackup[] = [],
+): BookmarkExportData => {
   return {
     version: BOOKMARK_EXPORT_VERSION,
     bookmarks: normalizeDockOrder(bookmarks),
     categories: parseCategoryMeta(categories),
+    backups: parseBackups(backups),
+  }
+}
+
+export const sanitizeBackup = (value: unknown): BookmarkBackup | null => {
+  if (!isRecord(value)) return null
+
+  const id = typeof value.id === 'string' && value.id.trim() ? value.id.trim() : createBookmarkId()
+  const createdAt = typeof value.createdAt === 'string' && value.createdAt.trim() ? value.createdAt.trim() : new Date().toISOString()
+  const label = typeof value.label === 'string' && value.label.trim() ? value.label.trim() : '备份'
+  const bookmarks = parseBookmarks(value.bookmarks)
+  const categories = parseCategoryMeta(value.categories)
+
+  if (!bookmarks.length) return null
+
+  return {
+    id,
+    createdAt,
+    label,
+    bookmarks,
+    categories,
+  }
+}
+
+export const parseBackups = (value: unknown): BookmarkBackup[] => {
+  if (!Array.isArray(value)) return []
+
+  return value.reduce<BookmarkBackup[]>((result, item) => {
+    const backup = sanitizeBackup(item)
+    if (backup) result.push(backup)
+    return result
+  }, [])
+}
+
+export const loadBackups = (): BookmarkBackup[] => {
+  try {
+    const raw = localStorage.getItem(BACKUP_STORAGE_KEY)
+    return raw ? parseBackups(JSON.parse(raw)) : []
+  } catch {
+    return []
+  }
+}
+
+export const saveBackups = (backups: BookmarkBackup[]) => {
+  try {
+    localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(parseBackups(backups)))
+    return true
+  } catch {
+    return false
   }
 }
 

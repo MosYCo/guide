@@ -14,6 +14,7 @@ const bookmarks: Bookmark[] = [
     faviconUrl: '',
     pin: true,
     dockOrder: 5,
+    tags: ['one'],
   },
   {
     id: 'two',
@@ -24,6 +25,7 @@ const bookmarks: Bookmark[] = [
     faviconUrl: '',
     pin: true,
     dockOrder: 1,
+    tags: [],
   },
   {
     id: 'three',
@@ -34,6 +36,7 @@ const bookmarks: Bookmark[] = [
     faviconUrl: '',
     pin: false,
     dockOrder: 3,
+    tags: ['stale'],
   },
 ]
 
@@ -58,5 +61,6 @@ describe('bookmark storage helpers', () => {
     expect(exported.version).toBe(BOOKMARK_EXPORT_VERSION)
     expect(parsed?.bookmarks).toHaveLength(3)
     expect(parsed?.categories).toEqual([{ name: '工具', order: 3, hidden: false }])
+    expect(parsed?.bookmarks[0].tags).toEqual(['one'])
   })
 })

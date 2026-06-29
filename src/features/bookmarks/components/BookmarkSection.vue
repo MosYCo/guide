@@ -7,12 +7,16 @@ defineProps<{
   collapsedCategories: Record<string, boolean>
   focusedId: string | null
   query: string
+  selectedIds: string[]
+  activeCategory: string | null
 }>()
 
 defineEmits<{
   toggle: [category: string]
+  toggleSelect: [bookmark: Bookmark]
   edit: [bookmark: Bookmark]
   delete: [bookmark: Bookmark]
+  add: []
 }>()
 </script>
 
@@ -20,7 +24,8 @@ defineEmits<{
   <main class="content">
     <div v-if="!groups.length" class="empty">
       <div class="empty-s">∅</div>
-      <p>{{ query ? `没有匹配「${query}」` : '当前分类下没有书签' }}</p>
+      <p>{{ query ? `没有匹配「${query}」` : activeCategory ? `「${activeCategory}」下没有书签` : '还没有书签' }}</p>
+      <button v-if="!query" class="btn btn-acc" @click="$emit('add')">添加书签</button>
     </div>
 
     <section
@@ -46,6 +51,8 @@ defineEmits<{
           :bookmark="bookmark"
           :focused="focusedId === bookmark.id"
           :query="query"
+          :selected="selectedIds.includes(bookmark.id)"
+          @toggle-select="$emit('toggleSelect', $event)"
           @edit="$emit('edit', $event)"
           @delete="$emit('delete', $event)"
         />

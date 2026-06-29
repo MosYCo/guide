@@ -127,6 +127,10 @@ const handleKeydown = (event: KeyboardEvent) => {
         />
       </div>
       <div class="field">
+        <label for="bookmark-tags">标签（可选）</label>
+        <input id="bookmark-tags" v-model="draft.tagsText" type="text" placeholder="用逗号或空格分隔" />
+      </div>
+      <div class="field">
         <label class="check-field">
           <input v-model="draft.pin" type="checkbox" />
           固定到 Dock

@@ -7,9 +7,11 @@ defineProps<{
   bookmark: Bookmark
   focused: boolean
   query: string
+  selected: boolean
 }>()
 
 defineEmits<{
+  toggleSelect: [bookmark: Bookmark]
   edit: [bookmark: Bookmark]
   delete: [bookmark: Bookmark]
 }>()
@@ -38,6 +40,9 @@ const parts = (text: string, query: string) => {
     :data-bookmark-id="bookmark.id"
   >
     <div class="bk-shine"></div>
+    <label class="bk-select" :title="`选择 ${bookmark.title}`">
+      <input :checked="selected" type="checkbox" @click.stop @change="$emit('toggleSelect', bookmark)" />
+    </label>
     <BookmarkIcon :bookmark="bookmark" />
     <div class="bk-body">
       <div class="bk-name">
@@ -51,6 +56,9 @@ const parts = (text: string, query: string) => {
           <mark v-if="part.match">{{ part.text }}</mark>
           <template v-else>{{ part.text }}</template>
         </template>
+      </div>
+      <div v-if="bookmark.tags?.length" class="bk-tags">
+        <span v-for="tag in bookmark.tags" :key="tag">#{{ tag }}</span>
       </div>
     </div>
     <svg class="bk-arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">

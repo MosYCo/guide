@@ -15,6 +15,10 @@ interface KeyboardOptions {
   onCloseHelp: () => void
   onOpenHelp: () => void
   onCycleTheme: () => void
+  onEdit: (bookmark: Bookmark) => void
+  onDelete: (bookmark: Bookmark) => void
+  onTogglePin: (bookmark: Bookmark) => void
+  onMoveDock: (bookmark: Bookmark, direction: 'left' | 'right') => void
 }
 
 const getGridColumnCount = () => {
@@ -58,6 +62,10 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
     if (bookmark) {
       window.open(bookmark.url, '_blank', 'noopener')
     }
+  }
+
+  const getFocusedBookmark = () => {
+    return options.bookmarks.value.find((item) => item.id === focusedId.value)
   }
 
   const clearFocus = () => {
@@ -151,6 +159,36 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
     }
 
     if (options.modalOpen.value || options.helpOpen.value) return
+
+    const focusedBookmark = getFocusedBookmark()
+
+    if (focusedBookmark && !isSearchFocused) {
+      if (event.key.toLowerCase() === 'e') {
+        event.preventDefault()
+        options.onEdit(focusedBookmark)
+        return
+      }
+      if (event.key.toLowerCase() === 'd') {
+        event.preventDefault()
+        options.onDelete(focusedBookmark)
+        return
+      }
+      if (event.key.toLowerCase() === 'p') {
+        event.preventDefault()
+        options.onTogglePin(focusedBookmark)
+        return
+      }
+      if (event.shiftKey && event.key === 'ArrowLeft') {
+        event.preventDefault()
+        options.onMoveDock(focusedBookmark, 'left')
+        return
+      }
+      if (event.shiftKey && event.key === 'ArrowRight') {
+        event.preventDefault()
+        options.onMoveDock(focusedBookmark, 'right')
+        return
+      }
+    }
 
     if (event.key === 'ArrowDown' || (event.key === 'Tab' && !event.shiftKey)) {
       event.preventDefault()

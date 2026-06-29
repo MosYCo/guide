@@ -1,21 +1,30 @@
 <script setup lang="ts">
+import type { SearchScope } from '@/features/bookmarks/composables/useBookmarkFilter'
 import type { ThemeDefinition } from '@/shared/composables/useTheme'
 import ThemeButton from './ThemeButton.vue'
 import SearchBox from './SearchBox.vue'
 
 const query = defineModel<string>('query', { required: true })
+const searchScope = defineModel<SearchScope>('searchScope', { required: true })
+const searchCurrentOnly = defineModel<boolean>('searchCurrentOnly', { required: true })
 
 defineProps<{
   appName: string
   theme: ThemeDefinition
   resultCount: number
   time: string
+  searchHistory: string[]
+  hasActiveCategory: boolean
 }>()
 
 defineEmits<{
   add: []
+  manageCategories: []
+  openBackups: []
   import: []
   export: []
+  commitSearch: []
+  clearSearchHistory: []
   toggleHelp: []
   cycleTheme: []
 }>()
@@ -29,11 +38,35 @@ defineEmits<{
     </div>
 
     <ThemeButton :theme="theme" @cycle="$emit('cycleTheme')" />
-    <SearchBox v-model="query" :result-count="resultCount" />
+    <SearchBox
+      v-model="query"
+      v-model:scope="searchScope"
+      v-model:current-only="searchCurrentOnly"
+      :result-count="resultCount"
+      :history="searchHistory"
+      :has-active-category="hasActiveCategory"
+      @commit="$emit('commitSearch')"
+      @clear-history="$emit('clearSearchHistory')"
+    />
 
     <div class="t-right">
       <span class="clock">{{ time }}</span>
       <span class="dot-sep"></span>
+      <button class="btn btn-icon" title="分类管理" @click="$emit('manageCategories')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+          <circle cx="8" cy="7" r="2" />
+          <circle cx="14" cy="12" r="2" />
+          <circle cx="10" cy="17" r="2" />
+        </svg>
+      </button>
+      <button class="btn btn-icon" title="备份恢复" @click="$emit('openBackups')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 12a9 9 0 109-9" />
+          <path d="M3 3v6h6" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      </button>
       <button class="btn btn-icon" title="键盘快捷键" @click="$emit('toggleHelp')">
         <svg
           viewBox="0 0 24 24"

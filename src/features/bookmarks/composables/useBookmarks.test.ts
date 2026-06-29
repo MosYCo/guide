@@ -12,6 +12,7 @@ const seedBookmarks: Bookmark[] = [
     icon: '',
     faviconUrl: '',
     pin: true,
+    tags: ['work'],
   },
   {
     id: 'b',
@@ -21,6 +22,7 @@ const seedBookmarks: Bookmark[] = [
     icon: '',
     faviconUrl: '',
     pin: true,
+    tags: [],
   },
   {
     id: 'c',
@@ -30,6 +32,7 @@ const seedBookmarks: Bookmark[] = [
     icon: '',
     faviconUrl: '',
     pin: false,
+    tags: ['read'],
   },
 ]
 
@@ -57,5 +60,17 @@ describe('useBookmarks', () => {
     const pinned = bookmarks.value.filter((bookmark) => bookmark.pin).sort((a, b) => (a.dockOrder ?? 0) - (b.dockOrder ?? 0))
     expect(pinned.map((bookmark) => bookmark.id)).toEqual(['b', 'a'])
     expect(pinned.map((bookmark) => bookmark.dockOrder)).toEqual([0, 1])
+  })
+
+  it('renames categories and creates backups for bulk deletes', () => {
+    const { bookmarks, backups, renameCategory, bulkDelete } = useBookmarks()
+
+    expect(renameCategory('Temp', 'Renamed')).toEqual({ ok: true })
+    expect(bookmarks.value.filter((bookmark) => bookmark.cat === 'Renamed')).toHaveLength(2)
+
+    const result = bulkDelete(['a', 'b'])
+    expect(result).toEqual({ ok: true, count: 2 })
+    expect(bookmarks.value).toHaveLength(1)
+    expect(backups.value.length).toBeGreaterThan(0)
   })
 })
