@@ -30,3 +30,19 @@ export interface BookmarkImportResult {
 }
 
 export type DockDropPlacement = 'before' | 'after'
+
+export type DockMoveDirection = 'left' | 'right'
+
+export interface CategoryMeta {
+  name: string
+  order: number
+  hidden?: boolean
+}
+
+export interface BookmarkExportData {
+  version: 2
+  bookmarks: Bookmark[]
+  categories: CategoryMeta[]
+}
+
+export type BookmarkImportData = Bookmark[] | Partial<BookmarkExportData>

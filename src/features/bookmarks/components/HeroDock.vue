@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { CATEGORY_COLORS } from '../constants'
-import type { Bookmark, DockDropPlacement } from '../types'
-import { getHostname } from '../utils'
+import type { Bookmark, DockDropPlacement, DockMoveDirection } from '../types'
+import { getHostname, getPinnedBookmarks } from '../utils'
 import BookmarkIcon from './BookmarkIcon.vue'
 
 const props = defineProps<{
@@ -13,19 +13,10 @@ const emit = defineEmits<{
   edit: [bookmark: Bookmark]
   unpin: [bookmark: Bookmark]
   reorder: [draggedId: string, targetId: string, placement: DockDropPlacement]
+  move: [bookmark: Bookmark, direction: DockMoveDirection]
 }>()
 
-const pinnedBookmarks = computed(() =>
-  props.bookmarks
-    .filter((bookmark) => bookmark.pin)
-    .map((bookmark, index) => ({ bookmark, index }))
-    .sort((a, b) => {
-      const orderA = a.bookmark.dockOrder ?? a.index
-      const orderB = b.bookmark.dockOrder ?? b.index
-      return orderA === orderB ? a.index - b.index : orderA - orderB
-    })
-    .map(({ bookmark }) => bookmark),
-)
+const pinnedBookmarks = computed(() => getPinnedBookmarks(props.bookmarks))
 const keys = '123456789'
 const draggedId = ref<string | null>(null)
 const dragTargetId = ref<string | null>(null)
@@ -122,6 +113,22 @@ const clearDragState = () => {
         <div class="dc-name" :title="bookmark.title">{{ bookmark.title }}</div>
         <div class="dc-domain">{{ getHostname(bookmark.url) }}</div>
         <div class="dc-act">
+          <button
+            :disabled="index === 0"
+            :aria-label="`向左移动 ${bookmark.title}`"
+            title="向左移动"
+            @click.prevent.stop="$emit('move', bookmark, 'left')"
+          >
+            ‹
+          </button>
+          <button
+            :disabled="index === pinnedBookmarks.length - 1"
+            :aria-label="`向右移动 ${bookmark.title}`"
+            title="向右移动"
+            @click.prevent.stop="$emit('move', bookmark, 'right')"
+          >
+            ›
+          </button>
           <button :aria-label="`编辑 ${bookmark.title}`" title="编辑" @click.prevent.stop="$emit('edit', bookmark)">
             ✎
           </button>

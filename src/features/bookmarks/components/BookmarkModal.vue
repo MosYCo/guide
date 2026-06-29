@@ -13,7 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   save: []
-  addCategory: [category: string]
+  requestCategory: []
 }>()
 
 const titleInput = ref<HTMLInputElement>()
@@ -57,13 +57,8 @@ watch(
 const handleCategoryChange = () => {
   if (draft.value.cat !== '__new__') return
 
-  const name = window.prompt('输入新分类名称：')?.trim()
-  if (name) {
-    emit('addCategory', name)
-    draft.value.cat = name
-  } else {
-    draft.value.cat = props.categories[0] ?? '未分类'
-  }
+  draft.value.cat = props.categories[0] ?? '未分类'
+  emit('requestCategory')
 }
 
 const handleKeydown = (event: KeyboardEvent) => {

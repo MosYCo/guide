@@ -265,6 +265,18 @@
   color: #fff;
 }
 
+.btn-danger {
+  color: #fff;
+  font-weight: 600;
+  background: var(--danger, oklch(58% 0.2 25));
+  border-color: transparent;
+}
+
+.btn-danger:hover {
+  border-color: transparent;
+  filter: brightness(1.08);
+}
+
 .btn-icon {
   width: 32px;
   justify-content: center;
@@ -519,6 +531,17 @@
   color: var(--accent);
   background: var(--accent-d);
   border-color: var(--accent-d);
+}
+
+.dc-act button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.dc-act button:disabled:hover {
+  color: var(--muted);
+  background: var(--bg-r);
+  border-color: var(--border);
 }
 
 .dc-cat-dot {
@@ -1022,9 +1045,20 @@ mark {
   padding: 24px 24px 20px;
 }
 
+.dialog-modal {
+  width: 360px;
+}
+
 .modal h3 {
   margin-bottom: 16px;
   font-size: 0.9rem;
+}
+
+.dialog-message {
+  margin: -4px 0 16px;
+  color: var(--fg);
+  font: 400 0.84rem var(--fb);
+  line-height: 1.6;
 }
 
 .field {
@@ -1137,6 +1171,10 @@ mark {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 8px;
     padding: 12px;
+  }
+
+  .dc-act {
+    opacity: 1;
   }
 
   .filter-bar {

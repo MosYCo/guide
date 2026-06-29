@@ -1,12 +1,15 @@
 import {
   BOOKMARK_STORAGE_KEY,
+  BOOKMARK_EXPORT_VERSION,
+  CATEGORY_ORDER,
+  CATEGORY_STORAGE_KEY,
   COLLAPSED_STORAGE_KEY,
   DEFAULT_BOOKMARKS,
   DELETED_CATEGORIES_STORAGE_KEY,
   UNCATEGORIZED_CATEGORY,
 } from './constants'
-import type { Bookmark } from './types'
-import { createBookmarkId, parseBookmarkUrl } from './utils'
+import type { Bookmark, BookmarkExportData, CategoryMeta } from './types'
+import { createBookmarkId, normalizeDockOrder, parseBookmarkUrl } from './utils'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null
@@ -46,19 +49,21 @@ export const parseBookmarks = (value: unknown): Bookmark[] => {
   const seenIds = new Set<string>()
   const seenUrls = new Set<string>()
 
-  return value.reduce<Bookmark[]>((result, item) => {
-    const bookmark = sanitizeBookmark(item)
-    if (!bookmark || seenUrls.has(bookmark.url)) return result
+  return normalizeDockOrder(
+    value.reduce<Bookmark[]>((result, item) => {
+      const bookmark = sanitizeBookmark(item)
+      if (!bookmark || seenUrls.has(bookmark.url)) return result
 
-    while (seenIds.has(bookmark.id)) {
-      bookmark.id = createBookmarkId()
-    }
+      while (seenIds.has(bookmark.id)) {
+        bookmark.id = createBookmarkId()
+      }
 
-    seenIds.add(bookmark.id)
-    seenUrls.add(bookmark.url)
-    result.push(bookmark)
-    return result
-  }, [])
+      seenIds.add(bookmark.id)
+      seenUrls.add(bookmark.url)
+      result.push(bookmark)
+      return result
+    }, []),
+  )
 }
 
 const getDefaultBookmarks = () => parseBookmarks(DEFAULT_BOOKMARKS)
@@ -85,10 +90,81 @@ export const loadBookmarks = (): Bookmark[] => {
 
 export const saveBookmarks = (bookmarks: Bookmark[]) => {
   try {
-    localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(bookmarks))
+    localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(normalizeDockOrder(bookmarks)))
     return true
   } catch {
     return false
+  }
+}
+
+export const sanitizeCategoryMeta = (value: unknown): CategoryMeta | null => {
+  if (!isRecord(value)) return null
+
+  const name = typeof value.name === 'string' ? value.name.trim() : ''
+  if (!name) return null
+
+  return {
+    name,
+    order: typeof value.order === 'number' && Number.isFinite(value.order) ? value.order : CATEGORY_ORDER[name] ?? 99,
+    hidden: typeof value.hidden === 'boolean' ? value.hidden : false,
+  }
+}
+
+export const parseCategoryMeta = (value: unknown): CategoryMeta[] => {
+  if (!Array.isArray(value)) return []
+
+  const seen = new Set<string>()
+
+  return value.reduce<CategoryMeta[]>((result, item) => {
+    const category = sanitizeCategoryMeta(item)
+    if (!category || seen.has(category.name)) return result
+
+    seen.add(category.name)
+    result.push(category)
+    return result
+  }, [])
+}
+
+export const loadCategories = (): CategoryMeta[] => {
+  try {
+    const raw = localStorage.getItem(CATEGORY_STORAGE_KEY)
+    return raw ? parseCategoryMeta(JSON.parse(raw)) : []
+  } catch {
+    return []
+  }
+}
+
+export const saveCategories = (categories: CategoryMeta[]) => {
+  try {
+    localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(parseCategoryMeta(categories)))
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const parseImportData = (value: unknown): { bookmarks: Bookmark[]; categories: CategoryMeta[] } | null => {
+  const legacyBookmarks = parseBookmarks(value)
+  if (legacyBookmarks.length) {
+    return { bookmarks: legacyBookmarks, categories: [] }
+  }
+
+  if (!isRecord(value)) return null
+
+  const bookmarks = parseBookmarks(value.bookmarks)
+  if (!bookmarks.length) return null
+
+  return {
+    bookmarks,
+    categories: parseCategoryMeta(value.categories),
+  }
+}
+
+export const createExportData = (bookmarks: Bookmark[], categories: CategoryMeta[]): BookmarkExportData => {
+  return {
+    version: BOOKMARK_EXPORT_VERSION,
+    bookmarks: normalizeDockOrder(bookmarks),
+    categories: parseCategoryMeta(categories),
   }
 }
 

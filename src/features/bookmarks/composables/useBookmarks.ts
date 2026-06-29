@@ -1,8 +1,32 @@
 import { computed, ref } from 'vue'
 import { CATEGORY_ORDER, DEFAULT_BOOKMARKS, UNCATEGORIZED_CATEGORY } from '../constants'
-import { loadBookmarks, loadDeletedCategories, parseBookmarks, saveBookmarks, saveDeletedCategories } from '../storage'
-import type { Bookmark, BookmarkDraft, BookmarkImportResult, DockDropPlacement } from '../types'
-import { createBookmarkId, parseBookmarkUrl } from '../utils'
+import {
+  createExportData,
+  loadBookmarks,
+  loadCategories,
+  loadDeletedCategories,
+  parseBookmarks,
+  parseImportData,
+  saveBookmarks,
+  saveCategories,
+} from '../storage'
+import type {
+  Bookmark,
+  BookmarkDraft,
+  BookmarkExportData,
+  BookmarkImportResult,
+  CategoryMeta,
+  DockDropPlacement,
+  DockMoveDirection,
+} from '../types'
+import {
+  createBookmarkId,
+  getPinnedBookmarks,
+  movePinnedBookmark,
+  normalizeDockOrder,
+  parseBookmarkUrl,
+  sortCategories,
+} from '../utils'
 
 type BookmarkActionResult = { ok: true; bookmark: Bookmark } | { ok: false; reason: string }
 type CategoryDeleteResult = { ok: true; moved: number } | { ok: false; reason: string }
@@ -16,44 +40,64 @@ const createDraft = (category = Object.keys(CATEGORY_ORDER)[0] ?? UNCATEGORIZED_
   pin: false,
 })
 
+const createCategoryMeta = (name: string, order = CATEGORY_ORDER[name] ?? 99, hidden = false): CategoryMeta => ({
+  name,
+  order,
+  hidden,
+})
+
+const createDefaultCategories = () => {
+  return [...Object.keys(CATEGORY_ORDER), UNCATEGORIZED_CATEGORY].map((name) => createCategoryMeta(name))
+}
+
 export const useBookmarks = () => {
-  const bookmarks = ref<Bookmark[]>(loadBookmarks())
-  const deletedCategories = ref<string[]>(loadDeletedCategories())
+  const bookmarks = ref<Bookmark[]>(normalizeDockOrder(loadBookmarks()))
+  const categoriesMeta = ref<CategoryMeta[]>([
+    ...createDefaultCategories(),
+    ...loadCategories(),
+    ...loadDeletedCategories().map((name) => createCategoryMeta(name, CATEGORY_ORDER[name] ?? 99, true)),
+  ])
   const editingId = ref<string | null>(null)
   const draft = ref<BookmarkDraft>(createDraft())
   const isModalOpen = ref(false)
 
   const categories = computed(() => {
-    const deleted = new Set(deletedCategories.value)
     const bookmarkCategories = new Set(bookmarks.value.map((bookmark) => bookmark.cat))
-    const names = new Set([
-      ...Object.keys(CATEGORY_ORDER).filter((category) => !deleted.has(category) || bookmarkCategories.has(category)),
-      ...bookmarkCategories,
-    ])
+    const metaByName = new Map(categoriesMeta.value.map((category) => [category.name, category]))
 
-    names.add(UNCATEGORIZED_CATEGORY)
+    bookmarkCategories.forEach((category) => {
+      if (!metaByName.has(category)) {
+        metaByName.set(category, createCategoryMeta(category))
+      }
+    })
+    metaByName.set(UNCATEGORIZED_CATEGORY, metaByName.get(UNCATEGORIZED_CATEGORY) ?? createCategoryMeta(UNCATEGORIZED_CATEGORY))
 
-    return [...names].sort((a, b) => (CATEGORY_ORDER[a] ?? 99) - (CATEGORY_ORDER[b] ?? 99))
+    return sortCategories([...metaByName.values()].filter((category) => !category.hidden || bookmarkCategories.has(category.name))).map(
+      (category) => category.name,
+    )
   })
 
   const persist = () => {
-    return saveBookmarks(bookmarks.value)
+    bookmarks.value = normalizeDockOrder(bookmarks.value)
+    return saveBookmarks(bookmarks.value) && saveCategories(categoriesMeta.value)
   }
 
   const getNextDockOrder = () => {
-    return bookmarks.value.filter((bookmark) => bookmark.pin).length
+    return getPinnedBookmarks(bookmarks.value).length
   }
 
-  const restoreDeletedCategory = (category: string) => {
-    if (!deletedCategories.value.includes(category)) return true
+  const upsertCategory = (name: string, hidden = false) => {
+    const category = name.trim()
+    if (!category) return
 
-    const previousDeletedCategories = deletedCategories.value
-    deletedCategories.value = deletedCategories.value.filter((item) => item !== category)
+    const existing = categoriesMeta.value.find((item) => item.name === category)
+    if (existing) {
+      existing.hidden = hidden
+      return
+    }
 
-    if (saveDeletedCategories(deletedCategories.value)) return true
-
-    deletedCategories.value = previousDeletedCategories
-    return false
+    const maxOrder = categoriesMeta.value.reduce((max, item) => Math.max(max, item.order), 98)
+    categoriesMeta.value = [...categoriesMeta.value, createCategoryMeta(category, CATEGORY_ORDER[category] ?? maxOrder + 1, hidden)]
   }
 
   const openAddModal = () => {
@@ -93,9 +137,12 @@ export const useBookmarks = () => {
     const duplicated = bookmarks.value.find((bookmark) => bookmark.url === url && bookmark.id !== editingId.value)
     if (duplicated) return { ok: false, reason: `已存在：${duplicated.title}` }
 
+    upsertCategory(cat)
+
     if (editingId.value) {
       let updatedBookmark: Bookmark | undefined
       const previousBookmarks = bookmarks.value
+      const previousCategories = categoriesMeta.value.map((category) => ({ ...category }))
       bookmarks.value = bookmarks.value.map((bookmark) =>
         bookmark.id === editingId.value
           ? (updatedBookmark = {
@@ -117,17 +164,14 @@ export const useBookmarks = () => {
 
       if (!persist()) {
         bookmarks.value = previousBookmarks
-        return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
-      }
-      if (!restoreDeletedCategory(cat)) {
-        bookmarks.value = previousBookmarks
-        persist()
+        categoriesMeta.value = previousCategories
         return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
       }
       closeModal()
       return { ok: true, bookmark: updatedBookmark, created: false }
     } else {
       const previousBookmarks = bookmarks.value
+      const previousCategories = categoriesMeta.value.map((category) => ({ ...category }))
       const bookmark = {
         id: createBookmarkId(),
         title,
@@ -144,11 +188,7 @@ export const useBookmarks = () => {
       ]
       if (!persist()) {
         bookmarks.value = previousBookmarks
-        return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
-      }
-      if (!restoreDeletedCategory(cat)) {
-        bookmarks.value = previousBookmarks
-        persist()
+        categoriesMeta.value = previousCategories
         return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
       }
       closeModal()
@@ -158,10 +198,11 @@ export const useBookmarks = () => {
 
   const importBookmarks = (raw: string): BookmarkImportResult | null => {
     try {
-      const incoming = parseBookmarks(JSON.parse(raw))
-      if (!incoming.length) return null
+      const incoming = parseImportData(JSON.parse(raw))
+      if (!incoming) return null
 
       const previousBookmarks = bookmarks.value
+      const previousCategories = categoriesMeta.value.map((category) => ({ ...category }))
       const nextBookmarks = bookmarks.value.map((bookmark) => ({ ...bookmark }))
       const byUrl = new Map(nextBookmarks.map((bookmark) => [bookmark.url, bookmark]))
       const result: BookmarkImportResult = {
@@ -170,12 +211,15 @@ export const useBookmarks = () => {
         skipped: 0,
       }
 
-      incoming.forEach((bookmark) => {
+      incoming.categories.forEach((category) => upsertCategory(category.name, category.hidden))
+
+      incoming.bookmarks.forEach((bookmark) => {
+        upsertCategory(bookmark.cat)
         const existing = byUrl.get(bookmark.url)
         if (!existing) {
           const nextBookmark = {
             ...bookmark,
-            id: bookmarks.value.some((item) => item.id === bookmark.id) ? createBookmarkId() : bookmark.id,
+            id: nextBookmarks.some((item) => item.id === bookmark.id) ? createBookmarkId() : bookmark.id,
           }
           nextBookmarks.push(nextBookmark)
           byUrl.set(nextBookmark.url, nextBookmark)
@@ -207,9 +251,10 @@ export const useBookmarks = () => {
         result.updated += 1
       })
 
-      bookmarks.value = nextBookmarks
+      bookmarks.value = normalizeDockOrder(nextBookmarks)
       if (!persist()) {
         bookmarks.value = previousBookmarks
+        categoriesMeta.value = previousCategories
         return null
       }
       return result
@@ -230,24 +275,17 @@ export const useBookmarks = () => {
     if (normalizedCategory === UNCATEGORIZED_CATEGORY) return { ok: false, reason: '未分类不能删除' }
 
     const previousBookmarks = bookmarks.value
-    const previousDeletedCategories = deletedCategories.value
+    const previousCategories = categoriesMeta.value.map((item) => ({ ...item }))
     const moved = bookmarks.value.filter((bookmark) => bookmark.cat === normalizedCategory).length
 
     bookmarks.value = bookmarks.value.map((bookmark) =>
       bookmark.cat === normalizedCategory ? { ...bookmark, cat: UNCATEGORIZED_CATEGORY } : bookmark,
     )
-    deletedCategories.value = Array.from(new Set([...deletedCategories.value, normalizedCategory]))
+    upsertCategory(normalizedCategory, true)
 
     if (!persist()) {
       bookmarks.value = previousBookmarks
-      deletedCategories.value = previousDeletedCategories
-      return { ok: false, reason: '删除失败：浏览器存储空间不足或不可用' }
-    }
-
-    if (!saveDeletedCategories(deletedCategories.value)) {
-      bookmarks.value = previousBookmarks
-      deletedCategories.value = previousDeletedCategories
-      persist()
+      categoriesMeta.value = previousCategories
       return { ok: false, reason: '删除失败：浏览器存储空间不足或不可用' }
     }
 
@@ -280,15 +318,7 @@ export const useBookmarks = () => {
     if (draggedId === targetId) return { ok: true }
 
     const previousBookmarks = bookmarks.value
-    const pinnedBookmarks = bookmarks.value
-      .filter((bookmark) => bookmark.pin)
-      .map((bookmark, index) => ({ bookmark, index }))
-      .sort((a, b) => {
-        const orderA = a.bookmark.dockOrder ?? a.index
-        const orderB = b.bookmark.dockOrder ?? b.index
-        return orderA === orderB ? a.index - b.index : orderA - orderB
-      })
-      .map(({ bookmark }) => bookmark)
+    const pinnedBookmarks = getPinnedBookmarks(bookmarks.value)
 
     const draggedIndex = pinnedBookmarks.findIndex((bookmark) => bookmark.id === draggedId)
     const targetIndex = pinnedBookmarks.findIndex((bookmark) => bookmark.id === targetId)
@@ -314,10 +344,31 @@ export const useBookmarks = () => {
     return { ok: true }
   }
 
+  const movePinnedBookmarkByDirection = (
+    id: string,
+    direction: DockMoveDirection,
+  ): { ok: true } | { ok: false; reason: string } => {
+    const previousBookmarks = bookmarks.value
+    const nextBookmarks = movePinnedBookmark(bookmarks.value, id, direction)
+
+    if (nextBookmarks === bookmarks.value) return { ok: true }
+
+    bookmarks.value = normalizeDockOrder(nextBookmarks)
+    if (!persist()) {
+      bookmarks.value = previousBookmarks
+      return { ok: false, reason: '排序保存失败：浏览器存储空间不足或不可用' }
+    }
+
+    return { ok: true }
+  }
+
+  const exportBookmarks = (): BookmarkExportData => {
+    return createExportData(bookmarks.value, categoriesMeta.value)
+  }
+
   const resetBookmarks = () => {
     bookmarks.value = parseBookmarks(DEFAULT_BOOKMARKS)
-    deletedCategories.value = []
-    saveDeletedCategories(deletedCategories.value)
+    categoriesMeta.value = createDefaultCategories()
     persist()
   }
 
@@ -336,6 +387,8 @@ export const useBookmarks = () => {
     deleteCategory,
     unpinBookmark,
     reorderPinnedBookmarks,
+    movePinnedBookmarkByDirection,
+    exportBookmarks,
     resetBookmarks,
   }
 }
