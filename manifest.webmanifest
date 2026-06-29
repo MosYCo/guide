@@ -1,0 +1,21 @@
+{
+  "name": "NAVHUB Guide",
+  "short_name": "NAVHUB",
+  "description": "Local-first bookmark dashboard",
+  "start_url": "/guide/",
+  "display": "standalone",
+  "background_color": "#101114",
+  "theme_color": "#101114",
+  "icons": [
+    {
+      "src": "/guide/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/guide/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
