@@ -827,14 +827,73 @@
 }
 
 .bk-select {
-  position: relative;
+  position: absolute;
+  top: 7px;
+  left: 7px;
   z-index: 2;
   display: grid;
+  width: 20px;
+  height: 20px;
   place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--t),
+    transform var(--t);
+  transform: scale(0.92);
 }
 
 .bk-select input {
-  accent-color: var(--accent);
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.bk-select-mark {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  background: var(--bg-r);
+  border: 1px solid var(--border-h);
+  border-radius: 50%;
+  box-shadow: 0 4px 14px var(--card-shadow);
+  transition: all var(--t);
+}
+
+.bk-select-mark::after {
+  content: '';
+  width: 6px;
+  height: 3px;
+  border-bottom: 2px solid currentColor;
+  border-left: 2px solid currentColor;
+  opacity: 0;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.bk:hover .bk-select,
+.bk:focus-within .bk-select,
+.bk.kb-focus .bk-select,
+.bk.selected .bk-select {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bk.selected {
+  background: var(--card-h);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-d);
+}
+
+.bk.selected .bk-select-mark {
+  color: oklch(14% 0.02 70);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.bk.selected .bk-select-mark::after {
+  opacity: 1;
 }
 
 .bk:hover {

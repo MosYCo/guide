@@ -33,15 +33,16 @@ const parts = (text: string, query: string) => {
 
 <template>
   <a
-    :class="['bk', { 'kb-focus': focused }]"
+    :class="['bk', { 'kb-focus': focused, selected }]"
     :href="bookmark.url"
     target="_blank"
     rel="noopener"
     :data-bookmark-id="bookmark.id"
   >
     <div class="bk-shine"></div>
-    <label class="bk-select" :title="`选择 ${bookmark.title}`">
+    <label class="bk-select" :aria-label="`选择 ${bookmark.title}`" :title="`选择 ${bookmark.title}`">
       <input :checked="selected" type="checkbox" @click.stop @change="$emit('toggleSelect', bookmark)" />
+      <span class="bk-select-mark"></span>
     </label>
     <BookmarkIcon :bookmark="bookmark" />
     <div class="bk-body">
