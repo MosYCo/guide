@@ -351,6 +351,16 @@
   transition: all 0.25s var(--ease);
 }
 
+.dock-card[draggable='true'] {
+  cursor: grab;
+}
+
+.dock-card.dragging {
+  cursor: grabbing;
+  opacity: 0.45;
+  transform: scale(0.98);
+}
+
 .dock-card:hover {
   background: var(--dock-card-hover);
   border-color: var(--border-h);
@@ -359,6 +369,19 @@
     0 0 0 1px var(--accent-d),
     0 0 40px -10px var(--accent-glow);
   transform: translateY(-4px) scale(1.02);
+}
+
+.dock-card.drop-before,
+.dock-card.drop-after {
+  border-color: var(--accent);
+}
+
+.dock-card.drop-before {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.dock-card.drop-after {
+  box-shadow: inset -3px 0 0 var(--accent);
 }
 
 .dock-card::after {
@@ -522,6 +545,25 @@
   display: none;
 }
 
+.f-tab-wrap {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: all var(--t);
+}
+
+.f-tab-wrap:hover {
+  background: var(--sf);
+}
+
+.f-tab-wrap.active {
+  background: var(--card);
+  border-color: var(--border);
+}
+
 .f-tab {
   display: inline-flex;
   flex-shrink: 0;
@@ -541,6 +583,12 @@
   transition: all var(--t);
 }
 
+.f-tab-wrap .f-tab {
+  padding-right: 6px;
+  border: 0;
+  border-radius: 999px 0 0 999px;
+}
+
 .f-tab:hover {
   color: var(--fg);
   background: var(--sf);
@@ -552,6 +600,38 @@
   border-color: var(--border);
 }
 
+.f-tab-wrap.active .f-tab {
+  color: var(--fg-s);
+  background: transparent;
+}
+
+.ft-delete {
+  display: grid;
+  width: 24px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  color: var(--muted2);
+  font: 600 0.8rem var(--fm);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid transparent;
+  opacity: 0;
+  transition: all var(--t);
+}
+
+.f-tab-wrap:hover .ft-delete,
+.f-tab-wrap:focus-within .ft-delete {
+  opacity: 1;
+}
+
+.ft-delete:hover {
+  color: var(--danger, oklch(63% 0.2 25));
+  background: var(--sf);
+  border-left-color: var(--border);
+}
+
 .ft-dot {
   flex-shrink: 0;
   width: 5px;
@@ -561,7 +641,8 @@
   transition: opacity var(--t);
 }
 
-.f-tab.active .ft-dot {
+.f-tab.active .ft-dot,
+.f-tab-wrap.active .ft-dot {
   opacity: 1;
 }
 

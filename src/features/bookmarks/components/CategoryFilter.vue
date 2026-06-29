@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CATEGORY_COLORS } from '../constants'
+import { CATEGORY_COLORS, UNCATEGORIZED_CATEGORY } from '../constants'
 import type { Bookmark } from '../types'
 
 const props = defineProps<{
@@ -11,6 +11,7 @@ const props = defineProps<{
 
 defineEmits<{
   select: [category: string | null]
+  delete: [category: string]
 }>()
 
 const categoryCounts = computed(() => {
@@ -28,15 +29,25 @@ const categoryCounts = computed(() => {
       全部
       <span class="ft-n">{{ bookmarks.length }}</span>
     </button>
-    <button
+    <span
       v-for="category in categories"
       :key="category"
-      :class="['f-tab', { active: activeCategory === category }]"
-      @click="$emit('select', category)"
+      :class="['f-tab-wrap', { active: activeCategory === category }]"
     >
-      <span class="ft-dot" :style="{ background: CATEGORY_COLORS[category] || 'var(--muted)' }"></span>
-      {{ category }}
-      <span class="ft-n">{{ categoryCounts[category] ?? 0 }}</span>
-    </button>
+      <button class="f-tab" @click="$emit('select', category)">
+        <span class="ft-dot" :style="{ background: CATEGORY_COLORS[category] || 'var(--muted)' }"></span>
+        <span class="ft-name">{{ category }}</span>
+        <span class="ft-n">{{ categoryCounts[category] ?? 0 }}</span>
+      </button>
+      <button
+        v-if="category !== UNCATEGORIZED_CATEGORY"
+        class="ft-delete"
+        :aria-label="`删除分类 ${category}`"
+        :title="`删除分类 ${category}`"
+        @click="$emit('delete', category)"
+      >
+        ×
+      </button>
+    </span>
   </div>
 </template>

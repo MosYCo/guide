@@ -1,4 +1,10 @@
-import { BOOKMARK_STORAGE_KEY, COLLAPSED_STORAGE_KEY, DEFAULT_BOOKMARKS } from './constants'
+import {
+  BOOKMARK_STORAGE_KEY,
+  COLLAPSED_STORAGE_KEY,
+  DEFAULT_BOOKMARKS,
+  DELETED_CATEGORIES_STORAGE_KEY,
+  UNCATEGORIZED_CATEGORY,
+} from './constants'
 import type { Bookmark } from './types'
 import { createBookmarkId, parseBookmarkUrl } from './utils'
 
@@ -13,11 +19,11 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
   const url = typeof value.url === 'string' ? parseBookmarkUrl(value.url) : null
   const faviconUrl =
     typeof value.faviconUrl === 'string' && value.faviconUrl.trim() ? parseBookmarkUrl(value.faviconUrl) : ''
-  const cat = typeof value.cat === 'string' && value.cat.trim() ? value.cat.trim() : '未分类'
+  const cat = typeof value.cat === 'string' && value.cat.trim() ? value.cat.trim() : UNCATEGORIZED_CATEGORY
 
   if (!title || !url || faviconUrl === null) return null
 
-  return {
+  const bookmark: Bookmark = {
     id: typeof value.id === 'string' && value.id.trim() ? value.id.trim() : createBookmarkId(),
     title,
     url,
@@ -26,6 +32,12 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
     faviconUrl,
     pin: typeof value.pin === 'boolean' ? value.pin : false,
   }
+
+  if (typeof value.dockOrder === 'number' && Number.isFinite(value.dockOrder)) {
+    bookmark.dockOrder = value.dockOrder
+  }
+
+  return bookmark
 }
 
 export const parseBookmarks = (value: unknown): Bookmark[] => {
@@ -92,6 +104,25 @@ export const loadCollapsedCategories = (): Record<string, boolean> => {
 export const saveCollapsedCategories = (collapsed: Record<string, boolean>) => {
   try {
     localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsed))
+    return true
+  } catch {
+    return false
+  }
+}
+
+export const loadDeletedCategories = (): string[] => {
+  try {
+    const raw = localStorage.getItem(DELETED_CATEGORIES_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed.filter((category): category is string => typeof category === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export const saveDeletedCategories = (categories: string[]) => {
+  try {
+    localStorage.setItem(DELETED_CATEGORIES_STORAGE_KEY, JSON.stringify(categories))
     return true
   } catch {
     return false

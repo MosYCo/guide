@@ -6,6 +6,7 @@ export interface Bookmark {
   icon: string
   faviconUrl: string
   pin: boolean
+  dockOrder?: number
 }
 
 export interface BookmarkDraft {
@@ -27,3 +28,5 @@ export interface BookmarkImportResult {
   updated: number
   skipped: number
 }
+
+export type DockDropPlacement = 'before' | 'after'

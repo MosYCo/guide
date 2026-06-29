@@ -7,7 +7,7 @@ import HeroDock from '@/features/bookmarks/components/HeroDock.vue'
 import { useBookmarkFilter } from '@/features/bookmarks/composables/useBookmarkFilter'
 import { useBookmarkKeyboard } from '@/features/bookmarks/composables/useBookmarkKeyboard'
 import { useBookmarks } from '@/features/bookmarks/composables/useBookmarks'
-import type { Bookmark } from '@/features/bookmarks/types'
+import type { Bookmark, DockDropPlacement } from '@/features/bookmarks/types'
 import AppTopbar from '@/shared/components/AppTopbar.vue'
 import KeyboardHelp from '@/shared/components/KeyboardHelp.vue'
 import ToastHost from '@/shared/components/ToastHost.vue'
@@ -28,7 +28,9 @@ const {
   saveDraft,
   importBookmarks,
   removeBookmark,
+  deleteCategory,
   unpinBookmark,
+  reorderPinnedBookmarks,
 } = useBookmarks()
 
 const {
@@ -77,6 +79,36 @@ const handleUnpin = (bookmark: Bookmark) => {
   }
 
   showToast(`已从快速启动移除 ${result.bookmark.title}`)
+}
+
+const handleDeleteCategory = (category: string) => {
+  const count = bookmarks.value.filter((bookmark) => bookmark.cat === category).length
+  const message =
+    count > 0
+      ? `删除分类「${category}」？该分类下 ${count} 个书签会移动到「未分类」。`
+      : `删除分类「${category}」？`
+
+  if (!window.confirm(message)) return
+
+  const result = deleteCategory(category)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+
+  if (activeCategory.value === category) {
+    setCategory(null)
+    clearFocus()
+  }
+
+  showToast(result.moved > 0 ? `已删除分类，${result.moved} 个书签移到未分类` : `已删除分类 ${category}`)
+}
+
+const handleDockReorder = (draggedId: string, targetId: string, placement: DockDropPlacement) => {
+  const result = reorderPinnedBookmarks(draggedId, targetId, placement)
+  if (!result.ok) {
+    showToast(result.reason)
+  }
 }
 
 const handleExport = () => {
@@ -156,7 +188,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
       "
     />
 
-    <HeroDock :bookmarks="bookmarks" @edit="openEditModal" @unpin="handleUnpin" />
+    <HeroDock :bookmarks="bookmarks" @edit="openEditModal" @unpin="handleUnpin" @reorder="handleDockReorder" />
 
     <CategoryFilter
       :bookmarks="bookmarks"
@@ -166,6 +198,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
         setCategory($event);
         clearFocus()
       "
+      @delete="handleDeleteCategory"
     />
 
     <BookmarkSection
