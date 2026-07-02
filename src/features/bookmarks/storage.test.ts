@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BOOKMARK_EXPORT_VERSION } from './constants'
-import { createExportData, parseImportData } from './storage'
+import { createBookmarkHtml, createExportData, parseBookmarkHtml, parseImportData } from './storage'
 import type { Bookmark } from './types'
 import { getPinnedBookmarks, normalizeDockOrder } from './utils'
 
@@ -15,6 +15,8 @@ const bookmarks: Bookmark[] = [
     pin: true,
     dockOrder: 5,
     tags: ['one'],
+    visits: 3,
+    lastVisitedAt: '2026-06-01T00:00:00.000Z',
   },
   {
     id: 'two',
@@ -62,5 +64,20 @@ describe('bookmark storage helpers', () => {
     expect(parsed?.bookmarks).toHaveLength(3)
     expect(parsed?.categories).toEqual([{ name: '工具', order: 3, hidden: false }])
     expect(parsed?.bookmarks[0].tags).toEqual(['one'])
+    expect(parsed?.bookmarks[0].visits).toBe(3)
+    expect(parsed?.bookmarks[0].lastVisitedAt).toBe('2026-06-01T00:00:00.000Z')
+  })
+
+  it('parses and creates browser bookmark HTML', () => {
+    const html = createBookmarkHtml(bookmarks)
+    const parsed = parseBookmarkHtml(html)
+
+    expect(html).toContain('NETSCAPE-Bookmark-file-1')
+    expect(html).toContain('TAGS="one"')
+    expect(parsed.map((bookmark) => bookmark.url)).toContain('https://one.example/')
+    expect(parsed.find((bookmark) => bookmark.url === 'https://one.example/')?.cat).toBe('开发')
+    expect(parsed.find((bookmark) => bookmark.url === 'https://one.example/')?.tags).toEqual([
+      'one',
+    ])
   })
 })

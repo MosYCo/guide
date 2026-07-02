@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { BOOKMARK_STORAGE_KEY } from '../constants'
+import { BOOKMARK_STORAGE_KEY, UNDO_STORAGE_KEY } from '../constants'
 import type { Bookmark } from '../types'
 import { useBookmarks } from './useBookmarks'
 
@@ -57,7 +57,9 @@ describe('useBookmarks', () => {
 
     movePinnedBookmarkByDirection('b', 'left')
 
-    const pinned = bookmarks.value.filter((bookmark) => bookmark.pin).sort((a, b) => (a.dockOrder ?? 0) - (b.dockOrder ?? 0))
+    const pinned = bookmarks.value
+      .filter((bookmark) => bookmark.pin)
+      .sort((a, b) => (a.dockOrder ?? 0) - (b.dockOrder ?? 0))
     expect(pinned.map((bookmark) => bookmark.id)).toEqual(['b', 'a'])
     expect(pinned.map((bookmark) => bookmark.dockOrder)).toEqual([0, 1])
   })
@@ -72,5 +74,32 @@ describe('useBookmarks', () => {
     expect(result).toEqual({ ok: true, count: 2 })
     expect(bookmarks.value).toHaveLength(1)
     expect(backups.value.length).toBeGreaterThan(0)
+  })
+
+  it('records local visits without creating undo snapshots', () => {
+    const { bookmarks, undoSnapshots, recordBookmarkVisit } = useBookmarks()
+
+    const result = recordBookmarkVisit('a')
+
+    expect(result.ok).toBe(true)
+    expect(bookmarks.value.find((bookmark) => bookmark.id === 'a')?.visits).toBe(1)
+    expect(bookmarks.value.find((bookmark) => bookmark.id === 'a')?.lastVisitedAt).toBeTruthy()
+    expect(undoSnapshots.value).toHaveLength(0)
+  })
+
+  it('undoes bookmark mutations from the local undo stack', () => {
+    const { bookmarks, undoSnapshots, toggleBookmarkPin, undoLastChange } = useBookmarks()
+
+    expect(toggleBookmarkPin('c')).toMatchObject({ ok: true })
+    expect(bookmarks.value.find((bookmark) => bookmark.id === 'c')?.pin).toBe(true)
+    expect(undoSnapshots.value).toHaveLength(1)
+    expect(JSON.parse(localStorage.getItem(UNDO_STORAGE_KEY) ?? '[]')).toHaveLength(1)
+
+    const result = undoLastChange()
+
+    expect(result).toEqual({ ok: true, label: '切换 Dock 固定' })
+    expect(bookmarks.value.find((bookmark) => bookmark.id === 'c')?.pin).toBe(false)
+    expect(undoSnapshots.value).toHaveLength(0)
+    expect(JSON.parse(localStorage.getItem(UNDO_STORAGE_KEY) ?? '[]')).toHaveLength(0)
   })
 })

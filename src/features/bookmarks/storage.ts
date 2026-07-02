@@ -8,6 +8,7 @@ import {
   DEFAULT_BOOKMARKS,
   DELETED_CATEGORIES_STORAGE_KEY,
   UNCATEGORIZED_CATEGORY,
+  UNDO_STORAGE_KEY,
 } from './constants'
 import type { Bookmark, BookmarkBackup, BookmarkExportData, CategoryMeta } from './types'
 import { createBookmarkId, normalizeDockOrder, parseBookmarkUrl } from './utils'
@@ -22,8 +23,11 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
   const title = typeof value.title === 'string' ? value.title.trim() : ''
   const url = typeof value.url === 'string' ? parseBookmarkUrl(value.url) : null
   const faviconUrl =
-    typeof value.faviconUrl === 'string' && value.faviconUrl.trim() ? parseBookmarkUrl(value.faviconUrl) : ''
-  const cat = typeof value.cat === 'string' && value.cat.trim() ? value.cat.trim() : UNCATEGORIZED_CATEGORY
+    typeof value.faviconUrl === 'string' && value.faviconUrl.trim()
+      ? parseBookmarkUrl(value.faviconUrl)
+      : ''
+  const cat =
+    typeof value.cat === 'string' && value.cat.trim() ? value.cat.trim() : UNCATEGORIZED_CATEGORY
 
   if (!title || !url || faviconUrl === null) return null
 
@@ -36,12 +40,26 @@ export const sanitizeBookmark = (value: unknown): Bookmark | null => {
     faviconUrl,
     pin: typeof value.pin === 'boolean' ? value.pin : false,
     tags: Array.isArray(value.tags)
-      ? value.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean)
+      ? value.tags
+          .filter((tag): tag is string => typeof tag === 'string')
+          .map((tag) => tag.trim())
+          .filter(Boolean)
       : [],
+    visits:
+      typeof value.visits === 'number' && Number.isFinite(value.visits) && value.visits > 0
+        ? Math.floor(value.visits)
+        : 0,
   }
 
   if (typeof value.dockOrder === 'number' && Number.isFinite(value.dockOrder)) {
     bookmark.dockOrder = value.dockOrder
+  }
+
+  if (typeof value.lastVisitedAt === 'string' && value.lastVisitedAt.trim()) {
+    const visitedAt = new Date(value.lastVisitedAt)
+    if (!Number.isNaN(visitedAt.getTime())) {
+      bookmark.lastVisitedAt = visitedAt.toISOString()
+    }
   }
 
   return bookmark
@@ -109,7 +127,10 @@ export const sanitizeCategoryMeta = (value: unknown): CategoryMeta | null => {
 
   return {
     name,
-    order: typeof value.order === 'number' && Number.isFinite(value.order) ? value.order : CATEGORY_ORDER[name] ?? 99,
+    order:
+      typeof value.order === 'number' && Number.isFinite(value.order)
+        ? value.order
+        : (CATEGORY_ORDER[name] ?? 99),
     hidden: typeof value.hidden === 'boolean' ? value.hidden : false,
   }
 }
@@ -167,6 +188,103 @@ export const parseImportData = (
   }
 }
 
+const getFolderTrail = (element: Element) => {
+  const trail: string[] = []
+  let current = element.parentElement
+
+  while (current) {
+    if (current.tagName.toLowerCase() === 'dl') {
+      const heading = current.previousElementSibling
+      if (heading?.tagName.toLowerCase() === 'h3') {
+        const text = heading.textContent?.trim()
+        if (text) trail.unshift(text)
+      }
+    }
+    current = current.parentElement
+  }
+
+  return trail
+}
+
+const getBookmarkHtmlCategory = (anchor: Element) => {
+  const trail = getFolderTrail(anchor)
+  return trail[trail.length - 1] ?? UNCATEGORIZED_CATEGORY
+}
+
+const getBookmarkHtmlTags = (anchor: Element) => {
+  const tags = anchor.getAttribute('tags') ?? ''
+  return tags
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+}
+
+export const parseBookmarkHtml = (html: string): Bookmark[] => {
+  try {
+    const document = new DOMParser().parseFromString(html, 'text/html')
+    const anchors = [...document.querySelectorAll('a[href]')]
+
+    return parseBookmarks(
+      anchors.map((anchor) => ({
+        id: createBookmarkId(),
+        title: anchor.textContent?.trim() ?? '',
+        url: anchor.getAttribute('href') ?? '',
+        cat: getBookmarkHtmlCategory(anchor),
+        icon: '',
+        faviconUrl: anchor.getAttribute('icon_uri') ?? anchor.getAttribute('icon') ?? '',
+        pin: false,
+        tags: getBookmarkHtmlTags(anchor),
+      })),
+    )
+  } catch {
+    return []
+  }
+}
+
+const escapeBookmarkHtml = (value: string) => {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export const createBookmarkHtml = (bookmarks: Bookmark[]) => {
+  const groups = bookmarks.reduce<Record<string, Bookmark[]>>((result, bookmark) => {
+    const category = bookmark.cat || UNCATEGORIZED_CATEGORY
+    result[category] = result[category] ?? []
+    result[category].push(bookmark)
+    return result
+  }, {})
+
+  const folderHtml = Object.entries(groups)
+    .map(([category, items]) => {
+      const links = items
+        .map((bookmark) => {
+          const tags = bookmark.tags?.length
+            ? ` TAGS="${escapeBookmarkHtml(bookmark.tags.join(','))}"`
+            : ''
+          const icon = bookmark.faviconUrl
+            ? ` ICON_URI="${escapeBookmarkHtml(bookmark.faviconUrl)}"`
+            : ''
+          return `        <DT><A HREF="${escapeBookmarkHtml(bookmark.url)}"${icon}${tags}>${escapeBookmarkHtml(bookmark.title)}</A>`
+        })
+        .join('\n')
+
+      return `    <DT><H3>${escapeBookmarkHtml(category)}</H3>\n    <DL><p>\n${links}\n    </DL><p>`
+    })
+    .join('\n')
+
+  return `<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+${folderHtml}
+</DL><p>
+`
+}
+
 export const createExportData = (
   bookmarks: Bookmark[],
   categories: CategoryMeta[],
@@ -184,7 +302,10 @@ export const sanitizeBackup = (value: unknown): BookmarkBackup | null => {
   if (!isRecord(value)) return null
 
   const id = typeof value.id === 'string' && value.id.trim() ? value.id.trim() : createBookmarkId()
-  const createdAt = typeof value.createdAt === 'string' && value.createdAt.trim() ? value.createdAt.trim() : new Date().toISOString()
+  const createdAt =
+    typeof value.createdAt === 'string' && value.createdAt.trim()
+      ? value.createdAt.trim()
+      : new Date().toISOString()
   const label = typeof value.label === 'string' && value.label.trim() ? value.label.trim() : '备份'
   const bookmarks = parseBookmarks(value.bookmarks)
   const categories = parseCategoryMeta(value.categories)
@@ -228,6 +349,24 @@ export const saveBackups = (backups: BookmarkBackup[]) => {
   }
 }
 
+export const loadUndoSnapshots = (): BookmarkBackup[] => {
+  try {
+    const raw = localStorage.getItem(UNDO_STORAGE_KEY)
+    return raw ? parseBackups(JSON.parse(raw)) : []
+  } catch {
+    return []
+  }
+}
+
+export const saveUndoSnapshots = (snapshots: BookmarkBackup[]) => {
+  try {
+    localStorage.setItem(UNDO_STORAGE_KEY, JSON.stringify(parseBackups(snapshots)))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export const loadCollapsedCategories = (): Record<string, boolean> => {
   try {
     const raw = localStorage.getItem(COLLAPSED_STORAGE_KEY)
@@ -250,7 +389,9 @@ export const loadDeletedCategories = (): string[] => {
   try {
     const raw = localStorage.getItem(DELETED_CATEGORIES_STORAGE_KEY)
     const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed.filter((category): category is string => typeof category === 'string') : []
+    return Array.isArray(parsed)
+      ? parsed.filter((category): category is string => typeof category === 'string')
+      : []
   } catch {
     return []
   }

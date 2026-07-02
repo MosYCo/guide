@@ -51,7 +51,9 @@ export const groupBookmarks = (bookmarks: Bookmark[]): BookmarkGroup[] => {
 export const sortCategories = (categories: string[] | CategoryMeta[]) => {
   return [...categories]
     .map((category) =>
-      typeof category === 'string' ? { name: category, order: CATEGORY_ORDER[category] ?? 99 } : category,
+      typeof category === 'string'
+        ? { name: category, order: CATEGORY_ORDER[category] ?? 99 }
+        : category,
     )
     .sort((categoryA, categoryB) => {
       return categoryA.order === categoryB.order
@@ -73,27 +75,26 @@ export const getPinnedBookmarks = (bookmarks: Bookmark[]) => {
 }
 
 export const normalizeDockOrder = (bookmarks: Bookmark[]): Bookmark[] => {
-  const orderById = new Map(getPinnedBookmarks(bookmarks).map((bookmark, index) => [bookmark.id, index]))
+  const orderById = new Map(
+    getPinnedBookmarks(bookmarks).map((bookmark, index) => [bookmark.id, index]),
+  )
 
   return bookmarks.map((bookmark) => {
     if (!bookmark.pin) {
-      return {
-        id: bookmark.id,
-        title: bookmark.title,
-        url: bookmark.url,
-        cat: bookmark.cat,
-        icon: bookmark.icon,
-        faviconUrl: bookmark.faviconUrl,
-        pin: false,
-        tags: bookmark.tags,
-      }
+      const bookmarkWithoutDockOrder = { ...bookmark }
+      delete bookmarkWithoutDockOrder.dockOrder
+      return { ...bookmarkWithoutDockOrder, pin: false }
     }
 
     return { ...bookmark, dockOrder: orderById.get(bookmark.id) ?? 0 }
   })
 }
 
-export const movePinnedBookmark = (bookmarks: Bookmark[], id: string, direction: DockMoveDirection): Bookmark[] => {
+export const movePinnedBookmark = (
+  bookmarks: Bookmark[],
+  id: string,
+  direction: DockMoveDirection,
+): Bookmark[] => {
   const pinned = getPinnedBookmarks(bookmarks)
   const index = pinned.findIndex((bookmark) => bookmark.id === id)
   const targetIndex = direction === 'left' ? index - 1 : index + 1
@@ -107,5 +108,7 @@ export const movePinnedBookmark = (bookmarks: Bookmark[], id: string, direction:
   nextPinned.splice(targetIndex, 0, bookmark)
 
   const orderById = new Map(nextPinned.map((item, order) => [item.id, order]))
-  return bookmarks.map((item) => (orderById.has(item.id) ? { ...item, dockOrder: orderById.get(item.id) } : item))
+  return bookmarks.map((item) =>
+    orderById.has(item.id) ? { ...item, dockOrder: orderById.get(item.id) } : item,
+  )
 }

@@ -8,6 +8,8 @@ export interface Bookmark {
   pin: boolean
   dockOrder?: number
   tags?: string[]
+  visits?: number
+  lastVisitedAt?: string
 }
 
 export interface BookmarkDraft {
@@ -60,7 +62,7 @@ export interface BookmarkBackup {
 }
 
 export interface BookmarkExportData {
-  version: 3
+  version: 4
   bookmarks: Bookmark[]
   categories: CategoryMeta[]
   backups?: BookmarkBackup[]
@@ -76,3 +78,12 @@ export interface BulkOperationResult {
 export type BookmarkActionResult = { ok: true; bookmark: Bookmark } | { ok: false; reason: string }
 
 export type MutationResult = { ok: true } | { ok: false; reason: string }
+
+export type BookmarkUndoResult = { ok: true; label: string } | { ok: false; reason: string }
+
+export interface TagSummary {
+  name: string
+  count: number
+}
+
+export type BookmarkSortMode = 'default' | 'smart' | 'recent' | 'frequent' | 'stale'

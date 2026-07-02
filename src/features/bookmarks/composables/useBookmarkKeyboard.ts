@@ -8,6 +8,7 @@ interface KeyboardOptions {
   bookmarks: Ref<Bookmark[]>
   modalOpen: Ref<boolean>
   helpOpen: Ref<boolean>
+  commandOpen: Ref<boolean>
   onAdd: () => void
   onClearCategory: () => void
   onSelectCategory: (category: string | null) => void
@@ -18,6 +19,7 @@ interface KeyboardOptions {
   onEdit: (bookmark: Bookmark) => void
   onDelete: (bookmark: Bookmark) => void
   onTogglePin: (bookmark: Bookmark) => void
+  onOpenBookmark: (bookmark: Bookmark) => void
   onMoveDock: (bookmark: Bookmark, direction: 'left' | 'right') => void
 }
 
@@ -30,7 +32,9 @@ const getGridColumnCount = () => {
 }
 
 const scrollBookmarkIntoView = (id: string) => {
-  const card = document.querySelector<HTMLAnchorElement>(`.bk[data-bookmark-id="${CSS.escape(id)}"]`)
+  const card = document.querySelector<HTMLAnchorElement>(
+    `.bk[data-bookmark-id="${CSS.escape(id)}"]`,
+  )
   card?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
 }
 
@@ -60,6 +64,7 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
   const openFocused = () => {
     const bookmark = options.bookmarks.value.find((item) => item.id === focusedId.value)
     if (bookmark) {
+      options.onOpenBookmark(bookmark)
       window.open(bookmark.url, '_blank', 'noopener')
     }
   }
@@ -84,6 +89,8 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
   const handleKeydown = (event: KeyboardEvent) => {
     const searchInput = document.getElementById('bookmark-search') as HTMLInputElement | null
     const isSearchFocused = document.activeElement === searchInput
+
+    if (options.commandOpen.value) return
 
     if (event.key === '?' && !options.modalOpen.value && !options.helpOpen.value) {
       event.preventDefault()
@@ -114,7 +121,11 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
       return
     }
 
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'n' && !options.modalOpen.value) {
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key.toLowerCase() === 'n' &&
+      !options.modalOpen.value
+    ) {
       event.preventDefault()
       options.onAdd()
       return
@@ -152,7 +163,12 @@ export const useBookmarkKeyboard = (options: KeyboardOptions) => {
       }
     }
 
-    if (event.key === '/' && !options.modalOpen.value && !options.helpOpen.value && !isSearchFocused) {
+    if (
+      event.key === '/' &&
+      !options.modalOpen.value &&
+      !options.helpOpen.value &&
+      !isSearchFocused
+    ) {
       event.preventDefault()
       searchInput?.focus()
       return

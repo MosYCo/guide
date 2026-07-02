@@ -12,6 +12,7 @@ defineProps<{
 
 defineEmits<{
   toggleSelect: [bookmark: Bookmark]
+  open: [bookmark: Bookmark]
   edit: [bookmark: Bookmark]
   delete: [bookmark: Bookmark]
 }>()
@@ -29,6 +30,13 @@ const parts = (text: string, query: string) => {
     { text: text.slice(index + normalizedQuery.length), match: false },
   ].filter((part) => part.text)
 }
+
+const formatVisitedDate = (value: string) => {
+  return new Date(value).toLocaleDateString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+  })
+}
 </script>
 
 <template>
@@ -38,10 +46,20 @@ const parts = (text: string, query: string) => {
     target="_blank"
     rel="noopener"
     :data-bookmark-id="bookmark.id"
+    @click="$emit('open', bookmark)"
   >
     <div class="bk-shine"></div>
-    <label class="bk-select" :aria-label="`选择 ${bookmark.title}`" :title="`选择 ${bookmark.title}`">
-      <input :checked="selected" type="checkbox" @click.stop @change="$emit('toggleSelect', bookmark)" />
+    <label
+      class="bk-select"
+      :aria-label="`选择 ${bookmark.title}`"
+      :title="`选择 ${bookmark.title}`"
+    >
+      <input
+        :checked="selected"
+        type="checkbox"
+        @click.stop
+        @change="$emit('toggleSelect', bookmark)"
+      />
       <span class="bk-select-mark"></span>
     </label>
     <BookmarkIcon :bookmark="bookmark" />
@@ -53,7 +71,10 @@ const parts = (text: string, query: string) => {
         </template>
       </div>
       <div class="bk-host">
-        <template v-for="part in parts(getHostname(bookmark.url), query)" :key="`${part.text}-${part.match}`">
+        <template
+          v-for="part in parts(getHostname(bookmark.url), query)"
+          :key="`${part.text}-${part.match}`"
+        >
           <mark v-if="part.match">{{ part.text }}</mark>
           <template v-else>{{ part.text }}</template>
         </template>
@@ -61,13 +82,28 @@ const parts = (text: string, query: string) => {
       <div v-if="bookmark.tags?.length" class="bk-tags">
         <span v-for="tag in bookmark.tags" :key="tag">#{{ tag }}</span>
       </div>
+      <div v-if="bookmark.visits || bookmark.lastVisitedAt" class="bk-stats">
+        <span>{{ bookmark.visits ?? 0 }} 次</span>
+        <span v-if="bookmark.lastVisitedAt">{{ formatVisitedDate(bookmark.lastVisitedAt) }}</span>
+      </div>
     </div>
-    <svg class="bk-arw" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <svg
+      class="bk-arw"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    >
       <line x1="7" y1="17" x2="17" y2="7" />
       <polyline points="7 7 17 7 17 17" />
     </svg>
     <div class="bk-act">
-      <button :aria-label="`编辑 ${bookmark.title}`" title="编辑" @click.prevent.stop="$emit('edit', bookmark)">
+      <button
+        :aria-label="`编辑 ${bookmark.title}`"
+        title="编辑"
+        @click.prevent.stop="$emit('edit', bookmark)"
+      >
         ✎
       </button>
       <button

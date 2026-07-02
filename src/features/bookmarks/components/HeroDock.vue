@@ -10,6 +10,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  open: [bookmark: Bookmark]
   edit: [bookmark: Bookmark]
   unpin: [bookmark: Bookmark]
   reorder: [draggedId: string, targetId: string, placement: DockDropPlacement]
@@ -72,7 +73,9 @@ const handlePointerDown = (event: PointerEvent, bookmark: Bookmark) => {
 const handlePointerMove = (event: PointerEvent) => {
   if (!pointerDraggedId.value) return
 
-  const card = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('.dock-card')
+  const card = document
+    .elementFromPoint(event.clientX, event.clientY)
+    ?.closest<HTMLElement>('.dock-card')
   const targetId = card?.dataset.bookmarkId
   if (!card || !targetId || targetId === pointerDraggedId.value) return
 
@@ -83,7 +86,11 @@ const handlePointerMove = (event: PointerEvent) => {
 }
 
 const handlePointerUp = () => {
-  if (pointerDraggedId.value && dragTargetId.value && pointerDraggedId.value !== dragTargetId.value) {
+  if (
+    pointerDraggedId.value &&
+    dragTargetId.value &&
+    pointerDraggedId.value !== dragTargetId.value
+  ) {
     emit('reorder', pointerDraggedId.value, dragTargetId.value, dropPlacement.value)
   }
 
@@ -139,13 +146,18 @@ const handlePointerUp = () => {
         @pointermove="handlePointerMove"
         @pointerup="handlePointerUp"
         @pointercancel="clearDragState"
+        @click="$emit('open', bookmark)"
       >
         <div class="dc-shimmer"></div>
-        <span class="dc-cat-dot" :style="{ background: CATEGORY_COLORS[bookmark.cat] || 'var(--muted2)' }"></span>
+        <span
+          class="dc-cat-dot"
+          :style="{ background: CATEGORY_COLORS[bookmark.cat] || 'var(--muted2)' }"
+        ></span>
         <span v-if="index < keys.length" class="dc-key">{{ keys[index] }}</span>
         <BookmarkIcon :bookmark="bookmark" variant="dock" />
         <div class="dc-name" :title="bookmark.title">{{ bookmark.title }}</div>
         <div class="dc-domain">{{ getHostname(bookmark.url) }}</div>
+        <div v-if="bookmark.visits" class="dc-visits">{{ bookmark.visits }} 次</div>
         <div class="dc-act">
           <button
             :disabled="index === 0"
@@ -163,7 +175,11 @@ const handlePointerUp = () => {
           >
             ›
           </button>
-          <button :aria-label="`编辑 ${bookmark.title}`" title="编辑" @click.prevent.stop="$emit('edit', bookmark)">
+          <button
+            :aria-label="`编辑 ${bookmark.title}`"
+            title="编辑"
+            @click.prevent.stop="$emit('edit', bookmark)"
+          >
             ✎
           </button>
           <button

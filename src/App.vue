@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import BookmarkModal from '@/features/bookmarks/components/BookmarkModal.vue'
 import BookmarkSection from '@/features/bookmarks/components/BookmarkSection.vue'
 import BackupPanel from '@/features/bookmarks/components/BackupPanel.vue'
 import CategoryFilter from '@/features/bookmarks/components/CategoryFilter.vue'
 import CategoryManager from '@/features/bookmarks/components/CategoryManager.vue'
+import CommandPalette from '@/features/bookmarks/components/CommandPalette.vue'
 import HeroDock from '@/features/bookmarks/components/HeroDock.vue'
 import { useBookmarkFilter } from '@/features/bookmarks/composables/useBookmarkFilter'
 import { useBookmarkKeyboard } from '@/features/bookmarks/composables/useBookmarkKeyboard'
@@ -23,7 +24,9 @@ const {
   bookmarks,
   categories,
   categorySummaries,
+  tagSummaries,
   backups,
+  undoSnapshots,
   draft,
   editingId,
   isModalOpen,
@@ -32,6 +35,9 @@ const {
   closeModal,
   saveDraft,
   importBookmarks,
+  exportBookmarksAsHtml,
+  recordBookmarkVisit,
+  undoLastChange,
   removeBookmark,
   deleteCategory,
   bulkMoveCategory,
@@ -53,13 +59,16 @@ const {
 const {
   query,
   activeCategory,
+  activeTag,
   searchScope,
   searchCurrentCategoryOnly,
+  sortMode,
   searchHistory,
   collapsedCategories,
   filteredBookmarks,
   groupedBookmarks,
   setCategory,
+  setTag,
   clearFilters,
   commitSearch,
   clearSearchHistory,
@@ -72,6 +81,7 @@ const { message, isVisible, showToast } = useToast()
 const isHelpOpen = ref(false)
 const isCategoryManagerOpen = ref(false)
 const isBackupPanelOpen = ref(false)
+const isCommandPaletteOpen = ref(false)
 const importInput = ref<HTMLInputElement | null>(null)
 const selectedIds = ref<string[]>([])
 const dialog = ref<
@@ -84,6 +94,7 @@ const dialog = ref<
 >(null)
 
 const isEditing = computed(() => Boolean(editingId.value))
+const canUndo = computed(() => undoSnapshots.value.length > 0)
 const dialogTitle = computed(() => {
   if (!dialog.value) return ''
   if (dialog.value.type === 'deleteBookmark') return `删除 ${dialog.value.bookmark.title}`
@@ -95,7 +106,8 @@ const dialogTitle = computed(() => {
 const dialogMessage = computed(() => {
   if (!dialog.value) return ''
   if (dialog.value.type === 'deleteBookmark') return '该书签会从本地列表中移除。'
-  if (dialog.value.type === 'bulkDelete') return '选中的书签会从本地列表中移除，操作前会自动创建备份。'
+  if (dialog.value.type === 'bulkDelete')
+    return '选中的书签会从本地列表中移除，操作前会自动创建备份。'
   if (dialog.value.type === 'restoreBackup') return '当前数据会先自动备份，然后恢复所选快照。'
   if (dialog.value.type === 'deleteCategory') {
     return dialog.value.count > 0
@@ -146,6 +158,27 @@ const handleDeleteCategory = (category: string) => {
   dialog.value = { type: 'deleteCategory', category, count }
 }
 
+const handleSelectCategory = (category: string | null) => {
+  setCategory(category)
+  clearFocus()
+}
+
+const handleSelectTag = (tag: string | null) => {
+  setTag(tag)
+  clearFocus()
+}
+
+const handleCommandSelectCategory = (category: string | null) => {
+  setCategory(category)
+  setTag(null)
+  clearFocus()
+}
+
+const handleClearFilters = () => {
+  clearFilters()
+  clearFocus()
+}
+
 const handleDockReorder = (draggedId: string, targetId: string, placement: DockDropPlacement) => {
   const result = reorderPinnedBookmarks(draggedId, targetId, placement)
   if (!result.ok) {
@@ -166,7 +199,9 @@ const handleTogglePin = (bookmark: Bookmark) => {
     showToast(result.reason)
     return
   }
-  showToast(result.bookmark.pin ? `已固定 ${result.bookmark.title}` : `已取消固定 ${result.bookmark.title}`)
+  showToast(
+    result.bookmark.pin ? `已固定 ${result.bookmark.title}` : `已取消固定 ${result.bookmark.title}`,
+  )
 }
 
 const handleBulkMove = (category: string) => {
@@ -179,6 +214,12 @@ const handleBulkMove = (category: string) => {
   }
   showToast(`已移动 ${result.count} 个书签`)
   clearSelection()
+}
+
+const handleBulkMoveChange = (event: Event) => {
+  const select = event.target as HTMLSelectElement
+  handleBulkMove(select.value)
+  select.value = ''
 }
 
 const handleBulkPin = (pin: boolean) => {
@@ -196,8 +237,8 @@ const handleExport = () => {
   showToast(`已导出 ${bookmarks.value.length} 个书签`)
 }
 
-const downloadBookmarks = (data: unknown, filename = 'navhub-bookmarks.json') => {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+const downloadFile = (content: string, filename: string, type: string) => {
+  const blob = new Blob([content], { type })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -206,9 +247,27 @@ const downloadBookmarks = (data: unknown, filename = 'navhub-bookmarks.json') =>
   URL.revokeObjectURL(url)
 }
 
+const downloadBookmarks = (data: unknown, filename = 'navhub-bookmarks.json') => {
+  downloadFile(JSON.stringify(data, null, 2), filename, 'application/json')
+}
+
 const handleExportSelected = () => {
   downloadBookmarks(exportSelectedBookmarks(selectedIds.value), 'navhub-selected-bookmarks.json')
   showToast(`已导出 ${selectedIds.value.length} 个选中书签`)
+}
+
+const handleExportHtml = () => {
+  downloadFile(exportBookmarksAsHtml(), 'navhub-bookmarks.html', 'text/html;charset=utf-8')
+  showToast(`已导出 HTML：${bookmarks.value.length} 个书签`)
+}
+
+const handleExportSelectedHtml = () => {
+  downloadFile(
+    exportBookmarksAsHtml(selectedIds.value),
+    'navhub-selected-bookmarks.html',
+    'text/html;charset=utf-8',
+  )
+  showToast(`已导出 HTML：${selectedIds.value.length} 个选中书签`)
 }
 
 const handleImportClick = () => {
@@ -229,6 +288,39 @@ const handleImport = async (event: Event) => {
   }
 
   showToast(`导入完成：新增 ${result.added}，更新 ${result.updated}，跳过 ${result.skipped}`)
+}
+
+const handleOpenBookmark = (bookmark: Bookmark) => {
+  const result = recordBookmarkVisit(bookmark.id)
+  if (!result.ok) {
+    showToast(result.reason)
+  }
+}
+
+const handleCommandOpenBookmark = (bookmark: Bookmark) => {
+  const result = recordBookmarkVisit(bookmark.id)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+
+  window.open(bookmark.url, '_blank', 'noopener')
+}
+
+const handleUndo = () => {
+  const result = undoLastChange()
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+
+  showToast(`已撤销：${result.label}`)
+  clearSelection()
+}
+
+const handleCycleTheme = () => {
+  cycleTheme()
+  showToast(`主题：${currentTheme.value.label}`)
 }
 
 const addCategory = (category: string) => {
@@ -277,7 +369,9 @@ const handleDialogConfirm = (value?: string) => {
       clearFocus()
     }
 
-    showToast(result.moved > 0 ? `已删除分类，${result.moved} 个书签移到未分类` : `已删除分类 ${category}`)
+    showToast(
+      result.moved > 0 ? `已删除分类，${result.moved} 个书签移到未分类` : `已删除分类 ${category}`,
+    )
   }
 
   if (dialog.value.type === 'addCategory') {
@@ -312,6 +406,7 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
   bookmarks: filteredBookmarks,
   modalOpen: isModalOpen,
   helpOpen: isHelpOpen,
+  commandOpen: isCommandPaletteOpen,
   onAdd: openAddModal,
   onClearCategory: clearFilters,
   onSelectCategory: setCategory,
@@ -322,19 +417,20 @@ const { focusedId, clearFocus } = useBookmarkKeyboard({
   onOpenHelp: () => {
     isHelpOpen.value = true
   },
-  onCycleTheme: () => {
-    cycleTheme()
-    showToast(`主题：${currentTheme.value.label}`)
-  },
+  onCycleTheme: handleCycleTheme,
   onEdit: openEditModal,
   onDelete: handleDelete,
   onTogglePin: handleTogglePin,
+  onOpenBookmark: handleOpenBookmark,
   onMoveDock: (bookmark, direction) => {
     handleDockMove(bookmark, direction)
   },
 })
 
-const handleCategoryAction = (action: () => { ok: true } | { ok: false; reason: string }, success: string) => {
+const handleCategoryAction = (
+  action: () => { ok: true } | { ok: false; reason: string },
+  success: string,
+) => {
   const result = action()
   if (!result.ok) {
     showToast(result.reason)
@@ -358,6 +454,21 @@ const handleCategoryMove = (category: string, direction: DockMoveDirection) => {
 const handleCategoryHidden = (category: string, hidden: boolean) => {
   handleCategoryAction(() => setCategoryHidden(category, hidden), '已更新分类状态')
 }
+
+const handleGlobalCommandKey = (event: KeyboardEvent) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    isCommandPaletteOpen.value = true
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleGlobalCommandKey)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleGlobalCommandKey)
+})
 </script>
 
 <template>
@@ -372,40 +483,45 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
       :time="time"
       :search-history="searchHistory"
       :has-active-category="activeCategory !== null"
+      :can-undo="canUndo"
       @add="openAddModal"
+      @open-commands="isCommandPaletteOpen = true"
       @manage-categories="isCategoryManagerOpen = true"
       @open-backups="isBackupPanelOpen = true"
       @export="handleExport"
+      @export-html="handleExportHtml"
       @import="handleImportClick"
+      @undo="handleUndo"
       @commit-search="commitSearch"
       @clear-search-history="clearSearchHistory"
       @toggle-help="isHelpOpen = !isHelpOpen"
-      @cycle-theme="
-        cycleTheme();
-        showToast(`主题：${currentTheme.label}`)
-      "
+      @cycle-theme="handleCycleTheme"
     />
 
     <div v-if="selectedIds.length" class="bulk-bar">
       <span>已选择 {{ selectedIds.length }} 个</span>
-      <select
-        @change="
-          handleBulkMove(($event.target as HTMLSelectElement).value);
-          ($event.target as HTMLSelectElement).value = ''
-        "
-      >
+      <select @change="handleBulkMoveChange">
         <option value="">移动到分类...</option>
-        <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+        <option v-for="category in categories" :key="category" :value="category">
+          {{ category }}
+        </option>
       </select>
       <button class="btn" @click="handleBulkPin(true)">固定 Dock</button>
       <button class="btn" @click="handleBulkPin(false)">取消 Dock</button>
       <button class="btn" @click="handleExportSelected">导出选中</button>
-      <button class="btn btn-danger" @click="dialog = { type: 'bulkDelete', count: selectedIds.length }">删除</button>
+      <button class="btn" @click="handleExportSelectedHtml">导出 HTML</button>
+      <button
+        class="btn btn-danger"
+        @click="dialog = { type: 'bulkDelete', count: selectedIds.length }"
+      >
+        删除
+      </button>
       <button class="btn" @click="clearSelection">取消选择</button>
     </div>
 
     <HeroDock
       :bookmarks="bookmarks"
+      @open="handleOpenBookmark"
       @edit="openEditModal"
       @unpin="handleUnpin"
       @reorder="handleDockReorder"
@@ -416,10 +532,12 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
       :bookmarks="bookmarks"
       :categories="categories"
       :active-category="activeCategory"
-      @select="
-        setCategory($event);
-        clearFocus()
-      "
+      :tags="tagSummaries"
+      :active-tag="activeTag"
+      :sort-mode="sortMode"
+      @select="handleSelectCategory"
+      @select-tag="handleSelectTag"
+      @update-sort="sortMode = $event"
       @delete="handleDeleteCategory"
     />
 
@@ -432,6 +550,7 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
       :active-category="activeCategory"
       @toggle="toggleCategoryCollapsed"
       @toggle-select="toggleSelect"
+      @open="handleOpenBookmark"
       @edit="openEditModal"
       @delete="handleDelete"
       @add="openAddModal"
@@ -442,8 +561,8 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
     ref="importInput"
     class="visually-hidden"
     type="file"
-    accept="application/json,.json"
-    aria-label="导入书签 JSON"
+    accept="application/json,text/html,.json,.html,.htm"
+    aria-label="导入书签 JSON 或 HTML"
     @change="handleImport"
   />
 
@@ -473,16 +592,39 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
     @save="handleSave"
     @request-category="requestCategory"
   />
+  <CommandPalette
+    :open="isCommandPaletteOpen"
+    :bookmarks="bookmarks"
+    :categories="categories"
+    :tags="tagSummaries"
+    :undo-count="undoSnapshots.length"
+    @close="isCommandPaletteOpen = false"
+    @open-bookmark="handleCommandOpenBookmark"
+    @add="openAddModal"
+    @set-category="handleCommandSelectCategory"
+    @set-tag="handleSelectTag"
+    @clear-filters="handleClearFilters"
+    @manage-categories="isCategoryManagerOpen = true"
+    @open-backups="isBackupPanelOpen = true"
+    @import="handleImportClick"
+    @export-json="handleExport"
+    @export-html="handleExportHtml"
+    @undo="handleUndo"
+  />
   <ConfirmDialog
     :open="Boolean(dialog)"
     :title="dialogTitle"
     :message="dialogMessage"
     :tone="
-      dialog?.type === 'deleteBookmark' || dialog?.type === 'deleteCategory' || dialog?.type === 'bulkDelete'
+      dialog?.type === 'deleteBookmark' ||
+      dialog?.type === 'deleteCategory' ||
+      dialog?.type === 'bulkDelete'
         ? 'danger'
         : 'default'
     "
-    :confirm-label="dialog?.type === 'addCategory' ? '创建' : dialog?.type === 'restoreBackup' ? '恢复' : '删除'"
+    :confirm-label="
+      dialog?.type === 'addCategory' ? '创建' : dialog?.type === 'restoreBackup' ? '恢复' : '删除'
+    "
     :input-label="dialog?.type === 'addCategory' ? '分类名称' : ''"
     input-placeholder="例如：阅读"
     @cancel="dialog = null"
