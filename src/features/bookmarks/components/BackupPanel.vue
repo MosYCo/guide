@@ -23,14 +23,23 @@ const formatTime = (value: string) => {
 
 <template>
   <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div class="modal manager-modal" role="dialog" aria-modal="true" aria-labelledby="backup-panel-title">
+    <div
+      class="modal manager-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="backup-panel-title"
+    >
       <h3 id="backup-panel-title">备份恢复</h3>
-      <div v-if="!backups.length" class="manager-empty">还没有备份。执行删除、批量操作或分类调整后会自动生成。</div>
+      <div v-if="!backups.length" class="manager-empty">
+        还没有备份。执行删除、批量操作或分类调整后会自动生成。
+      </div>
       <div v-else class="manager-list">
         <div v-for="backup in backups" :key="backup.id" class="manager-row">
           <div class="manager-main">
             <span class="manager-name">{{ backup.label }}</span>
-            <span class="manager-meta">{{ formatTime(backup.createdAt) }} · {{ backup.bookmarks.length }} 个书签</span>
+            <span class="manager-meta"
+              >{{ formatTime(backup.createdAt) }} · {{ backup.bookmarks.length }} 个书签</span
+            >
           </div>
           <button class="mini-btn" @click="$emit('restore', backup.id)">恢复</button>
         </div>

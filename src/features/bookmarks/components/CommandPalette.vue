@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import type { Bookmark, TagSummary } from '../types'
+import type { Bookmark, BookmarkIconMode, TagSummary } from '../types'
 import { getHostname } from '../utils'
 import BookmarkIcon from './BookmarkIcon.vue'
 
@@ -17,7 +17,9 @@ type CommandPaletteItem =
         | 'add'
         | 'clearFilters'
         | 'manageCategories'
+        | 'openCleanup'
         | 'openBackups'
+        | 'openSettings'
         | 'import'
         | 'exportJson'
         | 'exportHtml'
@@ -30,6 +32,7 @@ const props = defineProps<{
   categories: string[]
   tags: TagSummary[]
   undoCount: number
+  iconMode: BookmarkIconMode
 }>()
 
 const emit = defineEmits<{
@@ -40,7 +43,9 @@ const emit = defineEmits<{
   setTag: [tag: string | null]
   clearFilters: []
   manageCategories: []
+  openCleanup: []
   openBackups: []
+  openSettings: []
   import: []
   exportJson: []
   exportHtml: []
@@ -76,11 +81,25 @@ const actionItems = computed<CommandPaletteItem[]>(() => [
     action: 'manageCategories',
   },
   {
+    id: 'action:cleanup',
+    type: 'action',
+    label: '整理工具',
+    meta: '重复、低频、长期未访问',
+    action: 'openCleanup',
+  },
+  {
     id: 'action:backups',
     type: 'action',
     label: '备份恢复',
     meta: '查看本地快照',
     action: 'openBackups',
+  },
+  {
+    id: 'action:settings',
+    type: 'action',
+    label: '设置',
+    meta: '图标隐私与本地存储',
+    action: 'openSettings',
   },
   {
     id: 'action:import',
@@ -164,7 +183,9 @@ const runItem = (item: CommandPaletteItem) => {
   if (item.action === 'undo') emit('undo')
   if (item.action === 'clearFilters') emit('clearFilters')
   if (item.action === 'manageCategories') emit('manageCategories')
+  if (item.action === 'openCleanup') emit('openCleanup')
   if (item.action === 'openBackups') emit('openBackups')
+  if (item.action === 'openSettings') emit('openSettings')
   if (item.action === 'import') emit('import')
   if (item.action === 'exportJson') emit('exportJson')
   if (item.action === 'exportHtml') emit('exportHtml')
@@ -259,7 +280,11 @@ watch(items, () => {
           @mouseenter="activeIndex = index"
           @click="runItem(item)"
         >
-          <BookmarkIcon v-if="item.type === 'bookmark'" :bookmark="item.bookmark" />
+          <BookmarkIcon
+            v-if="item.type === 'bookmark'"
+            :bookmark="item.bookmark"
+            :icon-mode="iconMode"
+          />
           <span v-else :class="['command-glyph', `command-glyph-${item.type}`]">
             {{ item.type === 'category' ? 'C' : item.type === 'tag' ? '#' : '⌘' }}
           </span>

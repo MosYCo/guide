@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Bookmark, BookmarkGroup } from '../types'
+import type { Bookmark, BookmarkGroup, BookmarkIconMode } from '../types'
 import BookmarkCard from './BookmarkCard.vue'
 
 defineProps<{
@@ -9,6 +9,7 @@ defineProps<{
   query: string
   selectedIds: string[]
   activeCategory: string | null
+  iconMode: BookmarkIconMode
 }>()
 
 defineEmits<{
@@ -68,6 +69,7 @@ defineEmits<{
           :focused="focusedId === bookmark.id"
           :query="query"
           :selected="selectedIds.includes(bookmark.id)"
+          :icon-mode="iconMode"
           @toggle-select="$emit('toggleSelect', $event)"
           @open="$emit('open', $event)"
           @edit="$emit('edit', $event)"

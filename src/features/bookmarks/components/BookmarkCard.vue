@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Bookmark } from '../types'
+import type { Bookmark, BookmarkIconMode } from '../types'
 import { getHostname } from '../utils'
 import BookmarkIcon from './BookmarkIcon.vue'
 
@@ -8,6 +8,7 @@ defineProps<{
   focused: boolean
   query: string
   selected: boolean
+  iconMode: BookmarkIconMode
 }>()
 
 defineEmits<{
@@ -62,7 +63,7 @@ const formatVisitedDate = (value: string) => {
       />
       <span class="bk-select-mark"></span>
     </label>
-    <BookmarkIcon :bookmark="bookmark" />
+    <BookmarkIcon :bookmark="bookmark" :icon-mode="iconMode" />
     <div class="bk-body">
       <div class="bk-name">
         <template v-for="part in parts(bookmark.title, query)" :key="`${part.text}-${part.match}`">

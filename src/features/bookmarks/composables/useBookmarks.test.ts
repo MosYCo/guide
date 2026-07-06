@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { BOOKMARK_STORAGE_KEY, UNDO_STORAGE_KEY } from '../constants'
+import { BOOKMARK_STORAGE_KEY, SETTINGS_STORAGE_KEY, UNDO_STORAGE_KEY } from '../constants'
 import type { Bookmark } from '../types'
 import { useBookmarks } from './useBookmarks'
 
@@ -33,6 +33,16 @@ const seedBookmarks: Bookmark[] = [
     faviconUrl: '',
     pin: false,
     tags: ['read'],
+  },
+  {
+    id: 'd',
+    title: 'Alpha Copy',
+    url: 'https://www.alpha.example/',
+    cat: 'Other',
+    icon: '',
+    faviconUrl: '',
+    pin: false,
+    tags: ['solo'],
   },
 ]
 
@@ -72,7 +82,7 @@ describe('useBookmarks', () => {
 
     const result = bulkDelete(['a', 'b'])
     expect(result).toEqual({ ok: true, count: 2 })
-    expect(bookmarks.value).toHaveLength(1)
+    expect(bookmarks.value).toHaveLength(2)
     expect(backups.value.length).toBeGreaterThan(0)
   })
 
@@ -85,6 +95,43 @@ describe('useBookmarks', () => {
     expect(bookmarks.value.find((bookmark) => bookmark.id === 'a')?.visits).toBe(1)
     expect(bookmarks.value.find((bookmark) => bookmark.id === 'a')?.lastVisitedAt).toBeTruthy()
     expect(undoSnapshots.value).toHaveLength(0)
+  })
+
+  it('persists icon mode settings', () => {
+    const { settings, setIconMode } = useBookmarks()
+
+    expect(setIconMode('text')).toEqual({ ok: true })
+
+    expect(settings.value.iconMode).toBe('text')
+    expect(JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) ?? '{}')).toEqual({
+      iconMode: 'text',
+    })
+  })
+
+  it('summarizes and applies cleanup actions', () => {
+    const { bookmarks, cleanupSummary, deduplicateBookmarks, removeLowFrequencyTags } =
+      useBookmarks()
+
+    expect(cleanupSummary.value.duplicateGroups).toHaveLength(1)
+    expect(cleanupSummary.value.lowFrequencyTags.map((tag) => tag.name)).toContain('solo')
+
+    expect(deduplicateBookmarks()).toEqual({ ok: true, count: 1 })
+    expect(bookmarks.value.some((bookmark) => bookmark.id === 'd')).toBe(false)
+
+    expect(removeLowFrequencyTags()).toMatchObject({ ok: true })
+    expect(bookmarks.value.flatMap((bookmark) => bookmark.tags ?? [])).not.toContain('read')
+  })
+
+  it('clears local backups and updates storage state', () => {
+    const { backups, storageUsage, bulkDelete, clearBackups } = useBookmarks()
+
+    expect(bulkDelete(['c'])).toEqual({ ok: true, count: 1 })
+    const usedWithBackup = storageUsage.value.usedBytes
+    expect(backups.value.length).toBeGreaterThan(0)
+
+    expect(clearBackups()).toEqual({ ok: true, count: 1 })
+    expect(backups.value).toHaveLength(0)
+    expect(storageUsage.value.usedBytes).toBeLessThanOrEqual(usedWithBackup)
   })
 
   it('undoes bookmark mutations from the local undo stack', () => {

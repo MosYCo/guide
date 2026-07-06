@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { CATEGORY_COLORS } from '../constants'
-import type { Bookmark, DockDropPlacement, DockMoveDirection } from '../types'
+import type { Bookmark, BookmarkIconMode, DockDropPlacement, DockMoveDirection } from '../types'
 import { getHostname, getPinnedBookmarks } from '../utils'
 import BookmarkIcon from './BookmarkIcon.vue'
 
 const props = defineProps<{
   bookmarks: Bookmark[]
+  iconMode: BookmarkIconMode
 }>()
 
 const emit = defineEmits<{
@@ -154,7 +155,7 @@ const handlePointerUp = () => {
           :style="{ background: CATEGORY_COLORS[bookmark.cat] || 'var(--muted2)' }"
         ></span>
         <span v-if="index < keys.length" class="dc-key">{{ keys[index] }}</span>
-        <BookmarkIcon :bookmark="bookmark" variant="dock" />
+        <BookmarkIcon :bookmark="bookmark" :icon-mode="iconMode" variant="dock" />
         <div class="dc-name" :title="bookmark.title">{{ bookmark.title }}</div>
         <div class="dc-domain">{{ getHostname(bookmark.url) }}</div>
         <div v-if="bookmark.visits" class="dc-visits">{{ bookmark.visits }} 次</div>

@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BookmarkModal from '@/features/bookmarks/components/BookmarkModal.vue'
 import BookmarkSection from '@/features/bookmarks/components/BookmarkSection.vue'
 import BackupPanel from '@/features/bookmarks/components/BackupPanel.vue'
 import CategoryFilter from '@/features/bookmarks/components/CategoryFilter.vue'
 import CategoryManager from '@/features/bookmarks/components/CategoryManager.vue'
+import CleanupPanel from '@/features/bookmarks/components/CleanupPanel.vue'
 import CommandPalette from '@/features/bookmarks/components/CommandPalette.vue'
 import HeroDock from '@/features/bookmarks/components/HeroDock.vue'
+import SettingsPanel from '@/features/bookmarks/components/SettingsPanel.vue'
 import { useBookmarkFilter } from '@/features/bookmarks/composables/useBookmarkFilter'
 import { useBookmarkKeyboard } from '@/features/bookmarks/composables/useBookmarkKeyboard'
 import { useBookmarks } from '@/features/bookmarks/composables/useBookmarks'
-import type { Bookmark, DockDropPlacement, DockMoveDirection } from '@/features/bookmarks/types'
+import type {
+  Bookmark,
+  BookmarkIconMode,
+  DockDropPlacement,
+  DockMoveDirection,
+} from '@/features/bookmarks/types'
 import AppTopbar from '@/shared/components/AppTopbar.vue'
 import ConfirmDialog from '@/shared/components/ConfirmDialog.vue'
 import KeyboardHelp from '@/shared/components/KeyboardHelp.vue'
@@ -25,8 +32,11 @@ const {
   categories,
   categorySummaries,
   tagSummaries,
+  cleanupSummary,
   backups,
   undoSnapshots,
+  settings,
+  storageUsage,
   draft,
   editingId,
   isModalOpen,
@@ -54,6 +64,12 @@ const {
   exportBookmarks,
   exportSelectedBookmarks,
   restoreBackup,
+  setIconMode,
+  clearBackups,
+  cleanupEmptyCategories,
+  removeLowFrequencyTags,
+  removeStaleBookmarks,
+  deduplicateBookmarks,
 } = useBookmarks()
 
 const {
@@ -81,7 +97,10 @@ const { message, isVisible, showToast } = useToast()
 const isHelpOpen = ref(false)
 const isCategoryManagerOpen = ref(false)
 const isBackupPanelOpen = ref(false)
+const isCleanupPanelOpen = ref(false)
+const isSettingsPanelOpen = ref(false)
 const isCommandPaletteOpen = ref(false)
+const updateRegistration = ref<ServiceWorkerRegistration | null>(null)
 const importInput = ref<HTMLInputElement | null>(null)
 const selectedIds = ref<string[]>([])
 const dialog = ref<
@@ -90,17 +109,30 @@ const dialog = ref<
   | { type: 'bulkDelete'; count: number }
   | { type: 'restoreBackup'; id: string }
   | { type: 'addCategory' }
+  | { type: 'changeIconMode'; mode: BookmarkIconMode }
   | null
 >(null)
 
 const isEditing = computed(() => Boolean(editingId.value))
 const canUndo = computed(() => undoSnapshots.value.length > 0)
+const isOverlayOpen = computed(
+  () =>
+    isModalOpen.value ||
+    isHelpOpen.value ||
+    isCategoryManagerOpen.value ||
+    isBackupPanelOpen.value ||
+    isCleanupPanelOpen.value ||
+    isSettingsPanelOpen.value ||
+    isCommandPaletteOpen.value ||
+    Boolean(dialog.value),
+)
 const dialogTitle = computed(() => {
   if (!dialog.value) return ''
   if (dialog.value.type === 'deleteBookmark') return `删除 ${dialog.value.bookmark.title}`
   if (dialog.value.type === 'deleteCategory') return `删除分类 ${dialog.value.category}`
   if (dialog.value.type === 'bulkDelete') return `删除 ${dialog.value.count} 个书签`
   if (dialog.value.type === 'restoreBackup') return '恢复备份'
+  if (dialog.value.type === 'changeIconMode') return '切换图标来源'
   return '新建分类'
 })
 const dialogMessage = computed(() => {
@@ -114,10 +146,35 @@ const dialogMessage = computed(() => {
       ? `该分类下 ${dialog.value.count} 个书签会移动到「未分类」。`
       : '该空分类会从分类筛选中移除。'
   }
+  if (dialog.value.type === 'changeIconMode') {
+    const labels: Record<BookmarkIconMode, string> = {
+      text: '文本图标',
+      direct: '站点 favicon',
+      google: 'Google favicon',
+    }
+    return `确认切换为「${labels[dialog.value.mode]}」？外部 favicon 模式可能会发起图标网络请求。`
+  }
   return ''
 })
 
 document.title = APP_NAME
+
+let previousBodyOverflow = ''
+
+watch(
+  isOverlayOpen,
+  (open) => {
+    if (open) {
+      if (!previousBodyOverflow) previousBodyOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return
+    }
+
+    document.body.style.overflow = previousBodyOverflow
+    previousBodyOverflow = ''
+  },
+  { immediate: true },
+)
 
 const handleSave = () => {
   const result = saveDraft()
@@ -396,6 +453,10 @@ const handleDialogConfirm = (value?: string) => {
     clearSelection()
   }
 
+  if (dialog.value.type === 'changeIconMode') {
+    applyIconMode(dialog.value.mode)
+  }
+
   dialog.value = null
 }
 
@@ -455,6 +516,59 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
   handleCategoryAction(() => setCategoryHidden(category, hidden), '已更新分类状态')
 }
 
+const handleIconMode = (mode: BookmarkIconMode) => {
+  if (mode === settings.value.iconMode) return
+
+  dialog.value = { type: 'changeIconMode', mode }
+}
+
+const applyIconMode = (mode: BookmarkIconMode) => {
+  const result = setIconMode(mode)
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  const labels: Record<BookmarkIconMode, string> = {
+    text: '文本图标',
+    direct: '站点 favicon',
+    google: 'Google favicon',
+  }
+  showToast(`图标来源：${labels[mode]}`)
+}
+
+const handleCleanupAction = (
+  action: () => { ok: true; count: number } | { ok: false; reason: string },
+  success: (count: number) => string,
+) => {
+  const result = action()
+  if (!result.ok) {
+    showToast(result.reason)
+    return
+  }
+  showToast(success(result.count))
+  clearSelection()
+}
+
+const handleClearBackups = () => {
+  handleCleanupAction(clearBackups, (count) => `已清空 ${count} 个备份`)
+}
+
+const handleDeduplicate = () => {
+  handleCleanupAction(deduplicateBookmarks, (count) => `已合并重复书签，移除 ${count} 个`)
+}
+
+const handleRemoveStale = () => {
+  handleCleanupAction(removeStaleBookmarks, (count) => `已删除 ${count} 个长期未访问书签`)
+}
+
+const handleCleanupEmptyCategories = () => {
+  handleCleanupAction(cleanupEmptyCategories, (count) => `已清理 ${count} 个空分类`)
+}
+
+const handleRemoveLowFrequencyTags = () => {
+  handleCleanupAction(removeLowFrequencyTags, (count) => `已移除 ${count} 个低频标签`)
+}
+
 const handleGlobalCommandKey = (event: KeyboardEvent) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault()
@@ -462,17 +576,41 @@ const handleGlobalCommandKey = (event: KeyboardEvent) => {
   }
 }
 
+const handleUpdateAvailable = (event: Event) => {
+  const customEvent = event as CustomEvent<{ registration: ServiceWorkerRegistration }>
+  updateRegistration.value = customEvent.detail.registration
+}
+
+const applyAppUpdate = () => {
+  const worker = updateRegistration.value?.waiting
+  if (!worker) {
+    window.location.reload()
+    return
+  }
+
+  worker.postMessage({ type: 'SKIP_WAITING' })
+}
+
 onMounted(() => {
   document.addEventListener('keydown', handleGlobalCommandKey)
+  window.addEventListener('navhub:update-available', handleUpdateAvailable)
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleGlobalCommandKey)
+  window.removeEventListener('navhub:update-available', handleUpdateAvailable)
+  document.body.style.overflow = previousBodyOverflow
 })
 </script>
 
 <template>
   <div class="shell">
+    <div v-if="updateRegistration" class="update-banner">
+      <span>发现新版本</span>
+      <button class="mini-btn" @click="applyAppUpdate">刷新</button>
+      <button class="mini-btn" @click="updateRegistration = null">稍后</button>
+    </div>
+
     <AppTopbar
       v-model:query="query"
       v-model:search-scope="searchScope"
@@ -487,7 +625,9 @@ onBeforeUnmount(() => {
       @add="openAddModal"
       @open-commands="isCommandPaletteOpen = true"
       @manage-categories="isCategoryManagerOpen = true"
+      @open-cleanup="isCleanupPanelOpen = true"
       @open-backups="isBackupPanelOpen = true"
+      @open-settings="isSettingsPanelOpen = true"
       @export="handleExport"
       @export-html="handleExportHtml"
       @import="handleImportClick"
@@ -521,6 +661,7 @@ onBeforeUnmount(() => {
 
     <HeroDock
       :bookmarks="bookmarks"
+      :icon-mode="settings.iconMode"
       @open="handleOpenBookmark"
       @edit="openEditModal"
       @unpin="handleUnpin"
@@ -548,6 +689,7 @@ onBeforeUnmount(() => {
       :query="query"
       :selected-ids="selectedIds"
       :active-category="activeCategory"
+      :icon-mode="settings.iconMode"
       @toggle="toggleCategoryCollapsed"
       @toggle-select="toggleSelect"
       @open="handleOpenBookmark"
@@ -583,6 +725,26 @@ onBeforeUnmount(() => {
     @close="isBackupPanelOpen = false"
     @restore="dialog = { type: 'restoreBackup', id: $event }"
   />
+  <CleanupPanel
+    v-if="isCleanupPanelOpen"
+    :open="isCleanupPanelOpen"
+    :summary="cleanupSummary"
+    @close="isCleanupPanelOpen = false"
+    @deduplicate="handleDeduplicate"
+    @remove-stale="handleRemoveStale"
+    @cleanup-empty-categories="handleCleanupEmptyCategories"
+    @remove-low-frequency-tags="handleRemoveLowFrequencyTags"
+  />
+  <SettingsPanel
+    v-if="isSettingsPanelOpen"
+    :open="isSettingsPanelOpen"
+    :settings="settings"
+    :storage-usage="storageUsage"
+    :backup-count="backups.length"
+    @close="isSettingsPanelOpen = false"
+    @update-icon-mode="handleIconMode"
+    @clear-backups="handleClearBackups"
+  />
   <BookmarkModal
     v-model:draft="draft"
     :open="isModalOpen"
@@ -598,6 +760,7 @@ onBeforeUnmount(() => {
     :categories="categories"
     :tags="tagSummaries"
     :undo-count="undoSnapshots.length"
+    :icon-mode="settings.iconMode"
     @close="isCommandPaletteOpen = false"
     @open-bookmark="handleCommandOpenBookmark"
     @add="openAddModal"
@@ -605,7 +768,9 @@ onBeforeUnmount(() => {
     @set-tag="handleSelectTag"
     @clear-filters="handleClearFilters"
     @manage-categories="isCategoryManagerOpen = true"
+    @open-cleanup="isCleanupPanelOpen = true"
     @open-backups="isBackupPanelOpen = true"
+    @open-settings="isSettingsPanelOpen = true"
     @import="handleImportClick"
     @export-json="handleExport"
     @export-html="handleExportHtml"
@@ -623,7 +788,13 @@ onBeforeUnmount(() => {
         : 'default'
     "
     :confirm-label="
-      dialog?.type === 'addCategory' ? '创建' : dialog?.type === 'restoreBackup' ? '恢复' : '删除'
+      dialog?.type === 'addCategory'
+        ? '创建'
+        : dialog?.type === 'restoreBackup'
+          ? '恢复'
+          : dialog?.type === 'changeIconMode'
+            ? '切换'
+            : '删除'
     "
     :input-label="dialog?.type === 'addCategory' ? '分类名称' : ''"
     input-placeholder="例如：阅读"

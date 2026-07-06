@@ -4,15 +4,18 @@ import {
   DEFAULT_BOOKMARKS,
   MAX_BACKUPS,
   MAX_UNDO_SNAPSHOTS,
+  STALE_BOOKMARK_DAYS,
   UNCATEGORIZED_CATEGORY,
 } from '../constants'
 import {
   createBookmarkHtml,
   createExportData,
+  getStorageUsage,
   loadBackups,
   loadBookmarks,
   loadCategories,
   loadDeletedCategories,
+  loadSettings,
   loadUndoSnapshots,
   parseBookmarks,
   parseBookmarkHtml,
@@ -20,14 +23,18 @@ import {
   saveBackups,
   saveBookmarks,
   saveCategories,
+  saveSettings,
   saveUndoSnapshots,
 } from '../storage'
 import type {
   Bookmark,
   BookmarkActionResult,
   BookmarkBackup,
+  BookmarkCleanupSummary,
   BookmarkDraft,
   BookmarkExportData,
+  BookmarkIconMode,
+  BookmarkSettings,
   BookmarkImportResult,
   BookmarkUndoResult,
   BulkOperationResult,
@@ -84,6 +91,8 @@ const cloneBookmark = (bookmark: Bookmark): Bookmark => ({
 
 const cloneCategory = (category: CategoryMeta): CategoryMeta => ({ ...category })
 
+const cloneSettings = (settings: BookmarkSettings): BookmarkSettings => ({ ...settings })
+
 const cloneBackup = (backup: BookmarkBackup): BookmarkBackup => ({
   ...backup,
   bookmarks: backup.bookmarks.map(cloneBookmark),
@@ -101,6 +110,8 @@ export const useBookmarks = () => {
   ])
   const backups = ref<BookmarkBackup[]>(loadBackups())
   const undoSnapshots = ref<BookmarkBackup[]>(loadUndoSnapshots())
+  const settings = ref<BookmarkSettings>(loadSettings())
+  const storageUsage = ref(getStorageUsage())
   const editingId = ref<string | null>(null)
   const draft = ref<BookmarkDraft>(createDraft())
   const isModalOpen = ref(false)
@@ -158,14 +169,75 @@ export const useBookmarks = () => {
       )
   })
 
+  const getDuplicateKey = (bookmark: Bookmark) => {
+    try {
+      const url = new URL(bookmark.url)
+      url.hash = ''
+      url.hostname = url.hostname.replace(/^www\./, '').toLowerCase()
+      url.pathname = url.pathname.replace(/\/+$/, '') || '/'
+      return `${url.protocol}//${url.hostname}${url.pathname}${url.search}`.toLowerCase()
+    } catch {
+      return bookmark.url.trim().toLowerCase()
+    }
+  }
+
+  const getBookmarkScore = (bookmark: Bookmark) => {
+    const visitedAt = bookmark.lastVisitedAt ? new Date(bookmark.lastVisitedAt).getTime() : 0
+    return (bookmark.pin ? 1_000_000 : 0) + (bookmark.visits ?? 0) * 1_000 + visitedAt
+  }
+
+  const cleanupSummary = computed<BookmarkCleanupSummary>(() => {
+    const duplicateBuckets = bookmarks.value.reduce<Record<string, Bookmark[]>>(
+      (result, bookmark) => {
+        const key = getDuplicateKey(bookmark)
+        result[key] = result[key] ?? []
+        result[key].push(bookmark)
+        return result
+      },
+      {},
+    )
+    const categoryCounts = bookmarks.value.reduce<Record<string, number>>((result, bookmark) => {
+      result[bookmark.cat] = (result[bookmark.cat] ?? 0) + 1
+      return result
+    }, {})
+    const staleBefore = Date.now() - STALE_BOOKMARK_DAYS * 86_400_000
+
+    return {
+      duplicateGroups: Object.entries(duplicateBuckets)
+        .filter(([, items]) => items.length > 1)
+        .map(([url, items]) => ({ url, items })),
+      staleBookmarks: bookmarks.value.filter((bookmark) => {
+        if (bookmark.pin) return false
+        const visitedAt = bookmark.lastVisitedAt ? new Date(bookmark.lastVisitedAt).getTime() : 0
+        return !visitedAt || visitedAt < staleBefore
+      }),
+      emptyCategories: categoriesMeta.value
+        .filter(
+          (category) =>
+            !category.hidden &&
+            category.name !== UNCATEGORIZED_CATEGORY &&
+            (categoryCounts[category.name] ?? 0) === 0,
+        )
+        .map((category) => category.name),
+      lowFrequencyTags: tagSummaries.value.filter((tag) => tag.count === 1),
+    }
+  })
+
+  const refreshStorageUsage = () => {
+    storageUsage.value = getStorageUsage()
+  }
+
   const persist = () => {
     bookmarks.value = normalizeDockOrder(bookmarks.value)
-    return (
+    const saved =
       saveBookmarks(bookmarks.value) &&
       saveCategories(categoriesMeta.value) &&
       saveBackups(backups.value) &&
-      saveUndoSnapshots(undoSnapshots.value)
-    )
+      saveUndoSnapshots(undoSnapshots.value) &&
+      saveSettings(settings.value)
+
+    refreshStorageUsage()
+    return saved
   }
 
   const createSnapshot = (label: string): BookmarkBackup => {
@@ -196,6 +268,7 @@ export const useBookmarks = () => {
     const previousCategories = categoriesMeta.value.map(cloneCategory)
     const previousBackups = backups.value.map(cloneBackup)
     const previousUndoSnapshots = undoSnapshots.value.map(cloneBackup)
+    const previousSettings = cloneSettings(settings.value)
 
     createUndoSnapshot(label)
     if (backup) createBackup(label)
@@ -206,6 +279,7 @@ export const useBookmarks = () => {
       categoriesMeta.value = previousCategories
       backups.value = previousBackups
       undoSnapshots.value = previousUndoSnapshots
+      settings.value = previousSettings
       return { ok: false, reason: '保存失败：浏览器存储空间不足或不可用' }
     }
 
@@ -342,7 +416,7 @@ export const useBookmarks = () => {
   const importBookmarks = (raw: string): BookmarkImportResult => {
     const importFromHtml = () => {
       const bookmarks = parseBookmarkHtml(raw)
-      return bookmarks.length ? { bookmarks, categories: [], backups: [] } : null
+      return bookmarks.length ? { bookmarks, categories: [], backups: [], settings: null } : null
     }
 
     try {
@@ -354,6 +428,7 @@ export const useBookmarks = () => {
       const previousCategories = categoriesMeta.value.map(cloneCategory)
       const previousBackups = backups.value.map(cloneBackup)
       const previousUndoSnapshots = undoSnapshots.value.map(cloneBackup)
+      const previousSettings = cloneSettings(settings.value)
       const nextBookmarks = bookmarks.value.map(cloneBookmark)
       const byUrl = new Map(nextBookmarks.map((bookmark) => [bookmark.url, bookmark]))
       const result: BookmarkImportResult = {
@@ -366,6 +441,7 @@ export const useBookmarks = () => {
       createUndoSnapshot('导入书签')
       createBackup('导入前备份')
       incoming.categories.forEach((category) => upsertCategory(category.name, category.hidden))
+      if (incoming.settings) settings.value = cloneSettings(incoming.settings)
 
       incoming.bookmarks.forEach((bookmark) => {
         upsertCategory(bookmark.cat)
@@ -423,6 +499,7 @@ export const useBookmarks = () => {
         categoriesMeta.value = previousCategories
         backups.value = previousBackups
         undoSnapshots.value = previousUndoSnapshots
+        settings.value = previousSettings
         return { ok: false, reason: '导入失败：浏览器存储空间不足或不可用' }
       }
       return result
@@ -434,6 +511,7 @@ export const useBookmarks = () => {
       const previousCategories = categoriesMeta.value.map(cloneCategory)
       const previousBackups = backups.value.map(cloneBackup)
       const previousUndoSnapshots = undoSnapshots.value.map(cloneBackup)
+      const previousSettings = cloneSettings(settings.value)
       const nextBookmarks = bookmarks.value.map(cloneBookmark)
       const byUrl = new Map(nextBookmarks.map((bookmark) => [bookmark.url, bookmark]))
       const result: BookmarkImportResult = {
@@ -483,6 +561,7 @@ export const useBookmarks = () => {
         categoriesMeta.value = previousCategories
         backups.value = previousBackups
         undoSnapshots.value = previousUndoSnapshots
+        settings.value = previousSettings
         return { ok: false, reason: '导入失败：浏览器存储空间不足或不可用' }
       }
 
@@ -720,7 +799,7 @@ export const useBookmarks = () => {
   }
 
   const exportBookmarks = (): BookmarkExportData => {
-    return createExportData(bookmarks.value, categoriesMeta.value, backups.value)
+    return createExportData(bookmarks.value, categoriesMeta.value, backups.value, settings.value)
   }
 
   const exportSelectedBookmarks = (ids: string[]): BookmarkExportData => {
@@ -728,6 +807,8 @@ export const useBookmarks = () => {
     return createExportData(
       bookmarks.value.filter((bookmark) => selected.has(bookmark.id)),
       categoriesMeta.value,
+      [],
+      settings.value,
     )
   }
 
@@ -737,6 +818,93 @@ export const useBookmarks = () => {
       ? bookmarks.value.filter((bookmark) => selected.has(bookmark.id))
       : bookmarks.value
     return createBookmarkHtml(exportedBookmarks)
+  }
+
+  const setIconMode = (iconMode: BookmarkIconMode): MutationResult => {
+    const previousSettings = cloneSettings(settings.value)
+    settings.value = { ...settings.value, iconMode }
+
+    if (!saveSettings(settings.value)) {
+      settings.value = previousSettings
+      return { ok: false, reason: '保存设置失败：浏览器存储空间不足或不可用' }
+    }
+
+    refreshStorageUsage()
+    return { ok: true }
+  }
+
+  const clearBackups = (): BulkOperationResult | { ok: false; reason: string } => {
+    const count = backups.value.length
+    const previousBackups = backups.value.map(cloneBackup)
+
+    backups.value = []
+    if (!persist()) {
+      backups.value = previousBackups
+      return { ok: false, reason: '清理备份失败：浏览器存储空间不足或不可用' }
+    }
+
+    return { ok: true, count }
+  }
+
+  const cleanupEmptyCategories = (): BulkOperationResult | { ok: false; reason: string } => {
+    const emptyCategories = new Set(cleanupSummary.value.emptyCategories)
+    const result = withBackup('清理空分类', () => {
+      categoriesMeta.value = categoriesMeta.value.filter(
+        (category) => !emptyCategories.has(category.name),
+      )
+    })
+
+    return result.ok ? { ok: true, count: emptyCategories.size } : result
+  }
+
+  const removeLowFrequencyTags = (): BulkOperationResult | { ok: false; reason: string } => {
+    const tags = new Set(cleanupSummary.value.lowFrequencyTags.map((tag) => tag.name))
+    const result = withBackup('清理低频标签', () => {
+      bookmarks.value = bookmarks.value.map((bookmark) => ({
+        ...bookmark,
+        tags: (bookmark.tags ?? []).filter((tag) => !tags.has(tag)),
+      }))
+    })
+
+    return result.ok ? { ok: true, count: tags.size } : result
+  }
+
+  const removeStaleBookmarks = (): BulkOperationResult | { ok: false; reason: string } => {
+    const staleIds = new Set(cleanupSummary.value.staleBookmarks.map((bookmark) => bookmark.id))
+    const result = withBackup('清理长期未访问书签', () => {
+      bookmarks.value = bookmarks.value.filter((bookmark) => !staleIds.has(bookmark.id))
+    })
+
+    return result.ok ? { ok: true, count: staleIds.size } : result
+  }
+
+  const deduplicateBookmarks = (): BulkOperationResult | { ok: false; reason: string } => {
+    const duplicateKeys = new Set(cleanupSummary.value.duplicateGroups.map((group) => group.url))
+    let removed = 0
+
+    const result = withBackup('合并重复书签', () => {
+      const bestByKey = new Map<string, Bookmark>()
+
+      bookmarks.value.forEach((bookmark) => {
+        const key = getDuplicateKey(bookmark)
+        if (!duplicateKeys.has(key)) return
+
+        const current = bestByKey.get(key)
+        if (!current || getBookmarkScore(bookmark) > getBookmarkScore(current)) {
+          bestByKey.set(key, bookmark)
+        }
+      })
+
+      bookmarks.value = bookmarks.value.filter((bookmark) => {
+        const key = getDuplicateKey(bookmark)
+        if (!duplicateKeys.has(key)) return true
+        const keep = bestByKey.get(key)?.id === bookmark.id
+        if (!keep) removed += 1
+        return keep
+      })
+    })
+
+    return result.ok ? { ok: true, count: removed } : result
   }
 
   const recordBookmarkVisit = (id: string): BookmarkActionResult => {
@@ -806,8 +974,11 @@ export const useBookmarks = () => {
     categories,
     categorySummaries,
     tagSummaries,
+    cleanupSummary,
     backups,
     undoSnapshots,
+    settings,
+    storageUsage,
     draft,
     editingId,
     isModalOpen,
@@ -835,6 +1006,12 @@ export const useBookmarks = () => {
     exportBookmarks,
     exportSelectedBookmarks,
     restoreBackup,
+    setIconMode,
+    clearBackups,
+    cleanupEmptyCategories,
+    removeLowFrequencyTags,
+    removeStaleBookmarks,
+    deduplicateBookmarks,
     resetBookmarks,
   }
 }

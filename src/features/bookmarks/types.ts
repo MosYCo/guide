@@ -61,11 +61,18 @@ export interface BookmarkBackup {
   categories: CategoryMeta[]
 }
 
+export type BookmarkIconMode = 'google' | 'direct' | 'text'
+
+export interface BookmarkSettings {
+  iconMode: BookmarkIconMode
+}
+
 export interface BookmarkExportData {
   version: 4
   bookmarks: Bookmark[]
   categories: CategoryMeta[]
   backups?: BookmarkBackup[]
+  settings?: BookmarkSettings
 }
 
 export type BookmarkImportData = Bookmark[] | Partial<BookmarkExportData>
@@ -87,3 +94,21 @@ export interface TagSummary {
 }
 
 export type BookmarkSortMode = 'default' | 'smart' | 'recent' | 'frequent' | 'stale'
+
+export interface StorageUsage {
+  usedBytes: number
+  quotaBytes: number
+  percent: number
+}
+
+export interface DuplicateBookmarkGroup {
+  url: string
+  items: Bookmark[]
+}
+
+export interface BookmarkCleanupSummary {
+  duplicateGroups: DuplicateBookmarkGroup[]
+  staleBookmarks: Bookmark[]
+  emptyCategories: string[]
+  lowFrequencyTags: TagSummary[]
+}

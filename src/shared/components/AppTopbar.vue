@@ -22,7 +22,9 @@ defineEmits<{
   add: []
   openCommands: []
   manageCategories: []
+  openCleanup: []
   openBackups: []
+  openSettings: []
   import: []
   export: []
   exportHtml: []
@@ -95,6 +97,19 @@ defineEmits<{
           <circle cx="10" cy="17" r="2" />
         </svg>
       </button>
+      <button class="btn btn-icon" title="整理工具" @click="$emit('openCleanup')">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        >
+          <path d="M4 7h16" />
+          <path d="M7 12h10" />
+          <path d="M10 17h4" />
+        </svg>
+      </button>
       <button class="btn btn-icon" title="备份恢复" @click="$emit('openBackups')">
         <svg
           viewBox="0 0 24 24"
@@ -106,6 +121,21 @@ defineEmits<{
           <path d="M3 12a9 9 0 109-9" />
           <path d="M3 3v6h6" />
           <path d="M12 7v5l3 2" />
+        </svg>
+      </button>
+      <button class="btn btn-icon" title="设置" @click="$emit('openSettings')">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z"
+          />
         </svg>
       </button>
       <button class="btn btn-icon" title="键盘快捷键" @click="$emit('toggleHelp')">

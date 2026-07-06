@@ -25,7 +25,9 @@ const getInitialTheme = () => {
 export const useTheme = () => {
   const themeId = ref(getInitialTheme())
 
-  const currentTheme = computed(() => themes.find((theme) => theme.id === themeId.value) ?? themes[0])
+  const currentTheme = computed(
+    () => themes.find((theme) => theme.id === themeId.value) ?? themes[0],
+  )
 
   const applyTheme = () => {
     document.documentElement.setAttribute('data-theme', themeId.value)

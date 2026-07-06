@@ -32,7 +32,12 @@ const commitRename = (category: string) => {
 
 <template>
   <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div class="modal manager-modal" role="dialog" aria-modal="true" aria-labelledby="category-manager-title">
+    <div
+      class="modal manager-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="category-manager-title"
+    >
       <h3 id="category-manager-title">分类管理</h3>
       <div class="manager-list">
         <div v-for="(category, index) in categories" :key="category.name" class="manager-row">
@@ -41,7 +46,14 @@ const commitRename = (category: string) => {
             <span class="manager-meta">{{ category.count }} 个书签</span>
           </div>
           <div class="manager-controls">
-            <button class="mini-btn" :disabled="index === 0" title="上移" @click="$emit('move', category.name, 'left')">↑</button>
+            <button
+              class="mini-btn"
+              :disabled="index === 0"
+              title="上移"
+              @click="$emit('move', category.name, 'left')"
+            >
+              ↑
+            </button>
             <button
               class="mini-btn"
               :disabled="index === categories.length - 1"
@@ -50,13 +62,30 @@ const commitRename = (category: string) => {
             >
               ↓
             </button>
-            <input v-model="renameDraft[category.name]" class="mini-input" type="text" placeholder="重命名" />
-            <button class="mini-btn" :disabled="category.name === UNCATEGORIZED_CATEGORY" @click="commitRename(category.name)">
+            <input
+              v-model="renameDraft[category.name]"
+              class="mini-input"
+              type="text"
+              placeholder="重命名"
+            />
+            <button
+              class="mini-btn"
+              :disabled="category.name === UNCATEGORIZED_CATEGORY"
+              @click="commitRename(category.name)"
+            >
               改名
             </button>
-            <select v-model="mergeTarget[category.name]" class="mini-select" :disabled="category.name === UNCATEGORIZED_CATEGORY">
+            <select
+              v-model="mergeTarget[category.name]"
+              class="mini-select"
+              :disabled="category.name === UNCATEGORIZED_CATEGORY"
+            >
               <option value="">合并到...</option>
-              <option v-for="name in categoryNames.filter((name) => name !== category.name)" :key="name" :value="name">
+              <option
+                v-for="name in categoryNames.filter((name) => name !== category.name)"
+                :key="name"
+                :value="name"
+              >
                 {{ name }}
               </option>
             </select>

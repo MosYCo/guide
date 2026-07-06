@@ -35,6 +35,15 @@ export const getFaviconUrl = (url: string, size = 64) => {
   return `https://www.google.com/s2/favicons?sz=${size}&domain=${encodeURIComponent(getHostname(url))}`
 }
 
+export const getDirectFaviconUrl = (url: string) => {
+  try {
+    const parsedUrl = new URL(url)
+    return `${parsedUrl.origin}/favicon.ico`
+  } catch {
+    return ''
+  }
+}
+
 export const groupBookmarks = (bookmarks: Bookmark[]): BookmarkGroup[] => {
   const groups = bookmarks.reduce<Record<string, Bookmark[]>>((result, bookmark) => {
     const category = bookmark.cat || '未分类'

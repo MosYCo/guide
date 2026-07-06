@@ -61,11 +61,21 @@ describe('bookmark storage helpers', () => {
     const parsed = parseImportData(exported)
 
     expect(exported.version).toBe(BOOKMARK_EXPORT_VERSION)
+    expect(exported.settings?.iconMode).toBe('text')
     expect(parsed?.bookmarks).toHaveLength(3)
     expect(parsed?.categories).toEqual([{ name: '工具', order: 3, hidden: false }])
+    expect(parsed?.settings?.iconMode).toBe('text')
     expect(parsed?.bookmarks[0].tags).toEqual(['one'])
     expect(parsed?.bookmarks[0].visits).toBe(3)
     expect(parsed?.bookmarks[0].lastVisitedAt).toBe('2026-06-01T00:00:00.000Z')
+  })
+
+  it('sanitizes exported settings', () => {
+    const exported = createExportData(bookmarks, [], [], { iconMode: 'text' })
+    const parsed = parseImportData(exported)
+
+    expect(exported.settings?.iconMode).toBe('text')
+    expect(parsed?.settings?.iconMode).toBe('text')
   })
 
   it('parses and creates browser bookmark HTML', () => {

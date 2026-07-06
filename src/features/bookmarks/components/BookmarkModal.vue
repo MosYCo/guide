@@ -96,11 +96,24 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 <template>
   <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div ref="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="bookmark-modal-title" @keydown="handleKeydown">
+    <div
+      ref="modal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bookmark-modal-title"
+      @keydown="handleKeydown"
+    >
       <h3 id="bookmark-modal-title">{{ editing ? '编辑书签' : '添加书签' }}</h3>
       <div class="field">
         <label for="bookmark-title">名称</label>
-        <input id="bookmark-title" ref="titleInput" v-model="draft.title" type="text" placeholder="GitHub" />
+        <input
+          id="bookmark-title"
+          ref="titleInput"
+          v-model="draft.title"
+          type="text"
+          placeholder="GitHub"
+        />
       </div>
       <div class="field">
         <label for="bookmark-url">网址</label>
@@ -109,13 +122,21 @@ const handleKeydown = (event: KeyboardEvent) => {
       <div class="field">
         <label for="bookmark-category">分类</label>
         <select id="bookmark-category" v-model="draft.cat" @change="handleCategoryChange">
-          <option v-for="category in categoryOptions" :key="category" :value="category">{{ category }}</option>
+          <option v-for="category in categoryOptions" :key="category" :value="category">
+            {{ category }}
+          </option>
           <option value="__new__">+ 新分类</option>
         </select>
       </div>
       <div class="field">
         <label for="bookmark-icon">图标（Emoji，可选）</label>
-        <input id="bookmark-icon" v-model="draft.icon" type="text" placeholder="填写后优先显示 Emoji" maxlength="4" />
+        <input
+          id="bookmark-icon"
+          v-model="draft.icon"
+          type="text"
+          placeholder="填写后优先显示 Emoji"
+          maxlength="4"
+        />
       </div>
       <div class="field">
         <label for="bookmark-favicon">Favicon URL（可选）</label>
@@ -128,7 +149,12 @@ const handleKeydown = (event: KeyboardEvent) => {
       </div>
       <div class="field">
         <label for="bookmark-tags">标签（可选）</label>
-        <input id="bookmark-tags" v-model="draft.tagsText" type="text" placeholder="用逗号或空格分隔" />
+        <input
+          id="bookmark-tags"
+          v-model="draft.tagsText"
+          type="text"
+          placeholder="用逗号或空格分隔"
+        />
       </div>
       <div class="field">
         <label class="check-field">

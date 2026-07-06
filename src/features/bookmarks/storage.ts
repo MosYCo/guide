@@ -7,14 +7,28 @@ import {
   COLLAPSED_STORAGE_KEY,
   DEFAULT_BOOKMARKS,
   DELETED_CATEGORIES_STORAGE_KEY,
+  LOCAL_STORAGE_SOFT_LIMIT_BYTES,
+  SETTINGS_STORAGE_KEY,
   UNCATEGORIZED_CATEGORY,
   UNDO_STORAGE_KEY,
 } from './constants'
-import type { Bookmark, BookmarkBackup, BookmarkExportData, CategoryMeta } from './types'
+import type {
+  Bookmark,
+  BookmarkBackup,
+  BookmarkExportData,
+  BookmarkIconMode,
+  BookmarkSettings,
+  CategoryMeta,
+  StorageUsage,
+} from './types'
 import { createBookmarkId, normalizeDockOrder, parseBookmarkUrl } from './utils'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null
+}
+
+const DEFAULT_SETTINGS: BookmarkSettings = {
+  iconMode: 'text',
 }
 
 export const sanitizeBookmark = (value: unknown): Bookmark | null => {
@@ -170,10 +184,15 @@ export const saveCategories = (categories: CategoryMeta[]) => {
 
 export const parseImportData = (
   value: unknown,
-): { bookmarks: Bookmark[]; categories: CategoryMeta[]; backups: BookmarkBackup[] } | null => {
+): {
+  bookmarks: Bookmark[]
+  categories: CategoryMeta[]
+  backups: BookmarkBackup[]
+  settings: BookmarkSettings | null
+} | null => {
   const legacyBookmarks = parseBookmarks(value)
   if (legacyBookmarks.length) {
-    return { bookmarks: legacyBookmarks, categories: [], backups: [] }
+    return { bookmarks: legacyBookmarks, categories: [], backups: [], settings: null }
   }
 
   if (!isRecord(value)) return null
@@ -185,6 +204,7 @@ export const parseImportData = (
     bookmarks,
     categories: parseCategoryMeta(value.categories),
     backups: parseBackups(value.backups),
+    settings: sanitizeSettings(value.settings),
   }
 }
 
@@ -289,12 +309,44 @@ export const createExportData = (
   bookmarks: Bookmark[],
   categories: CategoryMeta[],
   backups: BookmarkBackup[] = [],
+  settings: BookmarkSettings = DEFAULT_SETTINGS,
 ): BookmarkExportData => {
   return {
     version: BOOKMARK_EXPORT_VERSION,
     bookmarks: normalizeDockOrder(bookmarks),
     categories: parseCategoryMeta(categories),
     backups: parseBackups(backups),
+    settings: sanitizeSettings(settings),
+  }
+}
+
+const iconModes: BookmarkIconMode[] = ['google', 'direct', 'text']
+
+export const sanitizeSettings = (value: unknown): BookmarkSettings => {
+  if (!isRecord(value)) return { ...DEFAULT_SETTINGS }
+
+  return {
+    iconMode: iconModes.includes(value.iconMode as BookmarkIconMode)
+      ? (value.iconMode as BookmarkIconMode)
+      : DEFAULT_SETTINGS.iconMode,
+  }
+}
+
+export const loadSettings = (): BookmarkSettings => {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
+    return raw ? sanitizeSettings(JSON.parse(raw)) : { ...DEFAULT_SETTINGS }
+  } catch {
+    return { ...DEFAULT_SETTINGS }
+  }
+}
+
+export const saveSettings = (settings: BookmarkSettings) => {
+  try {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(sanitizeSettings(settings)))
+    return true
+  } catch {
+    return false
   }
 }
 
@@ -403,5 +455,37 @@ export const saveDeletedCategories = (categories: string[]) => {
     return true
   } catch {
     return false
+  }
+}
+
+const getStringBytes = (value: string) => new Blob([value]).size
+
+export const getStorageUsage = (): StorageUsage => {
+  try {
+    const usedBytes = [
+      BOOKMARK_STORAGE_KEY,
+      CATEGORY_STORAGE_KEY,
+      DELETED_CATEGORIES_STORAGE_KEY,
+      BACKUP_STORAGE_KEY,
+      UNDO_STORAGE_KEY,
+      COLLAPSED_STORAGE_KEY,
+      SETTINGS_STORAGE_KEY,
+      'guide_search_history',
+    ].reduce((total, key) => {
+      const value = localStorage.getItem(key)
+      return total + getStringBytes(key) + (value ? getStringBytes(value) : 0)
+    }, 0)
+
+    return {
+      usedBytes,
+      quotaBytes: LOCAL_STORAGE_SOFT_LIMIT_BYTES,
+      percent: Math.min(100, Math.round((usedBytes / LOCAL_STORAGE_SOFT_LIMIT_BYTES) * 100)),
+    }
+  } catch {
+    return {
+      usedBytes: 0,
+      quotaBytes: LOCAL_STORAGE_SOFT_LIMIT_BYTES,
+      percent: 0,
+    }
   }
 }

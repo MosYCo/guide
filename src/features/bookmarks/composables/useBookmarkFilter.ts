@@ -1,4 +1,4 @@
-import { computed, ref, type Ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
 import { loadCollapsedCategories, saveCollapsedCategories } from '../storage'
 import type { Bookmark, BookmarkSortMode } from '../types'
 import { getHostname, groupBookmarks } from '../utils'
@@ -6,6 +6,16 @@ import { getHostname, groupBookmarks } from '../utils'
 export type SearchScope = 'all' | 'title' | 'domain' | 'category' | 'tag'
 
 const HISTORY_STORAGE_KEY = 'guide_search_history'
+const SEARCH_DEBOUNCE_MS = 80
+
+interface SearchableBookmark {
+  bookmark: Bookmark
+  title: string
+  domain: string
+  category: string
+  tag: string
+  url: string
+}
 
 const loadSearchHistory = () => {
   try {
@@ -135,6 +145,7 @@ const sortBookmarks = (bookmarks: Bookmark[], mode: BookmarkSortMode) => {
 
 export const useBookmarkFilter = (bookmarks: Ref<Bookmark[]>) => {
   const query = ref('')
+  const debouncedQuery = ref('')
   const activeCategory = ref<string | null>(null)
   const activeTag = ref<string | null>(null)
   const searchScope = ref<SearchScope>('all')
@@ -142,57 +153,82 @@ export const useBookmarkFilter = (bookmarks: Ref<Bookmark[]>) => {
   const sortMode = ref<BookmarkSortMode>('default')
   const searchHistory = ref<string[]>(loadSearchHistory())
   const collapsedCategories = ref<Record<string, boolean>>(loadCollapsedCategories())
+  let searchTimer: ReturnType<typeof setTimeout> | null = null
+
+  watch(
+    query,
+    (value) => {
+      if (searchTimer) clearTimeout(searchTimer)
+      searchTimer = setTimeout(() => {
+        debouncedQuery.value = value
+      }, SEARCH_DEBOUNCE_MS)
+    },
+    { immediate: true },
+  )
+
+  onBeforeUnmount(() => {
+    if (searchTimer) clearTimeout(searchTimer)
+  })
+
+  const searchableBookmarks = computed<SearchableBookmark[]>(() =>
+    bookmarks.value.map((bookmark) => ({
+      bookmark,
+      title: bookmark.title.toLowerCase(),
+      domain: getHostname(bookmark.url).toLowerCase(),
+      category: bookmark.cat.toLowerCase(),
+      tag: (bookmark.tags ?? []).join(' ').toLowerCase(),
+      url: bookmark.url.toLowerCase(),
+    })),
+  )
 
   const filteredBookmarks = computed(() => {
-    const normalizedQuery = query.value.trim().toLowerCase()
-    const parsedQuery = parseQuery(query.value.trim())
+    const normalizedQuery = debouncedQuery.value.trim().toLowerCase()
+    const parsedQuery = parseQuery(debouncedQuery.value.trim())
     const textQuery = parsedQuery.text.toLowerCase()
-    let list = bookmarks.value
+    let list = searchableBookmarks.value
 
     if (activeCategory.value && (!searchCurrentCategoryOnly.value || !normalizedQuery)) {
-      list = list.filter((bookmark) => bookmark.cat === activeCategory.value)
+      list = list.filter((entry) => entry.bookmark.cat === activeCategory.value)
     }
 
     if (activeTag.value) {
-      list = list.filter((bookmark) => (bookmark.tags ?? []).includes(activeTag.value as string))
+      list = list.filter((entry) => (entry.bookmark.tags ?? []).includes(activeTag.value as string))
     }
 
     if (activeCategory.value && searchCurrentCategoryOnly.value) {
-      list = list.filter((bookmark) => bookmark.cat === activeCategory.value)
+      list = list.filter((entry) => entry.bookmark.cat === activeCategory.value)
     }
 
     if (Object.keys(parsedQuery.filters).length) {
-      list = list.filter((bookmark) => {
+      list = list.filter((entry) => {
         return (
-          matchesField(bookmark.title, parsedQuery.filters.title) &&
-          matchesField(getHostname(bookmark.url), parsedQuery.filters.domain) &&
-          matchesField(bookmark.cat, parsedQuery.filters.category) &&
-          matchesField((bookmark.tags ?? []).join(' '), parsedQuery.filters.tag) &&
-          matchesField(bookmark.url, parsedQuery.filters.url)
+          matchesField(entry.title, parsedQuery.filters.title) &&
+          matchesField(entry.domain, parsedQuery.filters.domain) &&
+          matchesField(entry.category, parsedQuery.filters.category) &&
+          matchesField(entry.tag, parsedQuery.filters.tag) &&
+          matchesField(entry.url, parsedQuery.filters.url)
         )
       })
     }
 
     if (textQuery) {
-      list = list.filter((bookmark) => {
-        const fields = {
-          title: bookmark.title,
-          domain: getHostname(bookmark.url),
-          category: bookmark.cat,
-          tag: (bookmark.tags ?? []).join(' '),
-        }
+      list = list.filter((entry) => {
+        const scope = searchScope.value
 
-        if (searchScope.value === 'all') {
-          return [...Object.values(fields), bookmark.url].some((value) =>
-            fuzzyIncludes(value.toLowerCase(), textQuery),
+        if (scope === 'all') {
+          return [entry.title, entry.domain, entry.category, entry.tag, entry.url].some((value) =>
+            fuzzyIncludes(value, textQuery),
           )
         }
 
-        return fuzzyIncludes(fields[searchScope.value].toLowerCase(), textQuery)
+        return fuzzyIncludes(entry[scope], textQuery)
       })
     }
 
-    return sortBookmarks(list, sortMode.value)
+    return sortBookmarks(
+      list.map((entry) => entry.bookmark),
+      sortMode.value,
+    )
   })
 
   const groupedBookmarks = computed(() => groupBookmarks(filteredBookmarks.value))
@@ -207,6 +243,7 @@ export const useBookmarkFilter = (bookmarks: Ref<Bookmark[]>) => {
 
   const clearFilters = () => {
     query.value = ''
+    debouncedQuery.value = ''
     activeCategory.value = null
     activeTag.value = null
   }
