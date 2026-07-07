@@ -1,1 +1,0 @@
-import{d as e,a,o,t,q as i}from"./index-LSkk027t.js";const p=e({__name:"ToastHost",props:{message:{},visible:{type:Boolean}},setup(l){return(s,r)=>(o(),a("div",{class:i(["toast",{show:s.visible}]),role:"status","aria-live":"polite"},t(s.message),3))}});export{p as default};
