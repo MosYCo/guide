@@ -1,14 +1,27 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import BookmarkModal from '@/features/bookmarks/components/BookmarkModal.vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BookmarkSection from '@/features/bookmarks/components/BookmarkSection.vue'
-import BackupPanel from '@/features/bookmarks/components/BackupPanel.vue'
 import CategoryFilter from '@/features/bookmarks/components/CategoryFilter.vue'
-import CategoryManager from '@/features/bookmarks/components/CategoryManager.vue'
-import CleanupPanel from '@/features/bookmarks/components/CleanupPanel.vue'
-import CommandPalette from '@/features/bookmarks/components/CommandPalette.vue'
 import HeroDock from '@/features/bookmarks/components/HeroDock.vue'
-import SettingsPanel from '@/features/bookmarks/components/SettingsPanel.vue'
+
+const BookmarkModal = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/BookmarkModal.vue'),
+)
+const BackupPanel = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/BackupPanel.vue'),
+)
+const CategoryManager = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/CategoryManager.vue'),
+)
+const CleanupPanel = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/CleanupPanel.vue'),
+)
+const CommandPalette = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/CommandPalette.vue'),
+)
+const SettingsPanel = defineAsyncComponent(
+  () => import('@/features/bookmarks/components/SettingsPanel.vue'),
+)
 import { useBookmarkFilter } from '@/features/bookmarks/composables/useBookmarkFilter'
 import { useBookmarkKeyboard } from '@/features/bookmarks/composables/useBookmarkKeyboard'
 import { useBookmarks } from '@/features/bookmarks/composables/useBookmarks'
@@ -19,9 +32,16 @@ import type {
   DockMoveDirection,
 } from '@/features/bookmarks/types'
 import AppTopbar from '@/shared/components/AppTopbar.vue'
-import ConfirmDialog from '@/shared/components/ConfirmDialog.vue'
-import KeyboardHelp from '@/shared/components/KeyboardHelp.vue'
-import ToastHost from '@/shared/components/ToastHost.vue'
+
+const ConfirmDialog = defineAsyncComponent(
+  () => import('@/shared/components/ConfirmDialog.vue'),
+)
+const KeyboardHelp = defineAsyncComponent(
+  () => import('@/shared/components/KeyboardHelp.vue'),
+)
+const ToastHost = defineAsyncComponent(
+  () => import('@/shared/components/ToastHost.vue'),
+)
 import { APP_NAME } from '@/shared/config/app'
 import { useClock } from '@/shared/composables/useClock'
 import { useTheme } from '@/shared/composables/useTheme'
@@ -70,6 +90,7 @@ const {
   removeLowFrequencyTags,
   removeStaleBookmarks,
   deduplicateBookmarks,
+  loadDeferredData,
 } = useBookmarks()
 
 const {
@@ -594,6 +615,8 @@ const applyAppUpdate = () => {
 onMounted(() => {
   document.addEventListener('keydown', handleGlobalCommandKey)
   window.addEventListener('navhub:update-available', handleUpdateAvailable)
+  loadDeferredData()
+  requestAnimationFrame(() => document.body.classList.add('noise-ready'))
 })
 
 onBeforeUnmount(() => {

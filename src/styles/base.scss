@@ -38,7 +38,7 @@ body {
     color 0.35s ease;
 }
 
-body::before {
+body.noise-ready::before {
   content: '';
   position: fixed;
   inset: 0;

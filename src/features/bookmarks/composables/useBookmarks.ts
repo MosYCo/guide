@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import {
   CATEGORY_ORDER,
   DEFAULT_BOOKMARKS,
+  LOCAL_STORAGE_SOFT_LIMIT_BYTES,
   MAX_BACKUPS,
   MAX_UNDO_SNAPSHOTS,
   STALE_BOOKMARK_DAYS,
@@ -43,6 +44,7 @@ import type {
   DockDropPlacement,
   DockMoveDirection,
   MutationResult,
+  StorageUsage,
   TagSummary,
 } from '../types'
 import {
@@ -108,10 +110,17 @@ export const useBookmarks = () => {
       createCategoryMeta(name, CATEGORY_ORDER[name] ?? 99, true),
     ),
   ])
-  const backups = ref<BookmarkBackup[]>(loadBackups())
-  const undoSnapshots = ref<BookmarkBackup[]>(loadUndoSnapshots())
+  const backups = ref<BookmarkBackup[]>([])
+  const undoSnapshots = ref<BookmarkBackup[]>([])
   const settings = ref<BookmarkSettings>(loadSettings())
-  const storageUsage = ref(getStorageUsage())
+  const storageUsage = ref<StorageUsage>({ usedBytes: 0, quotaBytes: LOCAL_STORAGE_SOFT_LIMIT_BYTES, percent: 0 })
+
+  // Deferred: load non-critical data after initial render
+  const loadDeferredData = () => {
+    backups.value = loadBackups()
+    undoSnapshots.value = loadUndoSnapshots()
+    storageUsage.value = getStorageUsage()
+  }
   const editingId = ref<string | null>(null)
   const draft = ref<BookmarkDraft>(createDraft())
   const isModalOpen = ref(false)
@@ -1013,5 +1022,6 @@ export const useBookmarks = () => {
     removeStaleBookmarks,
     deduplicateBookmarks,
     resetBookmarks,
+    loadDeferredData,
   }
 }
