@@ -27,48 +27,50 @@ const scopeOptions: Array<{ value: SearchScope; label: string }> = [
 
 <template>
   <div :class="['search-wrap', { 'has-query': model.trim() }]">
-    <svg
-      class="si"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-    <input
-      id="bookmark-search"
-      v-model="model"
-      type="text"
+    <el-input
+      :model-value="model"
       placeholder="搜索书签..."
-      autocomplete="off"
-      spellcheck="false"
-      list="search-history"
-      @keydown.enter="$emit('commit')"
+      clearable
+      @update:model-value="(val: string) => model = val"
+      @keyup.enter="$emit('commit')"
+    >
+      <template #prefix>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </template>
+      <template #append>
+        <el-select
+          :model-value="scope"
+          style="width: 72px"
+          @update:model-value="(val: string) => scope = val as SearchScope"
+        >
+          <el-option
+            v-for="option in scopeOptions"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
+        </el-select>
+      </template>
+    </el-input>
+    <el-checkbox
+      v-if="hasActiveCategory"
+      v-model="currentOnly"
+      class="search-current"
+      label="当前"
+      size="small"
     />
-    <datalist id="search-history">
-      <option v-for="item in history" :key="item" :value="item"></option>
-    </datalist>
-    <select v-model="scope" class="search-scope" aria-label="搜索范围">
-      <option v-for="option in scopeOptions" :key="option.value" :value="option.value">
-        {{ option.label }}
-      </option>
-    </select>
-    <label v-if="hasActiveCategory" class="search-current" title="仅搜索当前分类">
-      <input v-model="currentOnly" type="checkbox" />
-      当前
-    </label>
-    <button
+    <el-button
       v-if="history.length"
       class="search-clear"
-      type="button"
+      :icon="undefined"
+      size="small"
+      circle
       title="清除搜索历史"
       @click="$emit('clearHistory')"
-    >
-      ×
-    </button>
+    >×</el-button>
     <span class="rc">{{ resultCount }} 结果</span>
     <span class="sb"><kbd>/</kbd><kbd>↑↓</kbd><kbd>↵</kbd></span>
   </div>

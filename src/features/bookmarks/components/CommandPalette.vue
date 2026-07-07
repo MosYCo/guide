@@ -239,22 +239,17 @@ watch(items, () => {
 </script>
 
 <template>
-  <div v-if="open" class="command-overlay" @click.self="close">
-    <div
-      class="command-panel"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="command-palette-title"
-    >
-      <h3 id="command-palette-title" class="visually-hidden">命令面板</h3>
+  <el-dialog
+    :model-value="open"
+    :show-close="false"
+    width="620px"
+    top="min(14vh, 120px)"
+    class="command-dialog"
+    @close="close"
+  >
+    <template #header>
       <div class="command-search">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="17" height="17">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
@@ -268,33 +263,32 @@ watch(items, () => {
           @keydown="handleKeydown"
         />
       </div>
-
-      <div class="command-list" role="listbox">
-        <button
-          v-for="(item, index) in items"
-          :key="item.id"
-          :class="['command-item', { active: index === activeIndex }]"
-          type="button"
-          role="option"
-          :aria-selected="index === activeIndex"
-          @mouseenter="activeIndex = index"
-          @click="runItem(item)"
-        >
-          <BookmarkIcon
-            v-if="item.type === 'bookmark'"
-            :bookmark="item.bookmark"
-            :icon-mode="iconMode"
-          />
-          <span v-else :class="['command-glyph', `command-glyph-${item.type}`]">
-            {{ item.type === 'category' ? 'C' : item.type === 'tag' ? '#' : '⌘' }}
-          </span>
-          <span class="command-copy">
-            <span class="command-label">{{ item.label }}</span>
-            <span class="command-meta">{{ item.meta }}</span>
-          </span>
-        </button>
-        <div v-if="!items.length" class="command-empty">没有匹配项</div>
-      </div>
+    </template>
+    <div class="command-list" role="listbox">
+      <button
+        v-for="(item, index) in items"
+        :key="item.id"
+        :class="['command-item', { active: index === activeIndex }]"
+        type="button"
+        role="option"
+        :aria-selected="index === activeIndex"
+        @mouseenter="activeIndex = index"
+        @click="runItem(item)"
+      >
+        <BookmarkIcon
+          v-if="item.type === 'bookmark'"
+          :bookmark="item.bookmark"
+          :icon-mode="iconMode"
+        />
+        <span v-else :class="['command-glyph', `command-glyph-${item.type}`]">
+          {{ item.type === 'category' ? 'C' : item.type === 'tag' ? '#' : '⌘' }}
+        </span>
+        <span class="command-copy">
+          <span class="command-label">{{ item.label }}</span>
+          <span class="command-meta">{{ item.meta }}</span>
+        </span>
+      </button>
+      <el-empty v-if="!items.length" description="没有匹配项" :image-size="60" />
     </div>
-  </div>
+  </el-dialog>
 </template>

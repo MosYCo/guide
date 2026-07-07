@@ -104,14 +104,7 @@ const handlePointerUp = () => {
     <div class="hero-dock-header">
       <span class="hero-dock-title">
         <span class="hd-icon">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </span>
@@ -160,36 +153,36 @@ const handlePointerUp = () => {
         <div class="dc-domain">{{ getHostname(bookmark.url) }}</div>
         <div v-if="bookmark.visits" class="dc-visits">{{ bookmark.visits }} 次</div>
         <div class="dc-act">
-          <button
+          <el-button
+            size="small"
+            circle
             :disabled="index === 0"
             :aria-label="`向左移动 ${bookmark.title}`"
             title="向左移动"
             @click.prevent.stop="$emit('move', bookmark, 'left')"
-          >
-            ‹
-          </button>
-          <button
+          >‹</el-button>
+          <el-button
+            size="small"
+            circle
             :disabled="index === pinnedBookmarks.length - 1"
             :aria-label="`向右移动 ${bookmark.title}`"
             title="向右移动"
             @click.prevent.stop="$emit('move', bookmark, 'right')"
-          >
-            ›
-          </button>
-          <button
+          >›</el-button>
+          <el-button
+            size="small"
+            circle
             :aria-label="`编辑 ${bookmark.title}`"
             title="编辑"
             @click.prevent.stop="$emit('edit', bookmark)"
-          >
-            ✎
-          </button>
-          <button
+          >✎</el-button>
+          <el-button
+            size="small"
+            circle
             :aria-label="`从快速启动移除 ${bookmark.title}`"
             title="从快速启动移除"
             @click.prevent.stop="$emit('unpin', bookmark)"
-          >
-            −
-          </button>
+          >−</el-button>
         </div>
       </a>
     </div>

@@ -50,19 +50,13 @@ const formatVisitedDate = (value: string) => {
     @click="$emit('open', bookmark)"
   >
     <div class="bk-shine"></div>
-    <label
-      class="bk-select"
+    <el-checkbox
+      :model-value="selected"
       :aria-label="`选择 ${bookmark.title}`"
-      :title="`选择 ${bookmark.title}`"
-    >
-      <input
-        :checked="selected"
-        type="checkbox"
-        @click.stop
-        @change="$emit('toggleSelect', bookmark)"
-      />
-      <span class="bk-select-mark"></span>
-    </label>
+      class="bk-select"
+      @click.stop
+      @update:model-value="$emit('toggleSelect', bookmark)"
+    />
     <BookmarkIcon :bookmark="bookmark" :icon-mode="iconMode" />
     <div class="bk-body">
       <div class="bk-name">
@@ -81,7 +75,7 @@ const formatVisitedDate = (value: string) => {
         </template>
       </div>
       <div v-if="bookmark.tags?.length" class="bk-tags">
-        <span v-for="tag in bookmark.tags" :key="tag">#{{ tag }}</span>
+        <el-tag v-for="tag in bookmark.tags" :key="tag" size="small" type="info" effect="plain">#{{ tag }}</el-tag>
       </div>
       <div v-if="bookmark.visits || bookmark.lastVisitedAt" class="bk-stats">
         <span>{{ bookmark.visits ?? 0 }} 次</span>
@@ -100,21 +94,21 @@ const formatVisitedDate = (value: string) => {
       <polyline points="7 7 17 7 17 17" />
     </svg>
     <div class="bk-act">
-      <button
+      <el-button
         :aria-label="`编辑 ${bookmark.title}`"
         title="编辑"
+        size="small"
+        circle
         @click.prevent.stop="$emit('edit', bookmark)"
-      >
-        ✎
-      </button>
-      <button
-        class="del"
+      >✎</el-button>
+      <el-button
         :aria-label="`删除 ${bookmark.title}`"
         title="删除"
+        size="small"
+        circle
+        type="danger"
         @click.prevent.stop="$emit('delete', bookmark)"
-      >
-        ✕
-      </button>
+      >✕</el-button>
     </div>
   </a>
 </template>

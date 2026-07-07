@@ -24,9 +24,8 @@ defineEmits<{
 
 <template>
   <main class="content">
-    <div v-if="!groups.length" class="empty">
-      <div class="empty-s">∅</div>
-      <p>
+    <el-empty v-if="!groups.length">
+      <template #description>
         {{
           query
             ? `没有匹配「${query}」`
@@ -34,48 +33,48 @@ defineEmits<{
               ? `「${activeCategory}」下没有书签`
               : '还没有书签'
         }}
-      </p>
-      <button v-if="!query" class="btn btn-acc" @click="$emit('add')">添加书签</button>
-    </div>
+      </template>
+      <el-button v-if="!query" type="primary" @click="$emit('add')">添加书签</el-button>
+    </el-empty>
 
-    <section
-      v-for="(group, groupIndex) in groups"
+    <el-collapse
       v-else
-      :key="group.name"
-      :class="['cat', { collapsed: collapsedCategories[group.name] }]"
-      :style="{ animationDelay: `${0.1 + groupIndex * 0.02}s` }"
+      :model-value="groups.filter((g) => !collapsedCategories[g.name]).map((g) => g.name)"
+      @update:model-value="(val: string | string[]) => {
+        const open = Array.isArray(val) ? val : [val]
+        groups.forEach((g) => {
+          const isOpen = open.includes(g.name)
+          if (isOpen === !!collapsedCategories[g.name]) $emit('toggle', g.name)
+        })
+      }"
     >
-      <div class="cat-head" @click="$emit('toggle', group.name)">
-        <span class="cat-label">{{ group.name }}</span>
-        <span class="cat-rule"></span>
-        <span class="cat-n">{{ group.items.length }}</span>
-        <svg
-          class="cat-ch"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </div>
-
-      <div class="cat-grid">
-        <BookmarkCard
-          v-for="bookmark in group.items"
-          :key="bookmark.id"
-          :bookmark="bookmark"
-          :focused="focusedId === bookmark.id"
-          :query="query"
-          :selected="selectedIds.includes(bookmark.id)"
-          :icon-mode="iconMode"
-          @toggle-select="$emit('toggleSelect', $event)"
-          @open="$emit('open', $event)"
-          @edit="$emit('edit', $event)"
-          @delete="$emit('delete', $event)"
-        />
-      </div>
-    </section>
+      <el-collapse-item
+        v-for="(group, groupIndex) in groups"
+        :key="group.name"
+        :name="group.name"
+        :style="{ animationDelay: `${0.1 + groupIndex * 0.02}s` }"
+      >
+        <template #title>
+          <span class="cat-label">{{ group.name }}</span>
+          <span class="cat-rule"></span>
+          <span class="cat-n">{{ group.items.length }}</span>
+        </template>
+        <div class="cat-grid">
+          <BookmarkCard
+            v-for="bookmark in group.items"
+            :key="bookmark.id"
+            :bookmark="bookmark"
+            :focused="focusedId === bookmark.id"
+            :query="query"
+            :selected="selectedIds.includes(bookmark.id)"
+            :icon-mode="iconMode"
+            @toggle-select="$emit('toggleSelect', $event)"
+            @open="$emit('open', $event)"
+            @edit="$emit('edit', $event)"
+            @delete="$emit('delete', $event)"
+          />
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </main>
 </template>

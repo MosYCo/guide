@@ -33,19 +33,12 @@ import type {
 } from '@/features/bookmarks/types'
 import AppTopbar from '@/shared/components/AppTopbar.vue'
 
-const ConfirmDialog = defineAsyncComponent(
-  () => import('@/shared/components/ConfirmDialog.vue'),
-)
 const KeyboardHelp = defineAsyncComponent(
   () => import('@/shared/components/KeyboardHelp.vue'),
-)
-const ToastHost = defineAsyncComponent(
-  () => import('@/shared/components/ToastHost.vue'),
 )
 import { APP_NAME } from '@/shared/config/app'
 import { useClock } from '@/shared/composables/useClock'
 import { useTheme } from '@/shared/composables/useTheme'
-import { useToast } from '@/shared/composables/useToast'
 
 const {
   bookmarks,
@@ -114,7 +107,7 @@ const {
 
 const { currentTheme, cycleTheme } = useTheme()
 const { time } = useClock()
-const { message, isVisible, showToast } = useToast()
+const toast = (text: string) => ElMessage({ message: text, grouping: true })
 const isHelpOpen = ref(false)
 const isCategoryManagerOpen = ref(false)
 const isBackupPanelOpen = ref(false)
@@ -124,15 +117,6 @@ const isCommandPaletteOpen = ref(false)
 const updateRegistration = ref<ServiceWorkerRegistration | null>(null)
 const importInput = ref<HTMLInputElement | null>(null)
 const selectedIds = ref<string[]>([])
-const dialog = ref<
-  | { type: 'deleteBookmark'; bookmark: Bookmark }
-  | { type: 'deleteCategory'; category: string; count: number }
-  | { type: 'bulkDelete'; count: number }
-  | { type: 'restoreBackup'; id: string }
-  | { type: 'addCategory' }
-  | { type: 'changeIconMode'; mode: BookmarkIconMode }
-  | null
->(null)
 
 const isEditing = computed(() => Boolean(editingId.value))
 const canUndo = computed(() => undoSnapshots.value.length > 0)
@@ -144,39 +128,8 @@ const isOverlayOpen = computed(
     isBackupPanelOpen.value ||
     isCleanupPanelOpen.value ||
     isSettingsPanelOpen.value ||
-    isCommandPaletteOpen.value ||
-    Boolean(dialog.value),
+    isCommandPaletteOpen.value,
 )
-const dialogTitle = computed(() => {
-  if (!dialog.value) return ''
-  if (dialog.value.type === 'deleteBookmark') return `删除 ${dialog.value.bookmark.title}`
-  if (dialog.value.type === 'deleteCategory') return `删除分类 ${dialog.value.category}`
-  if (dialog.value.type === 'bulkDelete') return `删除 ${dialog.value.count} 个书签`
-  if (dialog.value.type === 'restoreBackup') return '恢复备份'
-  if (dialog.value.type === 'changeIconMode') return '切换图标来源'
-  return '新建分类'
-})
-const dialogMessage = computed(() => {
-  if (!dialog.value) return ''
-  if (dialog.value.type === 'deleteBookmark') return '该书签会从本地列表中移除。'
-  if (dialog.value.type === 'bulkDelete')
-    return '选中的书签会从本地列表中移除，操作前会自动创建备份。'
-  if (dialog.value.type === 'restoreBackup') return '当前数据会先自动备份，然后恢复所选快照。'
-  if (dialog.value.type === 'deleteCategory') {
-    return dialog.value.count > 0
-      ? `该分类下 ${dialog.value.count} 个书签会移动到「未分类」。`
-      : '该空分类会从分类筛选中移除。'
-  }
-  if (dialog.value.type === 'changeIconMode') {
-    const labels: Record<BookmarkIconMode, string> = {
-      text: '文本图标',
-      direct: '站点 favicon',
-      google: 'Google favicon',
-    }
-    return `确认切换为「${labels[dialog.value.mode]}」？外部 favicon 模式可能会发起图标网络请求。`
-  }
-  return ''
-})
 
 document.title = APP_NAME
 
@@ -200,15 +153,29 @@ watch(
 const handleSave = () => {
   const result = saveDraft()
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
 
-  showToast(result.created ? `已添加 ${result.bookmark.title}` : '已更新')
+  toast(result.created ? `已添加 ${result.bookmark.title}` : '已更新')
 }
 
-const handleDelete = (bookmark: Bookmark) => {
-  dialog.value = { type: 'deleteBookmark', bookmark }
+const handleDelete = async (bookmark: Bookmark) => {
+  try {
+    await ElMessageBox.confirm('该书签会从本地列表中移除。', `删除 ${bookmark.title}`, {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const result = removeBookmark(bookmark.id)
+    if (!result.ok) {
+      toast(result.reason)
+      return
+    }
+    toast(`已删除 ${bookmark.title}`)
+  } catch {
+    // cancelled
+  }
 }
 
 const toggleSelect = (bookmark: Bookmark) => {
@@ -224,16 +191,38 @@ const clearSelection = () => {
 const handleUnpin = (bookmark: Bookmark) => {
   const result = unpinBookmark(bookmark.id)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
 
-  showToast(`已从快速启动移除 ${result.bookmark.title}`)
+  toast(`已从快速启动移除 ${result.bookmark.title}`)
 }
 
-const handleDeleteCategory = (category: string) => {
+const handleDeleteCategory = async (category: string) => {
   const count = bookmarks.value.filter((bookmark) => bookmark.cat === category).length
-  dialog.value = { type: 'deleteCategory', category, count }
+  const message =
+    count > 0
+      ? `该分类下 ${count} 个书签会移动到「未分类」。`
+      : '该空分类会从分类筛选中移除。'
+  try {
+    await ElMessageBox.confirm(message, `删除分类 ${category}`, {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const result = deleteCategory(category)
+    if (!result.ok) {
+      toast(result.reason)
+      return
+    }
+    if (activeCategory.value === category) {
+      setCategory(null)
+      clearFocus()
+    }
+    toast(result.moved > 0 ? `已删除分类，${result.moved} 个书签移到未分类` : `已删除分类 ${category}`)
+  } catch {
+    // cancelled
+  }
 }
 
 const handleSelectCategory = (category: string | null) => {
@@ -260,24 +249,24 @@ const handleClearFilters = () => {
 const handleDockReorder = (draggedId: string, targetId: string, placement: DockDropPlacement) => {
   const result = reorderPinnedBookmarks(draggedId, targetId, placement)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
   }
 }
 
 const handleDockMove = (bookmark: Bookmark, direction: DockMoveDirection) => {
   const result = movePinnedBookmarkByDirection(bookmark.id, direction)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
   }
 }
 
 const handleTogglePin = (bookmark: Bookmark) => {
   const result = toggleBookmarkPin(bookmark.id)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
-  showToast(
+  toast(
     result.bookmark.pin ? `已固定 ${result.bookmark.title}` : `已取消固定 ${result.bookmark.title}`,
   )
 }
@@ -287,10 +276,10 @@ const handleBulkMove = (category: string) => {
 
   const result = bulkMoveCategory(selectedIds.value, category)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
-  showToast(`已移动 ${result.count} 个书签`)
+  toast(`已移动 ${result.count} 个书签`)
   clearSelection()
 }
 
@@ -303,16 +292,16 @@ const handleBulkMoveChange = (event: Event) => {
 const handleBulkPin = (pin: boolean) => {
   const result = bulkSetPinned(selectedIds.value, pin)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
-  showToast(pin ? `已固定 ${result.count} 个书签到 Dock` : `已取消 ${result.count} 个 Dock 固定`)
+  toast(pin ? `已固定 ${result.count} 个书签到 Dock` : `已取消 ${result.count} 个 Dock 固定`)
   clearSelection()
 }
 
 const handleExport = () => {
   downloadBookmarks(exportBookmarks())
-  showToast(`已导出 ${bookmarks.value.length} 个书签`)
+  toast(`已导出 ${bookmarks.value.length} 个书签`)
 }
 
 const downloadFile = (content: string, filename: string, type: string) => {
@@ -331,12 +320,12 @@ const downloadBookmarks = (data: unknown, filename = 'navhub-bookmarks.json') =>
 
 const handleExportSelected = () => {
   downloadBookmarks(exportSelectedBookmarks(selectedIds.value), 'navhub-selected-bookmarks.json')
-  showToast(`已导出 ${selectedIds.value.length} 个选中书签`)
+  toast(`已导出 ${selectedIds.value.length} 个选中书签`)
 }
 
 const handleExportHtml = () => {
   downloadFile(exportBookmarksAsHtml(), 'navhub-bookmarks.html', 'text/html;charset=utf-8')
-  showToast(`已导出 HTML：${bookmarks.value.length} 个书签`)
+  toast(`已导出 HTML：${bookmarks.value.length} 个书签`)
 }
 
 const handleExportSelectedHtml = () => {
@@ -345,7 +334,7 @@ const handleExportSelectedHtml = () => {
     'navhub-selected-bookmarks.html',
     'text/html;charset=utf-8',
   )
-  showToast(`已导出 HTML：${selectedIds.value.length} 个选中书签`)
+  toast(`已导出 HTML：${selectedIds.value.length} 个选中书签`)
 }
 
 const handleImportClick = () => {
@@ -361,24 +350,24 @@ const handleImport = async (event: Event) => {
 
   const result = importBookmarks(await file.text())
   if (!result.ok) {
-    showToast(`导入失败：${result.reason}`)
+    toast(`导入失败：${result.reason}`)
     return
   }
 
-  showToast(`导入完成：新增 ${result.added}，更新 ${result.updated}，跳过 ${result.skipped}`)
+  toast(`导入完成：新增 ${result.added}，更新 ${result.updated}，跳过 ${result.skipped}`)
 }
 
 const handleOpenBookmark = (bookmark: Bookmark) => {
   const result = recordBookmarkVisit(bookmark.id)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
   }
 }
 
 const handleCommandOpenBookmark = (bookmark: Bookmark) => {
   const result = recordBookmarkVisit(bookmark.id)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
 
@@ -388,97 +377,70 @@ const handleCommandOpenBookmark = (bookmark: Bookmark) => {
 const handleUndo = () => {
   const result = undoLastChange()
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
 
-  showToast(`已撤销：${result.label}`)
+  toast(`已撤销：${result.label}`)
   clearSelection()
 }
 
 const handleCycleTheme = () => {
   cycleTheme()
-  showToast(`主题：${currentTheme.value.label}`)
+  toast(`主题：${currentTheme.value.label}`)
 }
 
-const addCategory = (category: string) => {
-  draft.value.cat = category
-}
-
-const requestCategory = () => {
-  dialog.value = { type: 'addCategory' }
-}
-
-const handleDialogConfirm = (value?: string) => {
-  if (!dialog.value) return
-
-  if (dialog.value.type === 'deleteBookmark') {
-    const result = removeBookmark(dialog.value.bookmark.id)
-    if (!result.ok) {
-      showToast(result.reason)
-      dialog.value = null
-      return
-    }
-    showToast(`已删除 ${dialog.value.bookmark.title}`)
+const requestCategory = async () => {
+  try {
+    const { value } = await ElMessageBox.prompt('例如：阅读', '新建分类', {
+      confirmButtonText: '创建',
+      cancelButtonText: '取消',
+      inputPattern: /\S/,
+      inputErrorMessage: '分类名称不能为空',
+    })
+    draft.value.cat = value.trim()
+  } catch {
+    // cancelled
   }
+}
 
-  if (dialog.value.type === 'bulkDelete') {
+const handleBulkDelete = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '选中的书签会从本地列表中移除，操作前会自动创建备份。',
+      `删除 ${selectedIds.value.length} 个书签`,
+      { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' },
+    )
     const result = bulkDelete(selectedIds.value)
     if (!result.ok) {
-      showToast(result.reason)
-      dialog.value = null
+      toast(result.reason)
       return
     }
-    showToast(`已删除 ${result.count} 个书签`)
+    toast(`已删除 ${result.count} 个书签`)
     clearSelection()
+  } catch {
+    // cancelled
   }
+}
 
-  if (dialog.value.type === 'deleteCategory') {
-    const category = dialog.value.category
-    const result = deleteCategory(category)
+const handleRestoreBackup = async (id: string) => {
+  try {
+    await ElMessageBox.confirm('当前数据会先自动备份，然后恢复所选快照。', '恢复备份', {
+      confirmButtonText: '恢复',
+      cancelButtonText: '取消',
+      type: 'info',
+    })
+    const result = restoreBackup(id)
     if (!result.ok) {
-      showToast(result.reason)
-      dialog.value = null
+      toast(result.reason)
       return
     }
-
-    if (activeCategory.value === category) {
-      setCategory(null)
-      clearFocus()
-    }
-
-    showToast(
-      result.moved > 0 ? `已删除分类，${result.moved} 个书签移到未分类` : `已删除分类 ${category}`,
-    )
-  }
-
-  if (dialog.value.type === 'addCategory') {
-    const category = value?.trim()
-    if (!category) {
-      showToast('分类名称不能为空')
-      return
-    }
-
-    addCategory(category)
-  }
-
-  if (dialog.value.type === 'restoreBackup') {
-    const result = restoreBackup(dialog.value.id)
-    if (!result.ok) {
-      showToast(result.reason)
-      dialog.value = null
-      return
-    }
-    showToast('已恢复备份')
+    toast('已恢复备份')
     isBackupPanelOpen.value = false
     clearSelection()
+  } catch {
+    // cancelled
   }
-
-  if (dialog.value.type === 'changeIconMode') {
-    applyIconMode(dialog.value.mode)
-  }
-
-  dialog.value = null
 }
 
 const { focusedId, clearFocus } = useBookmarkKeyboard({
@@ -515,10 +477,10 @@ const handleCategoryAction = (
 ) => {
   const result = action()
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
-  showToast(success)
+  toast(success)
 }
 
 const handleCategoryRename = (from: string, to: string) => {
@@ -537,16 +499,30 @@ const handleCategoryHidden = (category: string, hidden: boolean) => {
   handleCategoryAction(() => setCategoryHidden(category, hidden), '已更新分类状态')
 }
 
-const handleIconMode = (mode: BookmarkIconMode) => {
+const handleIconMode = async (mode: BookmarkIconMode) => {
   if (mode === settings.value.iconMode) return
 
-  dialog.value = { type: 'changeIconMode', mode }
+  const labels: Record<BookmarkIconMode, string> = {
+    text: '文本图标',
+    direct: '站点 favicon',
+    google: 'Google favicon',
+  }
+  try {
+    await ElMessageBox.confirm(
+      `确认切换为「${labels[mode]}」？外部 favicon 模式可能会发起图标网络请求。`,
+      '切换图标来源',
+      { confirmButtonText: '切换', cancelButtonText: '取消', type: 'info' },
+    )
+    applyIconMode(mode)
+  } catch {
+    // cancelled
+  }
 }
 
 const applyIconMode = (mode: BookmarkIconMode) => {
   const result = setIconMode(mode)
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
   const labels: Record<BookmarkIconMode, string> = {
@@ -554,7 +530,7 @@ const applyIconMode = (mode: BookmarkIconMode) => {
     direct: '站点 favicon',
     google: 'Google favicon',
   }
-  showToast(`图标来源：${labels[mode]}`)
+  toast(`图标来源：${labels[mode]}`)
 }
 
 const handleCleanupAction = (
@@ -563,10 +539,10 @@ const handleCleanupAction = (
 ) => {
   const result = action()
   if (!result.ok) {
-    showToast(result.reason)
+    toast(result.reason)
     return
   }
-  showToast(success(result.count))
+  toast(success(result.count))
   clearSelection()
 }
 
@@ -675,7 +651,7 @@ onBeforeUnmount(() => {
       <button class="btn" @click="handleExportSelectedHtml">导出 HTML</button>
       <button
         class="btn btn-danger"
-        @click="dialog = { type: 'bulkDelete', count: selectedIds.length }"
+        @click="handleBulkDelete"
       >
         删除
       </button>
@@ -746,7 +722,7 @@ onBeforeUnmount(() => {
     :open="isBackupPanelOpen"
     :backups="backups"
     @close="isBackupPanelOpen = false"
-    @restore="dialog = { type: 'restoreBackup', id: $event }"
+    @restore="handleRestoreBackup"
   />
   <CleanupPanel
     v-if="isCleanupPanelOpen"
@@ -799,30 +775,4 @@ onBeforeUnmount(() => {
     @export-html="handleExportHtml"
     @undo="handleUndo"
   />
-  <ConfirmDialog
-    :open="Boolean(dialog)"
-    :title="dialogTitle"
-    :message="dialogMessage"
-    :tone="
-      dialog?.type === 'deleteBookmark' ||
-      dialog?.type === 'deleteCategory' ||
-      dialog?.type === 'bulkDelete'
-        ? 'danger'
-        : 'default'
-    "
-    :confirm-label="
-      dialog?.type === 'addCategory'
-        ? '创建'
-        : dialog?.type === 'restoreBackup'
-          ? '恢复'
-          : dialog?.type === 'changeIconMode'
-            ? '切换'
-            : '删除'
-    "
-    :input-label="dialog?.type === 'addCategory' ? '分类名称' : ''"
-    input-placeholder="例如：阅读"
-    @cancel="dialog = null"
-    @confirm="handleDialogConfirm"
-  />
-  <ToastHost :message="message" :visible="isVisible" />
 </template>

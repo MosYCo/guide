@@ -1,4 +1,6 @@
 import 'virtual:uno.css'
+import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import '@/styles/base.scss'
 import '@/styles/navhub.scss'
 import { createApp } from 'vue'

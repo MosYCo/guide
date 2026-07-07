@@ -37,69 +37,74 @@ const categoryCounts = computed(() => {
 
 <template>
   <div class="filter-shell">
-    <div class="filter-bar">
-      <button
-        :class="['f-tab', { active: activeCategory === null }]"
-        @click="$emit('select', null)"
-      >
-        <span class="ft-dot" style="background: var(--accent)"></span>
-        全部
-        <span class="ft-n">{{ bookmarks.length }}</span>
-      </button>
-      <span
+    <el-tabs
+      :model-value="activeCategory ?? '__all__'"
+      type="card"
+      @update:model-value="(val: string | number) => $emit('select', val === '__all__' ? null : val as string)"
+    >
+      <el-tab-pane name="__all__">
+        <template #label>
+          <span class="ft-dot" style="background: var(--accent)"></span>
+          全部
+          <span class="ft-n">{{ bookmarks.length }}</span>
+        </template>
+      </el-tab-pane>
+      <el-tab-pane
         v-for="category in categories"
         :key="category"
-        :class="['f-tab-wrap', { active: activeCategory === category }]"
+        :name="category"
       >
-        <button class="f-tab" @click="$emit('select', category)">
+        <template #label>
           <span
             class="ft-dot"
             :style="{ background: CATEGORY_COLORS[category] || 'var(--muted)' }"
           ></span>
           <span class="ft-name">{{ category }}</span>
           <span class="ft-n">{{ categoryCounts[category] ?? 0 }}</span>
-        </button>
-        <button
-          v-if="category !== UNCATEGORIZED_CATEGORY"
-          class="ft-delete"
-          :aria-label="`删除分类 ${category}`"
-          :title="`删除分类 ${category}`"
-          @click="$emit('delete', category)"
-        >
-          ×
-        </button>
-      </span>
-    </div>
+          <el-tag
+            v-if="category !== UNCATEGORIZED_CATEGORY"
+            size="small"
+            closable
+            :disable-transitions="true"
+            style="margin-left: 4px"
+            @close.stop.prevent="$emit('delete', category)"
+          />
+        </template>
+      </el-tab-pane>
+    </el-tabs>
 
     <div class="filter-tools">
       <div v-if="tags.length" class="tag-strip" aria-label="标签筛选">
-        <button
-          :class="['tag-chip', { active: activeTag === null }]"
-          @click="$emit('selectTag', null)"
+        <el-check-tag
+          :checked="activeTag === null"
+          @change="$emit('selectTag', null)"
         >
           全部标签
-        </button>
-        <button
+        </el-check-tag>
+        <el-check-tag
           v-for="tag in tags.slice(0, 12)"
           :key="tag.name"
-          :class="['tag-chip', { active: activeTag === tag.name }]"
-          @click="$emit('selectTag', tag.name)"
+          :checked="activeTag === tag.name"
+          @change="$emit('selectTag', tag.name)"
         >
           #{{ tag.name }}
-          <span>{{ tag.count }}</span>
-        </button>
+          <span style="opacity: 0.6; margin-left: 2px">{{ tag.count }}</span>
+        </el-check-tag>
       </div>
 
-      <div class="sort-tabs" aria-label="书签排序">
-        <button
+      <el-radio-group
+        :model-value="sortMode"
+        size="small"
+        @update:model-value="(val: string | number | boolean) => $emit('updateSort', val as BookmarkSortMode)"
+      >
+        <el-radio-button
           v-for="option in sortOptions"
           :key="option.value"
-          :class="{ active: sortMode === option.value }"
-          @click="$emit('updateSort', option.value)"
+          :value="option.value"
         >
           {{ option.label }}
-        </button>
-      </div>
+        </el-radio-button>
+      </el-radio-group>
     </div>
   </div>
 </template>

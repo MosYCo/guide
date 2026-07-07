@@ -22,31 +22,30 @@ const formatTime = (value: string) => {
 </script>
 
 <template>
-  <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div
-      class="modal manager-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="backup-panel-title"
-    >
-      <h3 id="backup-panel-title">备份恢复</h3>
-      <div v-if="!backups.length" class="manager-empty">
-        还没有备份。执行删除、批量操作或分类调整后会自动生成。
-      </div>
-      <div v-else class="manager-list">
-        <div v-for="backup in backups" :key="backup.id" class="manager-row">
-          <div class="manager-main">
-            <span class="manager-name">{{ backup.label }}</span>
-            <span class="manager-meta"
-              >{{ formatTime(backup.createdAt) }} · {{ backup.bookmarks.length }} 个书签</span
-            >
-          </div>
-          <button class="mini-btn" @click="$emit('restore', backup.id)">恢复</button>
-        </div>
-      </div>
-      <div class="modal-ft">
-        <button class="btn btn-acc" @click="$emit('close')">完成</button>
-      </div>
-    </div>
-  </div>
+  <el-dialog
+    :model-value="open"
+    title="备份恢复"
+    width="760px"
+    :close-on-click-modal="true"
+    @close="$emit('close')"
+  >
+    <el-empty v-if="!backups.length" description="还没有备份。执行删除、批量操作或分类调整后会自动生成。" />
+    <el-table v-else :data="backups" stripe>
+      <el-table-column prop="label" label="备份名称" min-width="160" />
+      <el-table-column label="时间" min-width="140">
+        <template #default="{ row }">{{ formatTime(row.createdAt) }}</template>
+      </el-table-column>
+      <el-table-column label="书签数" width="100" align="center">
+        <template #default="{ row }">{{ row.bookmarks.length }}</template>
+      </el-table-column>
+      <el-table-column label="操作" width="100" align="center">
+        <template #default="{ row }">
+          <el-button type="primary" size="small" @click="$emit('restore', row.id)">恢复</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <template #footer>
+      <el-button type="primary" @click="$emit('close')">完成</el-button>
+    </template>
+  </el-dialog>
 </template>

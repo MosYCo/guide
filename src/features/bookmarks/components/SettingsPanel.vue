@@ -28,61 +28,55 @@ const formatBytes = (value: number) => {
 </script>
 
 <template>
-  <div v-if="open" class="overlay open" @click.self="$emit('close')">
-    <div
-      class="modal manager-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-panel-title"
-    >
-      <h3 id="settings-panel-title">设置</h3>
-
-      <div class="settings-block">
-        <div class="settings-title">图标来源</div>
-        <div class="segmented">
-          <button
-            v-for="mode in iconModes"
-            :key="mode.value"
-            :class="['segmented-btn', { active: settings.iconMode === mode.value }]"
-            type="button"
-            @click="$emit('updateIconMode', mode.value)"
-          >
-            <span>{{ mode.label }}</span>
-            <small>{{ mode.meta }}</small>
-          </button>
-        </div>
-      </div>
-
-      <div class="settings-block">
-        <div class="settings-title">本地存储</div>
-        <div
-          class="storage-meter"
-          :title="`${formatBytes(storageUsage.usedBytes)} / ${formatBytes(storageUsage.quotaBytes)}`"
-        >
-          <span :style="{ width: `${storageUsage.percent}%` }"></span>
-        </div>
-        <div class="settings-meta">
-          {{ formatBytes(storageUsage.usedBytes) }} / {{ formatBytes(storageUsage.quotaBytes) }}
-        </div>
-      </div>
-
-      <div class="manager-row">
-        <div class="manager-main">
-          <span class="manager-name">自动备份</span>
-          <span class="manager-meta">{{ backupCount }} 个快照</span>
-        </div>
-        <button
-          class="mini-btn danger"
-          :disabled="backupCount === 0"
-          @click="$emit('clearBackups')"
-        >
-          清空备份
-        </button>
-      </div>
-
-      <div class="modal-ft">
-        <button class="btn btn-acc" @click="$emit('close')">完成</button>
-      </div>
+  <el-dialog
+    :model-value="open"
+    title="设置"
+    width="760px"
+    :close-on-click-modal="true"
+    @close="$emit('close')"
+  >
+    <div class="settings-block">
+      <div class="settings-title">图标来源</div>
+      <el-segmented
+        :model-value="settings.iconMode"
+        :options="iconModes.map((m) => ({ ...m, value: m.value }))"
+        @change="(val: any) => $emit('updateIconMode', val as BookmarkIconMode)"
+      >
+        <template #default="{ item }">
+          <div style="padding: 4px 8px; text-align: center">
+            <div style="font-weight: 700; font-size: 14px">{{ (item as any).label }}</div>
+            <div style="font-size: 12px; color: var(--el-text-color-secondary)">
+              {{ (item as any).meta }}
+            </div>
+          </div>
+        </template>
+      </el-segmented>
     </div>
-  </div>
+
+    <div class="settings-block">
+      <div class="settings-title">本地存储</div>
+      <el-progress
+        :percentage="storageUsage.percent"
+        :stroke-width="10"
+        :format="() => `${formatBytes(storageUsage.usedBytes)} / ${formatBytes(storageUsage.quotaBytes)}`"
+      />
+    </div>
+
+    <el-descriptions :column="1" border>
+      <el-descriptions-item label="自动备份">
+        {{ backupCount }} 个快照
+        <el-button
+          size="small"
+          type="danger"
+          :disabled="backupCount === 0"
+          style="margin-left: 12px"
+          @click="$emit('clearBackups')"
+        >清空备份</el-button>
+      </el-descriptions-item>
+    </el-descriptions>
+
+    <template #footer>
+      <el-button type="primary" @click="$emit('close')">完成</el-button>
+    </template>
+  </el-dialog>
 </template>
