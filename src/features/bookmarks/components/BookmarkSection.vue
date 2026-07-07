@@ -40,8 +40,8 @@ defineEmits<{
     <el-collapse
       v-else
       :model-value="groups.filter((g) => !collapsedCategories[g.name]).map((g) => g.name)"
-      @update:model-value="(val: string | string[]) => {
-        const open = Array.isArray(val) ? val : [val]
+      @update:model-value="(val: any) => {
+        const open: string[] = Array.isArray(val) ? val : [val]
         groups.forEach((g) => {
           const isOpen = open.includes(g.name)
           if (isOpen === !!collapsedCategories[g.name]) $emit('toggle', g.name)

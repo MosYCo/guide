@@ -95,7 +95,7 @@ const categoryCounts = computed(() => {
       <el-radio-group
         :model-value="sortMode"
         size="small"
-        @update:model-value="(val: string | number | boolean) => $emit('updateSort', val as BookmarkSortMode)"
+        @update:model-value="(val: any) => $emit('updateSort', val as BookmarkSortMode)"
       >
         <el-radio-button
           v-for="option in sortOptions"

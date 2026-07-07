@@ -259,7 +259,7 @@ watch(items, () => {
           placeholder="搜索书签、分类、标签或命令"
           autocomplete="off"
           spellcheck="false"
-          @keydown="handleKeydown"
+          @keydown="(e: any) => handleKeydown(e)"
         />
       </div>
     </template>
