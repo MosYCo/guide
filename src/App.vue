@@ -283,12 +283,6 @@ const handleBulkMove = (category: string) => {
   clearSelection()
 }
 
-const handleBulkMoveChange = (event: Event) => {
-  const select = event.target as HTMLSelectElement
-  handleBulkMove(select.value)
-  select.value = ''
-}
-
 const handleBulkPin = (pin: boolean) => {
   const result = bulkSetPinned(selectedIds.value, pin)
   if (!result.ok) {
@@ -606,8 +600,8 @@ onBeforeUnmount(() => {
   <div class="shell">
     <div v-if="updateRegistration" class="update-banner">
       <span>发现新版本</span>
-      <button class="mini-btn" @click="applyAppUpdate">刷新</button>
-      <button class="mini-btn" @click="updateRegistration = null">稍后</button>
+      <el-button size="small" type="primary" @click="applyAppUpdate">刷新</el-button>
+      <el-button size="small" @click="updateRegistration = null">稍后</el-button>
     </div>
 
     <AppTopbar
@@ -639,23 +633,24 @@ onBeforeUnmount(() => {
 
     <div v-if="selectedIds.length" class="bulk-bar">
       <span>已选择 {{ selectedIds.length }} 个</span>
-      <select @change="handleBulkMoveChange">
-        <option value="">移动到分类...</option>
-        <option v-for="category in categories" :key="category" :value="category">
-          {{ category }}
-        </option>
-      </select>
-      <button class="btn" @click="handleBulkPin(true)">固定 Dock</button>
-      <button class="btn" @click="handleBulkPin(false)">取消 Dock</button>
-      <button class="btn" @click="handleExportSelected">导出选中</button>
-      <button class="btn" @click="handleExportSelectedHtml">导出 HTML</button>
-      <button
-        class="btn btn-danger"
-        @click="handleBulkDelete"
+      <el-select
+        placeholder="移动到分类..."
+        style="width: 130px"
+        @update:model-value="(val: string) => { if (val) handleBulkMove(val) }"
       >
-        删除
-      </button>
-      <button class="btn" @click="clearSelection">取消选择</button>
+        <el-option
+          v-for="category in categories"
+          :key="category"
+          :label="category"
+          :value="category"
+        />
+      </el-select>
+      <el-button size="small" @click="handleBulkPin(true)">固定 Dock</el-button>
+      <el-button size="small" @click="handleBulkPin(false)">取消 Dock</el-button>
+      <el-button size="small" @click="handleExportSelected">导出选中</el-button>
+      <el-button size="small" @click="handleExportSelectedHtml">导出 HTML</el-button>
+      <el-button size="small" type="danger" @click="handleBulkDelete">删除</el-button>
+      <el-button size="small" @click="clearSelection">取消选择</el-button>
     </div>
 
     <HeroDock
