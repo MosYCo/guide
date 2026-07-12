@@ -3,13 +3,23 @@
 :root {
   --r: 8px;
   --rl: 12px;
+  --r-xs: 5px;
+  --r-sm: 6px;
+  --r-md: 10px;
+
+  /* Type scale, 15px root; floor is 11px for legibility */
+  --fs-2xs: 0.7333rem; /* 11px */
+  --fs-xs: 0.8rem; /* 12px */
+  --fs-sm: 0.8667rem; /* 13px */
+  --fs-md: 0.9333rem; /* 14px */
+  --fs-lg: 1rem; /* 15px */
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-o: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --t: 0.18s;
-  --fd: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --fb: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --fm: 'JetBrains Mono', 'SF Mono', 'Fira Code', ui-monospace, monospace;
+  --fd: 'Inter Variable', 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
+  --fb: 'Inter Variable', 'Inter', 'SF Pro Text', -apple-system, system-ui, sans-serif;
+  --fm: 'JetBrains Mono Variable', 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
 }
 
 *,
@@ -42,7 +52,8 @@ body.noise-ready::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  /* Above the page chrome, below bulk bar / banners / Element Plus popups */
+  z-index: 300;
   pointer-events: none;
   opacity: var(--noise-o);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -69,6 +80,25 @@ a {
   white-space: nowrap;
   border: 0;
   clip: rect(0 0 0 0);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 button,
@@ -113,18 +143,6 @@ select {
 
   to {
     opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 

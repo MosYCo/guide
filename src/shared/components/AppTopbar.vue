@@ -18,7 +18,7 @@ defineProps<{
   canUndo: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   add: []
   openCommands: []
   manageCategories: []
@@ -34,6 +34,21 @@ defineEmits<{
   toggleHelp: []
   cycleTheme: []
 }>()
+
+const menuActions = {
+  manageCategories: () => emit('manageCategories'),
+  openCleanup: () => emit('openCleanup'),
+  openBackups: () => emit('openBackups'),
+  openSettings: () => emit('openSettings'),
+  toggleHelp: () => emit('toggleHelp'),
+  import: () => emit('import'),
+  export: () => emit('export'),
+  exportHtml: () => emit('exportHtml'),
+} as const
+
+const handleMenuCommand = (command: string) => {
+  menuActions[command as keyof typeof menuActions]?.()
+}
 </script>
 
 <template>
@@ -71,62 +86,27 @@ defineEmits<{
           <path d="M4 9h10a6 6 0 0 1 0 12h-1" />
         </svg>
       </el-button>
-      <el-button title="分类管理" circle @click="$emit('manageCategories')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M4 7h16M4 12h16M4 17h16" />
-          <circle cx="8" cy="7" r="2" />
-          <circle cx="14" cy="12" r="2" />
-          <circle cx="10" cy="17" r="2" />
-        </svg>
-      </el-button>
-      <el-button title="整理工具" circle @click="$emit('openCleanup')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M4 7h16" />
-          <path d="M7 12h10" />
-          <path d="M10 17h4" />
-        </svg>
-      </el-button>
-      <el-button title="备份恢复" circle @click="$emit('openBackups')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M3 12a9 9 0 109-9" />
-          <path d="M3 3v6h6" />
-          <path d="M12 7v5l3 2" />
-        </svg>
-      </el-button>
-      <el-button title="设置" circle @click="$emit('openSettings')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1Z" />
-        </svg>
-      </el-button>
-      <el-button title="键盘快捷键" circle @click="$emit('toggleHelp')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
-          <rect x="2" y="4" width="20" height="16" rx="2" />
-          <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10" />
-        </svg>
-      </el-button>
-      <el-button title="导入 JSON" @click="$emit('import')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-        <span class="lbl">导入</span>
-      </el-button>
-      <el-button title="导出 JSON" @click="$emit('export')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
-        <span class="lbl">导出</span>
-      </el-button>
-      <el-button title="导出浏览器书签 HTML" circle @click="$emit('exportHtml')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13">
-          <path d="M4 4h16v16H4z" />
-          <path d="M8 8h8M8 12h8M8 16h5" />
-        </svg>
-      </el-button>
+      <el-dropdown trigger="click" @command="handleMenuCommand">
+        <el-button title="更多操作" circle aria-label="更多操作">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+            <circle cx="5" cy="12" r="1.6" />
+            <circle cx="12" cy="12" r="1.6" />
+            <circle cx="19" cy="12" r="1.6" />
+          </svg>
+        </el-button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="manageCategories">分类管理</el-dropdown-item>
+            <el-dropdown-item command="openCleanup">整理工具</el-dropdown-item>
+            <el-dropdown-item command="openBackups">备份恢复</el-dropdown-item>
+            <el-dropdown-item command="openSettings">设置</el-dropdown-item>
+            <el-dropdown-item command="toggleHelp">键盘快捷键</el-dropdown-item>
+            <el-dropdown-item command="import" divided>导入书签…</el-dropdown-item>
+            <el-dropdown-item command="export">导出 JSON</el-dropdown-item>
+            <el-dropdown-item command="exportHtml">导出浏览器书签 HTML</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
       <el-button type="primary" @click="$emit('add')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="13" height="13">
           <line x1="12" y1="5" x2="12" y2="19" />

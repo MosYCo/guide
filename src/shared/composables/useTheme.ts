@@ -4,15 +4,18 @@ export interface ThemeDefinition {
   id: string
   label: string
   icon: 'sun' | 'zap' | 'moon' | 'sunrise'
+  dark: boolean
+  /** Approximation of the theme's --bg, for the browser chrome (meta theme-color). */
+  chromeColor: string
 }
 
 const THEME_STORAGE_KEY = 'guide_theme'
 
 export const themes: ThemeDefinition[] = [
-  { id: 'light', label: '浅色', icon: 'sunrise' },
-  { id: 'dark-amber', label: '深色 · 琥珀', icon: 'sun' },
-  { id: 'cyber-teal', label: '赛博 · 青', icon: 'zap' },
-  { id: 'ink-mono', label: '墨 · 单色', icon: 'moon' },
+  { id: 'light', label: '浅色', icon: 'sunrise', dark: false, chromeColor: '#f5f5f7' },
+  { id: 'dark-amber', label: '深色 · 琥珀', icon: 'sun', dark: true, chromeColor: '#121317' },
+  { id: 'cyber-teal', label: '赛博 · 青', icon: 'zap', dark: true, chromeColor: '#0e1016' },
+  { id: 'ink-mono', label: '墨 · 单色', icon: 'moon', dark: true, chromeColor: '#0d0d0d' },
 ]
 
 const getInitialTheme = () => {
@@ -30,7 +33,13 @@ export const useTheme = () => {
   )
 
   const applyTheme = () => {
-    document.documentElement.setAttribute('data-theme', themeId.value)
+    const theme = currentTheme.value
+    document.documentElement.setAttribute('data-theme', theme.id)
+    // Element Plus dark tokens activate on html.dark
+    document.documentElement.classList.toggle('dark', theme.dark)
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme.chromeColor)
   }
 
   const saveTheme = () => {
