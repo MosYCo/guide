@@ -1,7 +1,17 @@
-const CACHE_NAME = 'navhub-guide-v2'
+// Both values are injected at build time by the sw-precache-manifest plugin in
+// vite.config.ts: the full list of built asset URLs and a content hash used to
+// version the cache. The fallbacks only apply when serving the raw public/ file.
+self.__PRECACHE_MANIFEST = null
+self.__CACHE_VERSION = null
+
 const APP_BASE = new URL(self.registration.scope).pathname
 const APP_ORIGIN = self.location.origin
-const APP_SHELL = [APP_BASE, `${APP_BASE}favicon.png`, `${APP_BASE}manifest.webmanifest`]
+const CACHE_NAME = `navhub-guide-${self.__CACHE_VERSION ?? 'dev'}`
+const APP_SHELL = self.__PRECACHE_MANIFEST ?? [
+  APP_BASE,
+  `${APP_BASE}favicon.png`,
+  `${APP_BASE}manifest.webmanifest`,
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)))
