@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { BOOKMARK_STORAGE_KEY, SETTINGS_STORAGE_KEY, UNDO_STORAGE_KEY } from '../constants'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { BACKUP_STORAGE_KEY, BOOKMARK_STORAGE_KEY, SETTINGS_STORAGE_KEY, UNDO_STORAGE_KEY } from '../constants'
 import type { Bookmark } from '../types'
 import { useBookmarks } from './useBookmarks'
 
@@ -148,5 +148,76 @@ describe('useBookmarks', () => {
     expect(bookmarks.value.find((bookmark) => bookmark.id === 'c')?.pin).toBe(false)
     expect(undoSnapshots.value).toHaveLength(0)
     expect(JSON.parse(localStorage.getItem(UNDO_STORAGE_KEY) ?? '[]')).toHaveLength(0)
+  })
+
+  it('imports JSON bookmarks with added/updated/skipped counts and a pre-import backup', () => {
+    const { bookmarks, backups, importBookmarks } = useBookmarks()
+
+    const result = importBookmarks(
+      JSON.stringify([
+        { ...seedBookmarks[0], title: 'Alpha Renamed' },
+        seedBookmarks[2],
+        {
+          id: 'e',
+          title: 'Delta',
+          url: 'https://delta.example/',
+          cat: 'Other',
+          icon: '',
+          faviconUrl: '',
+          pin: false,
+        },
+      ]),
+    )
+
+    expect(result).toEqual({ ok: true, added: 1, updated: 1, skipped: 1 })
+    expect(bookmarks.value.find((bookmark) => bookmark.id === 'a')?.title).toBe('Alpha Renamed')
+    expect(bookmarks.value.some((bookmark) => bookmark.url === 'https://delta.example/')).toBe(true)
+    expect(backups.value[0]?.label).toBe('导入前备份')
+    expect(JSON.parse(localStorage.getItem(BACKUP_STORAGE_KEY) ?? '[]')).toHaveLength(1)
+  })
+
+  it('imports HTML bookmarks without clobbering pin state of existing entries', () => {
+    const { bookmarks, importBookmarks } = useBookmarks()
+
+    const result = importBookmarks(
+      `<DL><p>
+        <DT><H3>Imported</H3>
+        <DL><p>
+          <DT><A HREF="https://alpha.example/">Alpha From HTML</A>
+          <DT><A HREF="https://new.example/">Brand New</A>
+        </DL><p>
+      </DL><p>`,
+    )
+
+    expect(result).toEqual({ ok: true, added: 1, updated: 1, skipped: 0 })
+    const alpha = bookmarks.value.find((bookmark) => bookmark.url === 'https://alpha.example/')
+    expect(alpha?.title).toBe('Alpha From HTML')
+    expect(alpha?.pin).toBe(true)
+  })
+
+  it('rolls back memory state when persisting fails', () => {
+    const { bookmarks, undoSnapshots, bulkDelete } = useBookmarks()
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('QuotaExceededError')
+    })
+
+    const result = bulkDelete(['a', 'b'])
+
+    setItem.mockRestore()
+    expect(result).toEqual({ ok: false, reason: '保存失败：浏览器存储空间不足或不可用' })
+    expect(bookmarks.value).toHaveLength(4)
+    expect(undoSnapshots.value).toHaveLength(0)
+    expect(JSON.parse(localStorage.getItem(BOOKMARK_STORAGE_KEY) ?? '[]')).toHaveLength(4)
+  })
+
+  it('skips rewriting unchanged storage keys', () => {
+    const { recordBookmarkVisit } = useBookmarks()
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
+
+    expect(recordBookmarkVisit('a').ok).toBe(true)
+
+    const writtenKeys = setItem.mock.calls.map(([key]) => key)
+    setItem.mockRestore()
+    expect(writtenKeys).toEqual([BOOKMARK_STORAGE_KEY])
   })
 })

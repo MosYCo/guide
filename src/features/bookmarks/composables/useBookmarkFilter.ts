@@ -37,7 +37,7 @@ const saveSearchHistory = (history: string[]) => {
   }
 }
 
-const fuzzyIncludes = (text: string, query: string) => {
+export const fuzzyIncludes = (text: string, query: string) => {
   if (text.includes(query)) return true
 
   let queryIndex = 0
@@ -55,7 +55,7 @@ const getTime = (value?: string) => {
   return Number.isNaN(time) ? 0 : time
 }
 
-const parseQuery = (query: string) => {
+export const parseQuery = (query: string) => {
   const filters: Partial<Record<'title' | 'domain' | 'category' | 'tag' | 'url', string[]>> = {}
   const terms: string[] = []
   const tokens = query.match(/"[^"]+"|\S+/g) ?? []
@@ -105,19 +105,21 @@ const matchesField = (value: string, queries?: string[]) => {
   return queries.every((query) => fuzzyIncludes(normalizedValue, query.toLowerCase()))
 }
 
-const getSortWeight = (bookmark: Bookmark) => {
+const getSortWeight = (bookmark: Bookmark, now: number) => {
   const visits = bookmark.visits ?? 0
   const lastVisitedAt = getTime(bookmark.lastVisitedAt)
-  const recency = lastVisitedAt ? Math.max(0, 30 - (Date.now() - lastVisitedAt) / 86_400_000) : 0
+  const recency = lastVisitedAt ? Math.max(0, 30 - (now - lastVisitedAt) / 86_400_000) : 0
   return visits * 8 + recency
 }
 
-const sortBookmarks = (bookmarks: Bookmark[], mode: BookmarkSortMode) => {
+export const sortBookmarks = (bookmarks: Bookmark[], mode: BookmarkSortMode) => {
   if (mode === 'default') return bookmarks
+
+  const now = Date.now()
 
   return [...bookmarks].sort((bookmarkA, bookmarkB) => {
     if (mode === 'smart') {
-      const smartDiff = getSortWeight(bookmarkB) - getSortWeight(bookmarkA)
+      const smartDiff = getSortWeight(bookmarkB, now) - getSortWeight(bookmarkA, now)
       if (smartDiff !== 0) return smartDiff
     }
 
