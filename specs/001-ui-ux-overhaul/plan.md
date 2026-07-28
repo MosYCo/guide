@@ -1,113 +1,98 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: 前端显示层 UI/UX 系统性优化
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `001-ui-ux-overhaul` | **Date**: 2026-07-28 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Input**: Feature specification from `/specs/001-ui-ux-overhaul/spec.md`
 
 **Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+对书签导航应用前端显示层做四维度系统性优化:视觉(色彩/字体/圆角阴影 token 化、状态反馈统一)、交互(整卡单击即开、Ctrl+K 全屏命令面板、侧栏可折叠、破坏性确认与 toast 一致)、适配(Tailwind 默认断点梯度、44px 触摸热区、宽度驱动横竖屏、移动端底部 Tab+侧滑抽屉)、性能(LCP<1.5s/TTI<2s/INP<200ms/CLS<0.1、favicon 原生懒加载+虚拟滚动、纯 CSR)。硬约束:不改整体框架、不换 UI 组件库、不改数据存储方式。
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: TypeScript 5.6 + React 18.3(现有)
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: Vite 5.4、Tailwind CSS 3.4 + shadcn/ui(Radix UI)、idb 8(现有,不改)
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: IndexedDB(现有 `bookmark-navigation` 库,不改 schema;详见 [data-model.md](./data-model.md))
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: Vitest(单元/集成)+ Playwright(E2E);现有 `tests/unit`、`tests/integration`、`tests/e2e`(详见 [quickstart.md](./quickstart.md))
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: 现代浏览器(桌面/平板/手机),离线可用(IndexedDB + 纯 CSR)
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: 纯前端 SPA(Vite),无后端
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: 首屏 LCP < 1.5s、TTI < 2s(中端移动 + 3G 慢速模拟)、INP < 200ms、CLS < 0.1(500+ 书签数据集);滚动 60fps
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: 硬约束"沿用当前设计"= 不改整体框架、不换 UI 组件库、不改数据存储;WCAG AA(对比度 4.5:1/3:1)+ WCAG 2.5.5(触摸热区 44×44px);纯 CSR 不做 SSR/预渲染
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: 500+ 书签大数据量验收;单仓单前端项目(`src/` + `tests/`)
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+对照 [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) v1.0.0:
+
+- **I. 先思考再编码**: ✅ 通过。spec 经四轮 clarify 显式澄清视觉/交互/适配/性能四层假设;矛盾陈述(Assumptions 过时条目)已识别并在本次 plan 前清理。无默默假设。
+- **II. 简洁优先**: ✅ 通过。优化范围严格限定四维度,无投机性特性;渲染策略选纯 CSR 而非 SSR/预渲染(最小复杂度);命令面板是用户显式选择,非代理擅自扩展。
+- **III. 外科手术式改动**: ✅ 通过。硬约束"不改框架/不换库/不改存储"与"两套布局分支结构不改"直接对应;每条 FR 可追溯到 clarify 决议。无无关重构。
+- **IV. 目标驱动执行**: ✅ 通过。每维度均有可测量成功标准(SC-001~006)与验收脚本(见 quickstart.md)。
+
+**结论**: 无门违例,无需 Complexity Tracking 记录。
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+specs/001-ui-ux-overhaul/
+├── plan.md              # 本文件(/speckit-plan 输出)
+├── research.md          # Phase 0 输出(/speckit-plan)
+├── data-model.md        # Phase 1 输出(/speckit-plan)—— 展示层约束增量
+├── quickstart.md        # Phase 1 输出(/speckit-plan)
+├── contracts/           # Phase 1 输出(/speckit-plan)
+│   └── ui-contract.md   # 视觉 token / 状态组件 / 命令面板契约
+└── tasks.md             # Phase 2 输出(/speckit-tasks —— 本次不创建)
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+├── styles/                  # 新增:设计 token 集中处
+│   └── tokens.css           # 色彩语义色阶 / type scale / elevation / 触摸热区
+├── components/
+│   ├── ui/                  # shadcn 基础组件(现有,补 44px 热区与状态变体)
+│   │   ├── skeleton.tsx     # 复用为统一加载占位
+│   │   ├── toast.tsx        # 补语义色变体
+│   │   └── dialog.tsx       # 命令面板容器复用
+│   ├── bookmark/
+│   │   ├── BookmarkCard.tsx     # 强化悬停/聚焦反馈(FR-007)
+│   │   ├── BookmarkGrid.tsx     # 接虚拟滚动(FR-018)
+│   │   ├── BookmarkSearch.tsx  # 改为命令面板触发器(FR-008)
+│   │   └── CommandPalette.tsx  # 新增:全屏命令面板
+│   ├── category/
+│   │   ├── CategoryNav.tsx      # PC 侧栏可折叠 + 移动端底部 Tab+抽屉(FR-009/014)
+│   │   └── CategoryDrawer.tsx  # 新增:移动端侧滑抽屉
+│   └── layout/
+│       ├── AppLayout.tsx        # 断点分支沿用,补中间档
+│       └── Header.tsx           # FOUC 防护内联脚本接入点
+├── hooks/
+│   ├── useTheme.ts         # FOUC 防护(FR-017)
+│   ├── useMediaQuery.ts    # 断点沿用 lg 1024,补 md 768 查询
+│   └── useVirtualList.ts   # 新增:虚拟滚动 hook(FR-018)
+├── lib/
+│   └── utils.ts            # 现有 cn,沿用
+└── index.css              # 接入 tokens.css,语义色阶与 elevation 变量
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: 沿用现有单前端项目结构(`src/` + `tests/`),不引入 monorepo或多包。新增 `src/styles/tokens.css`(设计 token 集中)与三个新组件(`CommandPalette`、`CategoryDrawer`、`useVirtualList`),其余为既有文件增量改。
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+无门违例,本表留空。
