@@ -124,7 +124,7 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={handleExport} className="gap-1">
+      <Button variant="ghost" size="sm" onClick={handleExport} className="focus-ring min-h-11 gap-1">
         <Download className="h-4 w-4" />
         <span className="hidden sm:inline">导出</span>
       </Button>
@@ -132,7 +132,7 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
         variant="ghost"
         size="sm"
         onClick={() => fileInputRef.current?.click()}
-        className="gap-1"
+        className="focus-ring min-h-11 gap-1"
       >
         <Upload className="h-4 w-4" />
         <span className="hidden sm:inline">导入</span>

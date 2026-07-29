@@ -96,8 +96,9 @@
 | 项 | 契约 | FR |
 |---|---|---|
 | 三态 | light/dark/system + matchMedia 监听(沿用 `useTheme`) | FR-017 |
-| FOUC 防护 | `index.html` `<head>` 内联阻塞脚本:读 localStorage 主题 → 在 React 挂载前设 `.dark` class | FR-017 |
-| 切换 | `ThemeToggle` 三态循环,`aria-label` 含当前态 | FR-005 |
+| 主题键名 | localStorage 键 `bookmark-theme`(单一事实源,见 `@/utils/storage` 的 `THEME_KEY`);内联脚本与 hook MUST 共用此键名 | FR-017 |
+| FOUC 防护 | `index.html` `<head>` 内联阻塞脚本:读 localStorage 键 `bookmark-theme` → 在 React 挂载前设 `.dark` class | FR-017 |
+| 切换 | `ThemeToggle` 三态循环,`aria-label` 含当前态;用户切换时由 `useTheme` 调 `applyTheme` 设 class(挂载时不重复 apply,由内联脚本前置) | FR-005/017 |
 | 无闪烁 | 首屏渲染前主题已定,无亮→暗闪(SC-005) | FR-017 |
 
 ---

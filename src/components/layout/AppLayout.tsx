@@ -1,8 +1,11 @@
 /**
  * AppLayout 组件 - 响应式布局容器
- * PC: 左侧 CategoryNav(240px) + 右侧内容区
- * 移动端: 顶部 Header + 顶部 CategoryNav(标签栏) + 内容区
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §AppLayout
+ * PC(≥lg 1024): 左侧 CategoryNav + 右侧内容区
+ * 平板(md 768–1023): 同 PC 但侧栏收窄 + 内容区留白调整
+ * 移动端(<md 768): 顶部 Header + 底部 Tab(由 CategoryNav 渲染) + 内容区
+ * T019: 补 md 768 平板中间档;横竖屏靠宽度驱动,不监听 orientation(FR-011)
+ * 折叠态:aside 宽度随 collapsed 收窄(状态由 App 上提,AppLayout 受控)
+ * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §9
  */
 
 import type { ReactNode } from 'react'
@@ -13,17 +16,26 @@ export interface AppLayoutProps {
   header: ReactNode
   categoryNav: ReactNode
   children: ReactNode
+  /** PC 侧栏是否折叠(收起为图标列) */
+  collapsed?: boolean
 }
 
-export function AppLayout({ header, categoryNav, children }: AppLayoutProps) {
-  const { isPC } = useMediaQuery()
+export function AppLayout({ header, categoryNav, children, collapsed }: AppLayoutProps) {
+  const { isPC, isTablet } = useMediaQuery()
 
-  if (isPC) {
+  // PC 与平板共用侧栏布局,宽度据折叠态切换
+  if (isPC || isTablet) {
     return (
       <div className="flex min-h-screen flex-col">
         {header}
         <div className="flex flex-1 overflow-hidden">
-          <aside className="w-60 shrink-0 border-r border-border bg-card/50">
+          <aside
+            className={cn(
+              'shrink-0 border-r border-border bg-card/50 transition-[width] duration-200',
+              // 折叠态收窄为图标列宽度;展开态平板/PC 差异
+              collapsed ? 'w-16' : isTablet ? 'w-52' : 'w-60',
+            )}
+          >
             {categoryNav}
           </aside>
           <main className="flex-1 overflow-auto p-4">{children}</main>
@@ -32,13 +44,13 @@ export function AppLayout({ header, categoryNav, children }: AppLayoutProps) {
     )
   }
 
+  // 移动端:顶部 Header + 内容区 + 底部 Tab(由 CategoryNav 渲染)
   return (
     <div className="flex min-h-screen flex-col">
       {header}
-      <nav className={cn('border-b border-border bg-card/50 px-2 py-2')}>
-        {categoryNav}
-      </nav>
       <main className="flex-1 overflow-auto p-3 pb-20">{children}</main>
+      {/* 底部固定 Tab 由 CategoryNav 渲染(FR-014) */}
+      {categoryNav}
     </div>
   )
 }

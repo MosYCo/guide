@@ -68,7 +68,7 @@ export function CategoryForm({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>{isEdit ? '重命名分类' : '新建分类'}</DialogTitle>
+          <DialogTitle className="text-h1">{isEdit ? '重命名分类' : '新建分类'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -88,7 +88,7 @@ export function CategoryForm({
               aria-describedby={error ? 'category-error' : undefined}
             />
             {error && (
-              <p id="category-error" className="text-sm text-destructive">
+              <p id="category-error" className="text-caption text-destructive">
                 {error}
               </p>
             )}

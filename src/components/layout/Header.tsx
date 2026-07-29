@@ -1,10 +1,11 @@
 /**
  * Header 组件 - 顶部导航栏
  * 包含主题切换、操作按钮（添加书签、导入导出等）
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §Header
+ * T011: 落地 type scale / elevation / focus ring token
+ * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §1
  */
 
-import { Moon, Sun, Plus, Monitor } from 'lucide-react'
+import { Moon, Sun, Plus, Monitor, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -21,6 +22,7 @@ export interface HeaderProps {
   onThemeChange: (theme: Theme) => void
   onAddBookmark: () => void
   onDataChanged: () => Promise<void> | void
+  onOpenSearch: () => void
 }
 
 function ThemeToggle({
@@ -46,6 +48,7 @@ function ThemeToggle({
             variant="ghost"
             size="icon"
             onClick={() => onChange(next)}
+            className="focus-ring min-h-11 min-w-11"
             aria-label={`切换主题（当前：${label}）`}
           >
             {theme === 'system' ? (
@@ -67,22 +70,34 @@ export function Header({
   onThemeChange,
   onAddBookmark,
   onDataChanged,
+  onOpenSearch,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 flex h-16 items-center gap-2 border-b border-border bg-background/95 px-4 shadow-elevation-sm backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-primary">🔖 书签导航</span>
+        <span className="text-h1 font-bold text-primary">🔖 书签导航</span>
       </div>
       <div className="ml-auto flex items-center gap-1">
+        {/* 搜索入口:Header 图标按钮打开命令面板(FR-008);Ctrl+K 全局快捷键 */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onOpenSearch}
+          className="focus-ring min-h-11 min-w-11"
+          aria-label="搜索书签"
+          aria-keyshortcuts="Control+K Meta+K"
+        >
+          <Search className="h-5 w-5" />
+        </Button>
         <ImportExportButtons onDataChanged={onDataChanged} />
         <ThemeToggle
           theme={theme}
           resolvedTheme={resolvedTheme}
           onChange={onThemeChange}
         />
-        <Button onClick={onAddBookmark} size="sm" className="gap-1">
+        <Button onClick={onAddBookmark} size="sm" className="focus-ring gap-1">
           <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">添加书签</span>
+          <span className="text-body hidden sm:inline">添加书签</span>
         </Button>
       </div>
     </header>

@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { Bookmark } from '@/types'
 import { extractDomain } from '@/utils/url'
-import { fallbackIcon } from '@/services/favicon'
+import { fallbackIcon, getPlaceholderIcon } from '@/services/favicon'
 import { cn } from '@/lib/utils'
 
 export interface BookmarkCardProps {
@@ -46,6 +46,7 @@ export function BookmarkCard({
   onDragStart,
 }: BookmarkCardProps) {
   const [iconSrc, setIconSrc] = useState(bookmark.icon)
+  const [iconFailedOnce, setIconFailedOnce] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const domain = extractDomain(bookmark.url)
 
@@ -68,27 +69,40 @@ export function BookmarkCard({
       aria-label={`打开书签：${bookmark.name}`}
       className={cn(
         'group relative cursor-pointer transition-all',
-        'hover:-translate-y-0.5 hover:shadow-md',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'hover:-translate-y-0.5 hover:shadow-elevation-md',
+        'focus-ring',
       )}
     >
       <div className="flex flex-col items-center gap-2 p-3">
         <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded">
+          {/* T015/T024: favicon 原生懒加载 + 解码异步 + onError 二次降级(FR-018/016)
+           * 降级链:favicon 失败 → 首字母图标(getLetterIcon via fallbackIcon)→ 首字母也失败 → 纯色块(getPlaceholderIcon) */}
           <img
             src={iconSrc}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-8 w-8"
-            onError={() => setIconSrc(fallbackIcon(bookmark.name))}
+            onError={() => {
+              if (!iconFailedOnce) {
+                // 一次降级:首字母图标
+                setIconSrc(fallbackIcon(bookmark.name))
+                setIconFailedOnce(true)
+              } else {
+                // 二次降级:纯色块(首字母图标也失败)
+                setIconSrc(getPlaceholderIcon())
+              }
+            }}
           />
         </div>
         <p
-          className="line-clamp-1 w-full text-center text-sm font-medium"
+          className="text-body line-clamp-1 w-full text-center font-medium"
           title={bookmark.name}
         >
           {bookmark.name}
         </p>
         <p
-          className="line-clamp-1 w-full text-center text-xs text-muted-foreground"
+          className="text-caption line-clamp-1 w-full text-center text-muted-foreground"
           title={domain}
         >
           {domain}
@@ -100,7 +114,7 @@ export function BookmarkCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="focus-ring min-h-11 min-w-11 h-7 w-7 sm:min-h-7 sm:min-w-7"
               aria-label="更多操作"
               onClick={(e) => e.stopPropagation()}
             >

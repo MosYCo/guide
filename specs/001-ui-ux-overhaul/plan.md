@@ -14,7 +14,7 @@
 
 **Language/Version**: TypeScript 5.6 + React 18.3(现有)
 
-**Primary Dependencies**: Vite 5.4、Tailwind CSS 3.4 + shadcn/ui(Radix UI)、idb 8(现有,不改)
+**Primary Dependencies**: Vite 5.4、Tailwind CSS 3.4 + shadcn/ui(Radix UI)、idb 8(现有,不改);测试增量:`web-vitals`(性能 E2E 采集 LCP/TTI/INP/CLS,新增 devDependency)
 
 **Storage**: IndexedDB(现有 `bookmark-navigation` 库,不改 schema;详见 [data-model.md](./data-model.md))
 
@@ -63,7 +63,7 @@ specs/001-ui-ux-overhaul/
 ```text
 src/
 ├── styles/                  # 新增:设计 token 集中处
-│   └── tokens.css           # 色彩语义色阶 / type scale / elevation / 触摸热区
+│   └── tokens.css           # 色彩语义色阶 / type scale / elevation / focus ring 规范
 ├── components/
 │   ├── ui/                  # shadcn 基础组件(现有,补 44px 热区与状态变体)
 │   │   ├── skeleton.tsx     # 复用为统一加载占位
@@ -79,7 +79,7 @@ src/
 │   │   └── CategoryDrawer.tsx  # 新增:移动端侧滑抽屉
 │   └── layout/
 │       ├── AppLayout.tsx        # 断点分支沿用,补中间档
-│       └── Header.tsx           # FOUC 防护内联脚本接入点
+│       └── Header.tsx           # 主题切换按钮(FOUC 防护接入点为 index.html)
 ├── hooks/
 │   ├── useTheme.ts         # FOUC 防护(FR-017)
 │   ├── useMediaQuery.ts    # 断点沿用 lg 1024,补 md 768 查询
