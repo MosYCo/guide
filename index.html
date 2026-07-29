@@ -2,12 +2,33 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/guide/favicon.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
     <title>书签导航</title>
-    <script type="module" crossorigin src="/guide/assets/index-CjVRUlir.js"></script>
-    <link rel="stylesheet" crossorigin href="/guide/assets/index--MjJYVGY.css">
+    <!-- FR-017 FOUC 防护:在 React 挂载前读 localStorage 主题键 bookmark-theme
+         (单一事实源,见 @/utils/storage 的 THEME_KEY),提前设 .dark class,
+         避免首屏亮→暗闪烁。内联脚本无法 import 模块,故硬编码键名。 -->
+    <script>
+      ;(function () {
+        try {
+          var key = 'bookmark-theme'
+          var stored = localStorage.getItem(key)
+          var theme = stored // 'light' | 'dark' | 'system' | null
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+          var isDark =
+            theme === 'dark' || ((theme === 'system' || theme === null) && prefersDark)
+          if (isDark) document.documentElement.classList.add('dark')
+        } catch (e) {
+          /* localStorage 不可用(隐私模式)时静默降级 */
+        }
+      })()
+    </script>
+    <script type="module" crossorigin src="/guide/assets/index-C412EeZr.js"></script>
+    <link rel="modulepreload" crossorigin href="/guide/assets/radix-vendor-DsCA9z0c.js">
+    <link rel="stylesheet" crossorigin href="/guide/assets/index-w0ljrm_l.css">
   </head>
   <body>
     <div id="root"></div>
