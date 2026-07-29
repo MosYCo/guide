@@ -1,9 +1,11 @@
 /**
  * useTheme Hook - 暗黑模式管理
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §useTheme
+ * FR-017: 挂载时不重复 apply(由 index.html 内联脚本前置设 .dark,防 FOUC);
+ *         用户切换主题时仍由 hook 调 applyTheme 设 class(运行时切换生效)。
+ * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §6
  */
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ResolvedTheme, Theme } from '@/types'
 import { getStoredTheme, setStoredTheme } from '@/utils/storage'
 
@@ -32,10 +34,16 @@ export function useTheme(): UseThemeReturn {
     theme === 'system' ? getSystemTheme() : theme,
   )
 
+  // T006: 挂载时跳过 applyTheme(内联脚本已前置设 class,防 FOUC);
+  // 仅同步 resolvedTheme 状态。后续 theme 变化(用户切换)才 apply。
+  const mountedRef = useRef(false)
   useEffect(() => {
     const resolved = theme === 'system' ? getSystemTheme() : theme
     setResolvedTheme(resolved)
-    applyTheme(resolved)
+    if (mountedRef.current) {
+      applyTheme(resolved)
+    }
+    mountedRef.current = true
   }, [theme])
 
   useEffect(() => {

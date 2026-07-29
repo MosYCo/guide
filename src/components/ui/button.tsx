@@ -23,6 +23,8 @@ const buttonVariants = cva(
         sm: 'h-9 rounded-md px-3',
         lg: 'h-11 rounded-md px-8',
         icon: 'h-10 w-10',
+        // T018: 触摸热区 ≥44×44px(WCAG 2.5.5),移动端关键按钮用
+        touch: 'h-11 w-11 rounded-md',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

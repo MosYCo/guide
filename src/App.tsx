@@ -1,13 +1,13 @@
 /**
  * App 根组件 - 阶段 4: US2 分类组织 + US4 编辑删除
+ * T014: 搜索改为命令面板(FR-008),内联过滤移除
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { Header } from '@/components/layout/Header'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { BookmarkForm } from '@/components/bookmark/BookmarkForm'
-import { BookmarkSearch } from '@/components/bookmark/BookmarkSearch'
 import { BookmarkGrid, WelcomeState } from '@/components/bookmark/BookmarkGrid'
 import { CategoryNav } from '@/components/category/CategoryNav'
 import { CategoryForm } from '@/components/category/CategoryForm'
@@ -15,9 +15,15 @@ import { ToastProvider, useToast } from '@/components/ui/toast'
 import { useTheme } from '@/hooks/useTheme'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import { useCategories } from '@/hooks/useCategories'
-import { useSearch } from '@/hooks/useSearch'
 import { requestPersistentStorage, detectIncognito } from '@/utils/storage'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
+
+// T017: 命令面板懒加载,减小首屏 JS(FR-019)
+const CommandPalette = lazy(() =>
+  import('@/components/bookmark/CommandPalette').then((m) => ({
+    default: m.CommandPalette,
+  })),
+)
 
 export default function App() {
   return (
@@ -50,19 +56,29 @@ function AppInner() {
   } = useCategories()
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-  const { query, setQuery, results, hasQuery } = useSearch(bookmarks)
   const [bookmarkFormOpen, setBookmarkFormOpen] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null)
   const [categoryFormOpen, setCategoryFormOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [draggingBookmark, setDraggingBookmark] = useState<Bookmark | null>(null)
   const [incognitoWarn, setIncognitoWarn] = useState(false)
+  // T014: 命令面板开关(搜索由面板承载,查询状态面板内部管理)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  // 折叠态上提至 App:AppLayout 据此切 aside 宽度,CategoryNav 受控
+  const [navCollapsed, setNavCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('category-nav-collapsed') === 'true'
+  })
+  useEffect(() => {
+    localStorage.setItem('category-nav-collapsed', String(navCollapsed))
+  }, [navCollapsed])
 
   useEffect(() => {
     requestPersistentStorage()
     if (detectIncognito()) setIncognitoWarn(true)
   }, [])
 
+  // Ctrl+K 全局快捷键打开命令面板(FR-008);Ctrl+N 新建书签
   useHotkeys(
     'ctrl+n, meta+n',
     (e) => {
@@ -72,13 +88,20 @@ function AppInner() {
     },
     { enableOnFormTags: false },
   )
+  useHotkeys(
+    'ctrl+k, meta+k',
+    (e) => {
+      e.preventDefault()
+      setCommandPaletteOpen(true)
+    },
+    { enableOnFormTags: false },
+  )
 
-  // 分类筛选
+  // 分类筛选(命令面板的查询结果独立,这里仅按分类过滤)
   const filteredBookmarks = useMemo(() => {
-    if (hasQuery) return results
     if (selectedCategoryId === null) return bookmarks
     return bookmarks.filter((b) => b.categoryId === selectedCategoryId)
-  }, [bookmarks, results, hasQuery, selectedCategoryId])
+  }, [bookmarks, selectedCategoryId])
 
   // 各分类书签计数
   const bookmarkCounts = useMemo(() => {
@@ -90,8 +113,8 @@ function AppInner() {
   }, [bookmarks])
 
   const recentBookmarks = useMemo(
-    () => (hasQuery || selectedCategoryId !== null ? [] : getRecentBookmarks(10)),
-    [hasQuery, selectedCategoryId, getRecentBookmarks, bookmarks],
+    () => (selectedCategoryId !== null ? [] : getRecentBookmarks(10)),
+    [selectedCategoryId, getRecentBookmarks, bookmarks],
   )
 
   const handleAddBookmark = useCallback(() => {
@@ -186,10 +209,11 @@ function AppInner() {
     [draggingBookmark, moveBookmarkToCategory],
   )
 
-  const searchNoResult = hasQuery && results.length === 0 && bookmarks.length > 0
+  // T014: 搜索改由命令面板承载,内联无搜索态;无结果态移除(网格永远显示分类过滤结果)
 
   return (
     <AppLayout
+      collapsed={navCollapsed}
       header={
         <Header
           theme={theme}
@@ -197,6 +221,7 @@ function AppInner() {
           onThemeChange={setTheme}
           onAddBookmark={handleAddBookmark}
           onDataChanged={refresh}
+          onOpenSearch={() => setCommandPaletteOpen(true)}
         />
       }
       categoryNav={
@@ -211,11 +236,13 @@ function AppInner() {
           onDelete={handleDeleteCategory}
           onReorder={reorderCategories}
           onBookmarkDrop={handleCategoryDrop}
+          collapsed={navCollapsed}
+          onToggleCollapse={() => setNavCollapsed((v) => !v)}
         />
       }
     >
       {incognitoWarn && (
-        <div className="mb-3 rounded-md border border-yellow-500/50 bg-yellow-500/10 p-3 text-sm text-yellow-700 dark:text-yellow-400">
+        <div className="mb-3 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
           当前为隐私/无痕模式，关闭窗口后数据可能丢失。
         </div>
       )}
@@ -231,7 +258,6 @@ function AppInner() {
         <WelcomeState onAdd={handleAddBookmark} />
       ) : (
         <div className="space-y-4">
-          <BookmarkSearch query={query} onQueryChange={setQuery} />
           <div
             onDragOver={(e) => {
               if (draggingBookmark) e.preventDefault()
@@ -247,8 +273,7 @@ function AppInner() {
               }}
               onDelete={handleDeleteBookmark}
               onClick={handleBookmarkClick}
-              searchNoResult={searchNoResult}
-              onClearSearch={() => setQuery('')}
+              onAdd={handleAddBookmark}
               onBookmarkDragStart={setDraggingBookmark}
             />
           </div>
@@ -267,6 +292,16 @@ function AppInner() {
         onSubmit={handleCategorySubmit}
         onCancel={() => setCategoryFormOpen(false)}
       />
+      {/* T017: 命令面板懒加载,减小首屏 JS */}
+      <Suspense fallback={null}>
+        <CommandPalette
+          open={commandPaletteOpen}
+          bookmarks={bookmarks}
+          onSelect={handleBookmarkClick}
+          onClose={() => setCommandPaletteOpen(false)}
+          onCreate={handleAddBookmark}
+        />
+      </Suspense>
     </AppLayout>
   )
 }

@@ -1,0 +1,112 @@
+/**
+ * 设计 Token 集中定义
+ * FR-001: 语义色阶 / type scale / 圆角阶梯 / 阴影 elevation
+ * FR-005: 全局 focus ring 规范源
+ * 色值按 WCAG AA(正文 ≥4.5:1,大文本 ≥3:1)反推,基准色相:
+ *   success 绿 / warning 橙黄 / info 蓝
+ * 由 src/index.css @import 接入
+ */
+
+@layer base {
+  :root {
+    /* ===== 语义色阶(亮色) =====
+     * T010: 色值经 WCAG 对比度计算校准,前景色对 background(0 0% 100%)对比度 ≥4.5:1(AA)
+     * success 绿 142 71% 30% vs 白底 = 4.83:1
+     * warning 橙黄 38 92% 35% vs 白底 = 4.19:1(略低于 4.5,作大文本/icon 色;正文用 warning-foreground 深棕)
+     * info 蓝 217 91% 45% vs 白底 = 6.0:1
+     * foreground 配对色对各自 DEFAULT 背景 ≥4.5:1
+     */
+    --success: 142 71% 30%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 35%;
+    --warning-foreground: 20 50% 18%;
+    --info: 217 91% 45%;
+    --info-foreground: 0 0% 100%;
+
+    /* ===== type scale 四档(显示/标题/正文/辅助) =====
+     * 中文优化:行高 1.5–1.75 区间适配中文;字重梯度 400/500/600/700
+     */
+    --text-display-size: 1.875rem; /* 30px */
+    --text-display-line: 1.3;
+    --text-display-weight: 700;
+    --text-h1-size: 1.25rem; /* 20px */
+    --text-h1-line: 1.4;
+    --text-h1-weight: 600;
+    --text-body-size: 0.875rem; /* 14px */
+    --text-body-line: 1.6;
+    --text-body-weight: 400;
+    --text-caption-size: 0.75rem; /* 12px */
+    --text-caption-line: 1.5;
+    --text-caption-weight: 400;
+
+    /* ===== 阴影 elevation 四档 =====
+     * sm 卡片静止 / md 卡片悬停 / lg 弹层抽屉 / popover 浮层
+     */
+    --shadow-elevation-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
+    --shadow-elevation-md: 0 4px 6px -1px hsl(var(--foreground) / 0.1),
+      0 2px 4px -2px hsl(var(--foreground) / 0.1);
+    --shadow-elevation-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.1),
+      0 4px 6px -4px hsl(var(--foreground) / 0.1);
+    --shadow-elevation-popover: 0 10px 38px -10px hsl(var(--foreground) / 0.35),
+      0 10px 20px -10px hsl(var(--foreground) / 0.2);
+
+    /* ===== focus ring 规范源(FR-005) =====
+     * 全局可交互元素复用此规范,不另设第二套光晕
+     */
+    --focus-ring: 0 0 0 2px hsl(var(--ring));
+  }
+
+  .dark {
+    /* ===== 语义色阶(暗色) =====
+     * T010: 暗色 background 0 0% 10%,提高明度保对比度
+     * success 50% vs 10% = 9.37:1 / warning 60% vs 10% = 9.44:1 / info 65% vs 10% = 5.72:1
+     * warning-foreground 改深色(配亮 warning)
+     */
+    --success: 142 71% 50%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 60%;
+    --warning-foreground: 40 80% 12%;
+    --info: 217 91% 65%;
+    --info-foreground: 0 0% 100%;
+
+    /* 暗色阴影更深,用 foreground 高透明 */
+    --shadow-elevation-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-elevation-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4),
+      0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-elevation-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5),
+      0 4px 6px -4px hsl(0 0% 0% / 0.5);
+    --shadow-elevation-popover: 0 10px 38px -10px hsl(0 0% 0% / 0.7),
+      0 10px 20px -10px hsl(0 0% 0% / 0.5);
+  }
+}
+
+@layer base {
+  /* FR-005 全局 focus ring 规范:复用类,所有可交互元素落地 */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+@layer utilities {
+  /* type scale 工具类(FR-001 字体) */
+  .text-display {
+    font-size: var(--text-display-size);
+    line-height: var(--text-display-line);
+    font-weight: var(--text-display-weight);
+  }
+  .text-h1 {
+    font-size: var(--text-h1-size);
+    line-height: var(--text-h1-line);
+    font-weight: var(--text-h1-weight);
+  }
+  .text-body {
+    font-size: var(--text-body-size);
+    line-height: var(--text-body-line);
+    font-weight: var(--text-body-weight);
+  }
+  .text-caption {
+    font-size: var(--text-caption-size);
+    line-height: var(--text-caption-line);
+    font-weight: var(--text-caption-weight);
+  }
+}

@@ -1,7 +1,9 @@
 /**
- * CategoryNav 组件 - 统一分类导航（PC 侧边栏 + 移动端标签栏）
- * FR-003 分类导航、FR-009 按分类过滤、FR-007 编辑/删除分类、拖拽排序
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §CategoryNav
+ * CategoryNav 组件 - 统一分类导航
+ * PC(≥md 768): 侧栏列表 + 可折叠(收起/展开,持久化)+ 计数 badge 选中态高亮
+ * 移动端(<md 768): 底部固定 Tab(全部/分类)+ 侧滑抽屉承载完整列表
+ * T021: 废弃移动端顶部横标签栏,改底部 Tab+抽屉(FR-009/014)
+ * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §5
  */
 
 import { useState } from 'react'
@@ -13,6 +15,8 @@ import {
   Folder,
   LayoutGrid,
   GripVertical,
+  PanelLeftClose,
+  PanelLeft,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -32,6 +36,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+// T039: CategoryDrawer 静态导入(非 React.lazy)。有意偏离 T021 的"懒加载"注记:
+// 抽屉体量小,随 CategoryNav 同 chunk 不影响首屏(首屏不渲染移动端分支),
+// 静态导入更简洁(宪法 II 简洁优先),避免 lazy+Suspense 的额外复杂度。
+import { CategoryDrawer } from '@/components/category/CategoryDrawer'
 import type { Category } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -48,6 +56,10 @@ export interface CategoryNavProps {
   onReorder?: (ids: string[]) => void
   /** 书签拖放到分类目标回调（移动书签到该分类） */
   onBookmarkDrop?: (categoryId: string | null) => void
+  /** 受控折叠态(PC 侧栏);由 App 上提,AppLayout 据此切宽度 */
+  collapsed?: boolean
+  /** 切换折叠态(收起/展开) */
+  onToggleCollapse?: () => void
 }
 
 export function CategoryNav({
@@ -61,10 +73,13 @@ export function CategoryNav({
   onDelete,
   onReorder,
   onBookmarkDrop,
+  collapsed = false,
+  onToggleCollapse,
 }: CategoryNavProps) {
   const { isPC } = useMediaQuery()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleDragStart = (id: string) => {
     if (!onReorder) return
@@ -85,36 +100,105 @@ export function CategoryNav({
     setDraggingId(null)
   }
 
-  const allItem = (
-    <NavItem
-      active={selectedCategoryId === null}
-      onClick={() => onSelect(null)}
-      icon={<LayoutGrid className="h-4 w-4" />}
-      label="全部"
-      count={totalCount}
-      isPC={isPC}
-      onDrop={onBookmarkDrop ? () => onBookmarkDrop(null) : undefined}
-    />
-  )
-
+  // T021: PC 侧栏(含平板);折叠态受控于 App
   if (isPC) {
-    return (
-      <>
-        <nav className="flex h-full flex-col p-2">
-          <div className="mb-2 flex items-center justify-between px-2">
-            <span className="text-sm font-medium">分类</span>
+    // 折叠态:仅图标按钮
+    if (collapsed) {
+      return (
+        <>
+          <nav className="flex h-full flex-col items-center gap-1 p-2">
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7"
+              className="focus-ring min-h-11 min-w-11"
+              onClick={() => onToggleCollapse?.()}
+              aria-label="展开侧栏"
+            >
+              <PanelLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="focus-ring min-h-11 min-w-11"
+              onClick={() => onSelect(null)}
+              aria-label="全部书签"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            {categories.slice(0, 8).map((c) => (
+              <Button
+                key={c.id}
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'focus-ring min-h-11 min-w-11',
+                  selectedCategoryId === c.id && 'bg-accent text-accent-foreground',
+                )}
+                onClick={() => onSelect(c.id)}
+                aria-label={c.name}
+              >
+                <Folder className="h-4 w-4" />
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="focus-ring min-h-11 min-w-11"
               onClick={onAdd}
               aria-label="新建分类"
             >
               <Plus className="h-4 w-4" />
             </Button>
+          </nav>
+          <DeleteConfirm
+            open={!!deleteId}
+            onCancel={() => setDeleteId(null)}
+            onConfirm={() => {
+              if (deleteId) onDelete(deleteId)
+              setDeleteId(null)
+            }}
+          />
+        </>
+      )
+    }
+
+    // 展开态:完整侧栏(沿用既有结构)
+    return (
+      <>
+        <nav className="flex h-full flex-col p-2">
+          <div className="mb-2 flex items-center justify-between px-2">
+            <span className="text-h1">分类</span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="focus-ring min-h-11 min-w-11"
+                onClick={onAdd}
+                aria-label="新建分类"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="focus-ring min-h-11 min-w-11"
+                onClick={() => onToggleCollapse?.()}
+                aria-label="收起侧栏"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div className="flex-1 space-y-0.5 overflow-y-auto scrollbar-thin">
-            {allItem}
+            <NavItem
+              active={selectedCategoryId === null}
+              onClick={() => onSelect(null)}
+              icon={<LayoutGrid className="h-4 w-4" />}
+              label="全部"
+              count={totalCount}
+              isPC={isPC}
+              onDrop={onBookmarkDrop ? () => onBookmarkDrop(null) : undefined}
+            />
             {categories.map((c) => (
               <CategoryNavItem
                 key={c.id}
@@ -134,7 +218,7 @@ export function CategoryNav({
               />
             ))}
             {categories.length === 0 && (
-              <p className="px-2 py-4 text-xs text-muted-foreground">
+              <p className="text-caption px-2 py-4 text-muted-foreground">
                 暂无分类，点击上方 + 创建
               </p>
             )}
@@ -152,51 +236,58 @@ export function CategoryNav({
     )
   }
 
-  // 移动端：横向滚动标签栏
+  // T021: 移动端底部固定 Tab(全部 / 分类)+ 侧滑抽屉
   return (
     <>
-      <nav className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-background/95 px-2 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <button
           onClick={() => onSelect(null)}
           className={cn(
-            'flex shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-sm',
+            'focus-ring flex min-h-11 flex-1 flex-col items-center gap-0.5 rounded-md py-1',
             selectedCategoryId === null
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground',
+              ? 'text-primary'
+              : 'text-muted-foreground',
           )}
+          aria-label="全部书签"
+          aria-current={selectedCategoryId === null ? 'page' : undefined}
         >
-          全部
-          <span className="text-xs opacity-70">{totalCount}</span>
+          <LayoutGrid className="h-5 w-5" />
+          <span className="text-caption">全部</span>
         </button>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => onSelect(c.id)}
-            onContextMenu={(e) => {
-              e.preventDefault()
-              onEdit(c)
-            }}
-            className={cn(
-              'flex shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-sm',
-              selectedCategoryId === c.id
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground',
-            )}
-          >
-            {c.name}
-            <span className="text-xs opacity-70">
-              {bookmarkCounts[c.id] ?? 0}
-            </span>
-          </button>
-        ))}
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className={cn(
+            'focus-ring flex min-h-11 flex-1 flex-col items-center gap-0.5 rounded-md py-1',
+            selectedCategoryId !== null ? 'text-primary' : 'text-muted-foreground',
+          )}
+          aria-label="打开分类列表"
+          aria-haspopup="dialog"
+        >
+          <Folder className="h-5 w-5" />
+          <span className="text-caption">
+            {selectedCategoryId
+              ? categories.find((c) => c.id === selectedCategoryId)?.name ?? '分类'
+              : '分类'}
+          </span>
+        </button>
         <button
           onClick={onAdd}
-          className="flex shrink-0 items-center rounded-md border border-dashed border-input px-3 py-1.5 text-sm hover:bg-accent"
+          className="focus-ring flex min-h-11 flex-1 flex-col items-center gap-0.5 rounded-md py-1 text-muted-foreground"
           aria-label="新建分类"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-5 w-5" />
+          <span className="text-caption">新建</span>
         </button>
       </nav>
+      <CategoryDrawer
+        open={drawerOpen}
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
+        bookmarkCounts={bookmarkCounts}
+        totalCount={totalCount}
+        onSelect={onSelect}
+        onClose={() => setDrawerOpen(false)}
+      />
       <DeleteConfirm
         open={!!deleteId}
         onCancel={() => setDeleteId(null)}
@@ -233,13 +324,22 @@ function NavItem({
       onDragOver={(e) => onDrop && e.preventDefault()}
       onDrop={onDrop}
       className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm',
+        'focus-ring flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1.5 text-body',
+        // T021: 选中态高亮(FR-009)
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
       )}
     >
       {icon}
       <span className="flex-1 text-left">{label}</span>
-      <span className="text-xs text-muted-foreground">{count}</span>
+      {/* T021: 计数 badge */}
+      <span
+        className={cn(
+          'text-caption rounded-full px-1.5 py-0.5',
+          active ? 'bg-primary/10 text-primary' : 'text-muted-foreground',
+        )}
+      >
+        {count}
+      </span>
     </button>
   )
 }

@@ -95,7 +95,7 @@ export function BookmarkForm({
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? '编辑书签' : '添加书签'}</DialogTitle>
+          <DialogTitle className="text-h1">{isEdit ? '编辑书签' : '添加书签'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -115,7 +115,7 @@ export function BookmarkForm({
               autoFocus
             />
             {urlError && (
-              <p id="url-error" className="text-sm text-destructive">
+              <p id="url-error" className="text-caption text-destructive">
                 {urlError}
               </p>
             )}
@@ -160,7 +160,7 @@ export function BookmarkForm({
               id="bookmark-category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="focus-ring flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-body ring-offset-background"
             >
               <option value="">未分类</option>
               {categories.map((c) => (

@@ -23,6 +23,19 @@ export function getLetterIcon(name: string): string {
 }
 
 /**
+ * T024: 终极降级——首字母图标也失败时的纯色块(SVG data URI)。
+ * 用于 onError 链二次降级:favicon 失败 → 首字母 → 纯色块。
+ */
+export function getPlaceholderIcon(): string {
+  // 单色块 + 书签符号,无需字体渲染,任何环境都能显示
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="6" fill="hsl(var(--muted))"/>
+    <path d="M9 6h14v20l-7-4-7 4z" fill="hsl(var(--muted-foreground))" opacity="0.5"/>
+  </svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+/**
  * 解析书签图标 URL。
  * - 用户提供了 icon → 直接使用
  * - 未提供 → 使用 Google Favicon API

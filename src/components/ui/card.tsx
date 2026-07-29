@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
+// T011: 卡片静止态用 elevation-sm
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -8,7 +9,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'rounded-lg border border-border bg-card text-card-foreground shadow-sm',
+      'rounded-lg border border-border bg-card text-card-foreground shadow-elevation-sm',
       className,
     )}
     {...props}

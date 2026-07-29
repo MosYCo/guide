@@ -1,0 +1,4549 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2026-07-27T16:00:00.000Z",
+  "bookmarkCount": 501,
+  "categoryCount": 5,
+  "categories": [
+    {
+      "id": "seed-cat-0",
+      "name": "分类1",
+      "order": 0,
+      "createdAt": "2025-12-31T16:00:00.000Z"
+    },
+    {
+      "id": "seed-cat-1",
+      "name": "分类2",
+      "order": 1,
+      "createdAt": "2025-12-31T16:00:00.000Z"
+    },
+    {
+      "id": "seed-cat-2",
+      "name": "分类3",
+      "order": 2,
+      "createdAt": "2025-12-31T16:00:00.000Z"
+    },
+    {
+      "id": "seed-cat-3",
+      "name": "分类4",
+      "order": 3,
+      "createdAt": "2025-12-31T16:00:00.000Z"
+    },
+    {
+      "id": "seed-cat-4",
+      "name": "分类5",
+      "order": 4,
+      "createdAt": "2025-12-31T16:00:00.000Z"
+    }
+  ],
+  "bookmarks": [
+    {
+      "id": "seed-bm-0000",
+      "url": "https://example.com/1",
+      "name": "文档站 #1",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0001",
+      "url": "https://github.com/2",
+      "name": "工具集 #2",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0002",
+      "url": "https://stackoverflow.com/3",
+      "name": "学习资源 #3",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0003",
+      "url": "https://developer.mozilla.org/4",
+      "name": "开发工具 #4",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0004",
+      "url": "https://wikipedia.org/5",
+      "name": "参考手册 #5",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0005",
+      "url": "https://reactjs.org/6",
+      "name": "社区论坛 #6",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0006",
+      "url": "https://vitejs.dev/7",
+      "name": "框架官网 #7",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0007",
+      "url": "https://tailwindcss.com/8",
+      "name": "组件库 #8",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0008",
+      "url": "https://typescriptlang.org/9",
+      "name": "语言规范 #9",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0009",
+      "url": "https://shadcn-ui.com/10",
+      "name": "设计系统 #10",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0010",
+      "url": "https://example.com/11",
+      "name": "文档站 #11",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0011",
+      "url": "https://github.com/12",
+      "name": "工具集 #12",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0012",
+      "url": "https://stackoverflow.com/13",
+      "name": "学习资源 #13",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0013",
+      "url": "https://developer.mozilla.org/14",
+      "name": "开发工具 #14",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0014",
+      "url": "https://wikipedia.org/15",
+      "name": "参考手册 #15",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0015",
+      "url": "https://reactjs.org/16",
+      "name": "社区论坛 #16",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0016",
+      "url": "https://vitejs.dev/17",
+      "name": "框架官网 #17",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0017",
+      "url": "https://tailwindcss.com/18",
+      "name": "组件库 #18",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0018",
+      "url": "https://typescriptlang.org/19",
+      "name": "语言规范 #19",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0019",
+      "url": "https://shadcn-ui.com/20",
+      "name": "设计系统 #20",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0020",
+      "url": "https://example.com/21",
+      "name": "文档站 #21",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0021",
+      "url": "https://github.com/22",
+      "name": "工具集 #22",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0022",
+      "url": "https://stackoverflow.com/23",
+      "name": "学习资源 #23",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0023",
+      "url": "https://developer.mozilla.org/24",
+      "name": "开发工具 #24",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0024",
+      "url": "https://wikipedia.org/25",
+      "name": "参考手册 #25",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0025",
+      "url": "https://reactjs.org/26",
+      "name": "社区论坛 #26",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0026",
+      "url": "https://vitejs.dev/27",
+      "name": "框架官网 #27",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0027",
+      "url": "https://tailwindcss.com/28",
+      "name": "组件库 #28",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0028",
+      "url": "https://typescriptlang.org/29",
+      "name": "语言规范 #29",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0029",
+      "url": "https://shadcn-ui.com/30",
+      "name": "设计系统 #30",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0030",
+      "url": "https://example.com/31",
+      "name": "文档站 #31",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0031",
+      "url": "https://github.com/32",
+      "name": "工具集 #32",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0032",
+      "url": "https://stackoverflow.com/33",
+      "name": "学习资源 #33",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0033",
+      "url": "https://developer.mozilla.org/34",
+      "name": "开发工具 #34",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0034",
+      "url": "https://wikipedia.org/35",
+      "name": "参考手册 #35",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0035",
+      "url": "https://reactjs.org/36",
+      "name": "社区论坛 #36",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0036",
+      "url": "https://vitejs.dev/37",
+      "name": "框架官网 #37",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0037",
+      "url": "https://tailwindcss.com/38",
+      "name": "组件库 #38",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0038",
+      "url": "https://typescriptlang.org/39",
+      "name": "语言规范 #39",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0039",
+      "url": "https://shadcn-ui.com/40",
+      "name": "设计系统 #40",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0040",
+      "url": "https://example.com/41",
+      "name": "文档站 #41",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0041",
+      "url": "https://github.com/42",
+      "name": "工具集 #42",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0042",
+      "url": "https://stackoverflow.com/43",
+      "name": "学习资源 #43",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0043",
+      "url": "https://developer.mozilla.org/44",
+      "name": "开发工具 #44",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0044",
+      "url": "https://wikipedia.org/45",
+      "name": "参考手册 #45",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0045",
+      "url": "https://reactjs.org/46",
+      "name": "社区论坛 #46",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0046",
+      "url": "https://vitejs.dev/47",
+      "name": "框架官网 #47",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0047",
+      "url": "https://tailwindcss.com/48",
+      "name": "组件库 #48",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0048",
+      "url": "https://typescriptlang.org/49",
+      "name": "语言规范 #49",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0049",
+      "url": "https://shadcn-ui.com/50",
+      "name": "设计系统 #50",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0050",
+      "url": "https://example.com/51",
+      "name": "文档站 #51",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0051",
+      "url": "https://github.com/52",
+      "name": "工具集 #52",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0052",
+      "url": "https://stackoverflow.com/53",
+      "name": "学习资源 #53",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0053",
+      "url": "https://developer.mozilla.org/54",
+      "name": "开发工具 #54",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0054",
+      "url": "https://wikipedia.org/55",
+      "name": "参考手册 #55",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0055",
+      "url": "https://reactjs.org/56",
+      "name": "社区论坛 #56",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0056",
+      "url": "https://vitejs.dev/57",
+      "name": "框架官网 #57",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0057",
+      "url": "https://tailwindcss.com/58",
+      "name": "组件库 #58",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0058",
+      "url": "https://typescriptlang.org/59",
+      "name": "语言规范 #59",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0059",
+      "url": "https://shadcn-ui.com/60",
+      "name": "设计系统 #60",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0060",
+      "url": "https://example.com/61",
+      "name": "文档站 #61",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0061",
+      "url": "https://github.com/62",
+      "name": "工具集 #62",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0062",
+      "url": "https://stackoverflow.com/63",
+      "name": "学习资源 #63",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0063",
+      "url": "https://developer.mozilla.org/64",
+      "name": "开发工具 #64",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0064",
+      "url": "https://wikipedia.org/65",
+      "name": "参考手册 #65",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0065",
+      "url": "https://reactjs.org/66",
+      "name": "社区论坛 #66",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0066",
+      "url": "https://vitejs.dev/67",
+      "name": "框架官网 #67",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0067",
+      "url": "https://tailwindcss.com/68",
+      "name": "组件库 #68",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0068",
+      "url": "https://typescriptlang.org/69",
+      "name": "语言规范 #69",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0069",
+      "url": "https://shadcn-ui.com/70",
+      "name": "设计系统 #70",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0070",
+      "url": "https://example.com/71",
+      "name": "文档站 #71",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0071",
+      "url": "https://github.com/72",
+      "name": "工具集 #72",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0072",
+      "url": "https://stackoverflow.com/73",
+      "name": "学习资源 #73",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0073",
+      "url": "https://developer.mozilla.org/74",
+      "name": "开发工具 #74",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0074",
+      "url": "https://wikipedia.org/75",
+      "name": "参考手册 #75",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0075",
+      "url": "https://reactjs.org/76",
+      "name": "社区论坛 #76",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0076",
+      "url": "https://vitejs.dev/77",
+      "name": "框架官网 #77",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0077",
+      "url": "https://tailwindcss.com/78",
+      "name": "组件库 #78",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0078",
+      "url": "https://typescriptlang.org/79",
+      "name": "语言规范 #79",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0079",
+      "url": "https://shadcn-ui.com/80",
+      "name": "设计系统 #80",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0080",
+      "url": "https://example.com/81",
+      "name": "文档站 #81",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0081",
+      "url": "https://github.com/82",
+      "name": "工具集 #82",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0082",
+      "url": "https://stackoverflow.com/83",
+      "name": "学习资源 #83",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0083",
+      "url": "https://developer.mozilla.org/84",
+      "name": "开发工具 #84",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0084",
+      "url": "https://wikipedia.org/85",
+      "name": "参考手册 #85",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0085",
+      "url": "https://reactjs.org/86",
+      "name": "社区论坛 #86",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0086",
+      "url": "https://vitejs.dev/87",
+      "name": "框架官网 #87",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0087",
+      "url": "https://tailwindcss.com/88",
+      "name": "组件库 #88",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0088",
+      "url": "https://typescriptlang.org/89",
+      "name": "语言规范 #89",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0089",
+      "url": "https://shadcn-ui.com/90",
+      "name": "设计系统 #90",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0090",
+      "url": "https://example.com/91",
+      "name": "文档站 #91",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0091",
+      "url": "https://github.com/92",
+      "name": "工具集 #92",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0092",
+      "url": "https://stackoverflow.com/93",
+      "name": "学习资源 #93",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0093",
+      "url": "https://developer.mozilla.org/94",
+      "name": "开发工具 #94",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0094",
+      "url": "https://wikipedia.org/95",
+      "name": "参考手册 #95",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0095",
+      "url": "https://reactjs.org/96",
+      "name": "社区论坛 #96",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0096",
+      "url": "https://vitejs.dev/97",
+      "name": "框架官网 #97",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0097",
+      "url": "https://tailwindcss.com/98",
+      "name": "组件库 #98",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0098",
+      "url": "https://typescriptlang.org/99",
+      "name": "语言规范 #99",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0099",
+      "url": "https://shadcn-ui.com/100",
+      "name": "设计系统 #100",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0100",
+      "url": "https://example.com/101",
+      "name": "文档站 #101",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0101",
+      "url": "https://github.com/102",
+      "name": "工具集 #102",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0102",
+      "url": "https://stackoverflow.com/103",
+      "name": "学习资源 #103",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0103",
+      "url": "https://developer.mozilla.org/104",
+      "name": "开发工具 #104",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0104",
+      "url": "https://wikipedia.org/105",
+      "name": "参考手册 #105",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0105",
+      "url": "https://reactjs.org/106",
+      "name": "社区论坛 #106",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0106",
+      "url": "https://vitejs.dev/107",
+      "name": "框架官网 #107",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0107",
+      "url": "https://tailwindcss.com/108",
+      "name": "组件库 #108",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0108",
+      "url": "https://typescriptlang.org/109",
+      "name": "语言规范 #109",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0109",
+      "url": "https://shadcn-ui.com/110",
+      "name": "设计系统 #110",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0110",
+      "url": "https://example.com/111",
+      "name": "文档站 #111",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0111",
+      "url": "https://github.com/112",
+      "name": "工具集 #112",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0112",
+      "url": "https://stackoverflow.com/113",
+      "name": "学习资源 #113",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0113",
+      "url": "https://developer.mozilla.org/114",
+      "name": "开发工具 #114",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0114",
+      "url": "https://wikipedia.org/115",
+      "name": "参考手册 #115",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0115",
+      "url": "https://reactjs.org/116",
+      "name": "社区论坛 #116",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0116",
+      "url": "https://vitejs.dev/117",
+      "name": "框架官网 #117",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0117",
+      "url": "https://tailwindcss.com/118",
+      "name": "组件库 #118",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0118",
+      "url": "https://typescriptlang.org/119",
+      "name": "语言规范 #119",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0119",
+      "url": "https://shadcn-ui.com/120",
+      "name": "设计系统 #120",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0120",
+      "url": "https://example.com/121",
+      "name": "文档站 #121",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0121",
+      "url": "https://github.com/122",
+      "name": "工具集 #122",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0122",
+      "url": "https://stackoverflow.com/123",
+      "name": "学习资源 #123",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0123",
+      "url": "https://developer.mozilla.org/124",
+      "name": "开发工具 #124",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0124",
+      "url": "https://wikipedia.org/125",
+      "name": "参考手册 #125",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0125",
+      "url": "https://reactjs.org/126",
+      "name": "社区论坛 #126",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0126",
+      "url": "https://vitejs.dev/127",
+      "name": "框架官网 #127",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0127",
+      "url": "https://tailwindcss.com/128",
+      "name": "组件库 #128",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0128",
+      "url": "https://typescriptlang.org/129",
+      "name": "语言规范 #129",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0129",
+      "url": "https://shadcn-ui.com/130",
+      "name": "设计系统 #130",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0130",
+      "url": "https://example.com/131",
+      "name": "文档站 #131",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0131",
+      "url": "https://github.com/132",
+      "name": "工具集 #132",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0132",
+      "url": "https://stackoverflow.com/133",
+      "name": "学习资源 #133",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0133",
+      "url": "https://developer.mozilla.org/134",
+      "name": "开发工具 #134",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0134",
+      "url": "https://wikipedia.org/135",
+      "name": "参考手册 #135",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0135",
+      "url": "https://reactjs.org/136",
+      "name": "社区论坛 #136",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0136",
+      "url": "https://vitejs.dev/137",
+      "name": "框架官网 #137",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0137",
+      "url": "https://tailwindcss.com/138",
+      "name": "组件库 #138",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0138",
+      "url": "https://typescriptlang.org/139",
+      "name": "语言规范 #139",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0139",
+      "url": "https://shadcn-ui.com/140",
+      "name": "设计系统 #140",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0140",
+      "url": "https://example.com/141",
+      "name": "文档站 #141",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0141",
+      "url": "https://github.com/142",
+      "name": "工具集 #142",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0142",
+      "url": "https://stackoverflow.com/143",
+      "name": "学习资源 #143",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0143",
+      "url": "https://developer.mozilla.org/144",
+      "name": "开发工具 #144",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0144",
+      "url": "https://wikipedia.org/145",
+      "name": "参考手册 #145",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0145",
+      "url": "https://reactjs.org/146",
+      "name": "社区论坛 #146",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0146",
+      "url": "https://vitejs.dev/147",
+      "name": "框架官网 #147",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0147",
+      "url": "https://tailwindcss.com/148",
+      "name": "组件库 #148",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0148",
+      "url": "https://typescriptlang.org/149",
+      "name": "语言规范 #149",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0149",
+      "url": "https://shadcn-ui.com/150",
+      "name": "设计系统 #150",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0150",
+      "url": "https://example.com/151",
+      "name": "文档站 #151",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0151",
+      "url": "https://github.com/152",
+      "name": "工具集 #152",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0152",
+      "url": "https://stackoverflow.com/153",
+      "name": "学习资源 #153",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0153",
+      "url": "https://developer.mozilla.org/154",
+      "name": "开发工具 #154",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0154",
+      "url": "https://wikipedia.org/155",
+      "name": "参考手册 #155",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0155",
+      "url": "https://reactjs.org/156",
+      "name": "社区论坛 #156",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0156",
+      "url": "https://vitejs.dev/157",
+      "name": "框架官网 #157",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0157",
+      "url": "https://tailwindcss.com/158",
+      "name": "组件库 #158",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0158",
+      "url": "https://typescriptlang.org/159",
+      "name": "语言规范 #159",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0159",
+      "url": "https://shadcn-ui.com/160",
+      "name": "设计系统 #160",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0160",
+      "url": "https://example.com/161",
+      "name": "文档站 #161",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0161",
+      "url": "https://github.com/162",
+      "name": "工具集 #162",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0162",
+      "url": "https://stackoverflow.com/163",
+      "name": "学习资源 #163",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0163",
+      "url": "https://developer.mozilla.org/164",
+      "name": "开发工具 #164",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0164",
+      "url": "https://wikipedia.org/165",
+      "name": "参考手册 #165",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0165",
+      "url": "https://reactjs.org/166",
+      "name": "社区论坛 #166",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0166",
+      "url": "https://vitejs.dev/167",
+      "name": "框架官网 #167",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0167",
+      "url": "https://tailwindcss.com/168",
+      "name": "组件库 #168",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0168",
+      "url": "https://typescriptlang.org/169",
+      "name": "语言规范 #169",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0169",
+      "url": "https://shadcn-ui.com/170",
+      "name": "设计系统 #170",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0170",
+      "url": "https://example.com/171",
+      "name": "文档站 #171",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0171",
+      "url": "https://github.com/172",
+      "name": "工具集 #172",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0172",
+      "url": "https://stackoverflow.com/173",
+      "name": "学习资源 #173",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0173",
+      "url": "https://developer.mozilla.org/174",
+      "name": "开发工具 #174",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0174",
+      "url": "https://wikipedia.org/175",
+      "name": "参考手册 #175",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0175",
+      "url": "https://reactjs.org/176",
+      "name": "社区论坛 #176",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0176",
+      "url": "https://vitejs.dev/177",
+      "name": "框架官网 #177",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0177",
+      "url": "https://tailwindcss.com/178",
+      "name": "组件库 #178",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0178",
+      "url": "https://typescriptlang.org/179",
+      "name": "语言规范 #179",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0179",
+      "url": "https://shadcn-ui.com/180",
+      "name": "设计系统 #180",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0180",
+      "url": "https://example.com/181",
+      "name": "文档站 #181",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0181",
+      "url": "https://github.com/182",
+      "name": "工具集 #182",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0182",
+      "url": "https://stackoverflow.com/183",
+      "name": "学习资源 #183",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0183",
+      "url": "https://developer.mozilla.org/184",
+      "name": "开发工具 #184",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0184",
+      "url": "https://wikipedia.org/185",
+      "name": "参考手册 #185",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0185",
+      "url": "https://reactjs.org/186",
+      "name": "社区论坛 #186",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0186",
+      "url": "https://vitejs.dev/187",
+      "name": "框架官网 #187",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0187",
+      "url": "https://tailwindcss.com/188",
+      "name": "组件库 #188",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0188",
+      "url": "https://typescriptlang.org/189",
+      "name": "语言规范 #189",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0189",
+      "url": "https://shadcn-ui.com/190",
+      "name": "设计系统 #190",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0190",
+      "url": "https://example.com/191",
+      "name": "文档站 #191",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0191",
+      "url": "https://github.com/192",
+      "name": "工具集 #192",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0192",
+      "url": "https://stackoverflow.com/193",
+      "name": "学习资源 #193",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0193",
+      "url": "https://developer.mozilla.org/194",
+      "name": "开发工具 #194",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0194",
+      "url": "https://wikipedia.org/195",
+      "name": "参考手册 #195",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0195",
+      "url": "https://reactjs.org/196",
+      "name": "社区论坛 #196",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0196",
+      "url": "https://vitejs.dev/197",
+      "name": "框架官网 #197",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0197",
+      "url": "https://tailwindcss.com/198",
+      "name": "组件库 #198",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0198",
+      "url": "https://typescriptlang.org/199",
+      "name": "语言规范 #199",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0199",
+      "url": "https://shadcn-ui.com/200",
+      "name": "设计系统 #200",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0200",
+      "url": "https://example.com/201",
+      "name": "文档站 #201",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0201",
+      "url": "https://github.com/202",
+      "name": "工具集 #202",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0202",
+      "url": "https://stackoverflow.com/203",
+      "name": "学习资源 #203",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0203",
+      "url": "https://developer.mozilla.org/204",
+      "name": "开发工具 #204",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0204",
+      "url": "https://wikipedia.org/205",
+      "name": "参考手册 #205",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0205",
+      "url": "https://reactjs.org/206",
+      "name": "社区论坛 #206",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0206",
+      "url": "https://vitejs.dev/207",
+      "name": "框架官网 #207",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0207",
+      "url": "https://tailwindcss.com/208",
+      "name": "组件库 #208",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0208",
+      "url": "https://typescriptlang.org/209",
+      "name": "语言规范 #209",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0209",
+      "url": "https://shadcn-ui.com/210",
+      "name": "设计系统 #210",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0210",
+      "url": "https://example.com/211",
+      "name": "文档站 #211",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0211",
+      "url": "https://github.com/212",
+      "name": "工具集 #212",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0212",
+      "url": "https://stackoverflow.com/213",
+      "name": "学习资源 #213",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0213",
+      "url": "https://developer.mozilla.org/214",
+      "name": "开发工具 #214",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0214",
+      "url": "https://wikipedia.org/215",
+      "name": "参考手册 #215",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0215",
+      "url": "https://reactjs.org/216",
+      "name": "社区论坛 #216",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0216",
+      "url": "https://vitejs.dev/217",
+      "name": "框架官网 #217",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0217",
+      "url": "https://tailwindcss.com/218",
+      "name": "组件库 #218",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0218",
+      "url": "https://typescriptlang.org/219",
+      "name": "语言规范 #219",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0219",
+      "url": "https://shadcn-ui.com/220",
+      "name": "设计系统 #220",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0220",
+      "url": "https://example.com/221",
+      "name": "文档站 #221",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0221",
+      "url": "https://github.com/222",
+      "name": "工具集 #222",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0222",
+      "url": "https://stackoverflow.com/223",
+      "name": "学习资源 #223",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0223",
+      "url": "https://developer.mozilla.org/224",
+      "name": "开发工具 #224",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0224",
+      "url": "https://wikipedia.org/225",
+      "name": "参考手册 #225",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0225",
+      "url": "https://reactjs.org/226",
+      "name": "社区论坛 #226",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0226",
+      "url": "https://vitejs.dev/227",
+      "name": "框架官网 #227",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0227",
+      "url": "https://tailwindcss.com/228",
+      "name": "组件库 #228",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0228",
+      "url": "https://typescriptlang.org/229",
+      "name": "语言规范 #229",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0229",
+      "url": "https://shadcn-ui.com/230",
+      "name": "设计系统 #230",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0230",
+      "url": "https://example.com/231",
+      "name": "文档站 #231",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0231",
+      "url": "https://github.com/232",
+      "name": "工具集 #232",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0232",
+      "url": "https://stackoverflow.com/233",
+      "name": "学习资源 #233",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0233",
+      "url": "https://developer.mozilla.org/234",
+      "name": "开发工具 #234",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0234",
+      "url": "https://wikipedia.org/235",
+      "name": "参考手册 #235",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0235",
+      "url": "https://reactjs.org/236",
+      "name": "社区论坛 #236",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0236",
+      "url": "https://vitejs.dev/237",
+      "name": "框架官网 #237",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0237",
+      "url": "https://tailwindcss.com/238",
+      "name": "组件库 #238",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0238",
+      "url": "https://typescriptlang.org/239",
+      "name": "语言规范 #239",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0239",
+      "url": "https://shadcn-ui.com/240",
+      "name": "设计系统 #240",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0240",
+      "url": "https://example.com/241",
+      "name": "文档站 #241",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0241",
+      "url": "https://github.com/242",
+      "name": "工具集 #242",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0242",
+      "url": "https://stackoverflow.com/243",
+      "name": "学习资源 #243",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0243",
+      "url": "https://developer.mozilla.org/244",
+      "name": "开发工具 #244",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0244",
+      "url": "https://wikipedia.org/245",
+      "name": "参考手册 #245",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0245",
+      "url": "https://reactjs.org/246",
+      "name": "社区论坛 #246",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0246",
+      "url": "https://vitejs.dev/247",
+      "name": "框架官网 #247",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0247",
+      "url": "https://tailwindcss.com/248",
+      "name": "组件库 #248",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0248",
+      "url": "https://typescriptlang.org/249",
+      "name": "语言规范 #249",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0249",
+      "url": "https://shadcn-ui.com/250",
+      "name": "设计系统 #250",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0250",
+      "url": "https://example.com/251",
+      "name": "文档站 #251",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0251",
+      "url": "https://github.com/252",
+      "name": "工具集 #252",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0252",
+      "url": "https://stackoverflow.com/253",
+      "name": "学习资源 #253",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0253",
+      "url": "https://developer.mozilla.org/254",
+      "name": "开发工具 #254",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0254",
+      "url": "https://wikipedia.org/255",
+      "name": "参考手册 #255",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0255",
+      "url": "https://reactjs.org/256",
+      "name": "社区论坛 #256",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0256",
+      "url": "https://vitejs.dev/257",
+      "name": "框架官网 #257",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0257",
+      "url": "https://tailwindcss.com/258",
+      "name": "组件库 #258",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0258",
+      "url": "https://typescriptlang.org/259",
+      "name": "语言规范 #259",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0259",
+      "url": "https://shadcn-ui.com/260",
+      "name": "设计系统 #260",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0260",
+      "url": "https://example.com/261",
+      "name": "文档站 #261",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0261",
+      "url": "https://github.com/262",
+      "name": "工具集 #262",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0262",
+      "url": "https://stackoverflow.com/263",
+      "name": "学习资源 #263",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0263",
+      "url": "https://developer.mozilla.org/264",
+      "name": "开发工具 #264",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0264",
+      "url": "https://wikipedia.org/265",
+      "name": "参考手册 #265",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0265",
+      "url": "https://reactjs.org/266",
+      "name": "社区论坛 #266",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0266",
+      "url": "https://vitejs.dev/267",
+      "name": "框架官网 #267",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0267",
+      "url": "https://tailwindcss.com/268",
+      "name": "组件库 #268",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0268",
+      "url": "https://typescriptlang.org/269",
+      "name": "语言规范 #269",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0269",
+      "url": "https://shadcn-ui.com/270",
+      "name": "设计系统 #270",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0270",
+      "url": "https://example.com/271",
+      "name": "文档站 #271",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0271",
+      "url": "https://github.com/272",
+      "name": "工具集 #272",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0272",
+      "url": "https://stackoverflow.com/273",
+      "name": "学习资源 #273",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0273",
+      "url": "https://developer.mozilla.org/274",
+      "name": "开发工具 #274",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0274",
+      "url": "https://wikipedia.org/275",
+      "name": "参考手册 #275",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0275",
+      "url": "https://reactjs.org/276",
+      "name": "社区论坛 #276",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0276",
+      "url": "https://vitejs.dev/277",
+      "name": "框架官网 #277",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0277",
+      "url": "https://tailwindcss.com/278",
+      "name": "组件库 #278",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0278",
+      "url": "https://typescriptlang.org/279",
+      "name": "语言规范 #279",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0279",
+      "url": "https://shadcn-ui.com/280",
+      "name": "设计系统 #280",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0280",
+      "url": "https://example.com/281",
+      "name": "文档站 #281",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0281",
+      "url": "https://github.com/282",
+      "name": "工具集 #282",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0282",
+      "url": "https://stackoverflow.com/283",
+      "name": "学习资源 #283",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0283",
+      "url": "https://developer.mozilla.org/284",
+      "name": "开发工具 #284",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0284",
+      "url": "https://wikipedia.org/285",
+      "name": "参考手册 #285",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0285",
+      "url": "https://reactjs.org/286",
+      "name": "社区论坛 #286",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0286",
+      "url": "https://vitejs.dev/287",
+      "name": "框架官网 #287",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0287",
+      "url": "https://tailwindcss.com/288",
+      "name": "组件库 #288",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0288",
+      "url": "https://typescriptlang.org/289",
+      "name": "语言规范 #289",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0289",
+      "url": "https://shadcn-ui.com/290",
+      "name": "设计系统 #290",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0290",
+      "url": "https://example.com/291",
+      "name": "文档站 #291",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0291",
+      "url": "https://github.com/292",
+      "name": "工具集 #292",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0292",
+      "url": "https://stackoverflow.com/293",
+      "name": "学习资源 #293",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0293",
+      "url": "https://developer.mozilla.org/294",
+      "name": "开发工具 #294",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0294",
+      "url": "https://wikipedia.org/295",
+      "name": "参考手册 #295",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0295",
+      "url": "https://reactjs.org/296",
+      "name": "社区论坛 #296",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0296",
+      "url": "https://vitejs.dev/297",
+      "name": "框架官网 #297",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0297",
+      "url": "https://tailwindcss.com/298",
+      "name": "组件库 #298",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0298",
+      "url": "https://typescriptlang.org/299",
+      "name": "语言规范 #299",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0299",
+      "url": "https://shadcn-ui.com/300",
+      "name": "设计系统 #300",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0300",
+      "url": "https://example.com/301",
+      "name": "文档站 #301",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0301",
+      "url": "https://github.com/302",
+      "name": "工具集 #302",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0302",
+      "url": "https://stackoverflow.com/303",
+      "name": "学习资源 #303",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0303",
+      "url": "https://developer.mozilla.org/304",
+      "name": "开发工具 #304",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0304",
+      "url": "https://wikipedia.org/305",
+      "name": "参考手册 #305",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0305",
+      "url": "https://reactjs.org/306",
+      "name": "社区论坛 #306",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0306",
+      "url": "https://vitejs.dev/307",
+      "name": "框架官网 #307",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0307",
+      "url": "https://tailwindcss.com/308",
+      "name": "组件库 #308",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0308",
+      "url": "https://typescriptlang.org/309",
+      "name": "语言规范 #309",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0309",
+      "url": "https://shadcn-ui.com/310",
+      "name": "设计系统 #310",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0310",
+      "url": "https://example.com/311",
+      "name": "文档站 #311",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0311",
+      "url": "https://github.com/312",
+      "name": "工具集 #312",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0312",
+      "url": "https://stackoverflow.com/313",
+      "name": "学习资源 #313",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0313",
+      "url": "https://developer.mozilla.org/314",
+      "name": "开发工具 #314",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0314",
+      "url": "https://wikipedia.org/315",
+      "name": "参考手册 #315",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0315",
+      "url": "https://reactjs.org/316",
+      "name": "社区论坛 #316",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0316",
+      "url": "https://vitejs.dev/317",
+      "name": "框架官网 #317",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0317",
+      "url": "https://tailwindcss.com/318",
+      "name": "组件库 #318",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0318",
+      "url": "https://typescriptlang.org/319",
+      "name": "语言规范 #319",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0319",
+      "url": "https://shadcn-ui.com/320",
+      "name": "设计系统 #320",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0320",
+      "url": "https://example.com/321",
+      "name": "文档站 #321",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0321",
+      "url": "https://github.com/322",
+      "name": "工具集 #322",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0322",
+      "url": "https://stackoverflow.com/323",
+      "name": "学习资源 #323",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0323",
+      "url": "https://developer.mozilla.org/324",
+      "name": "开发工具 #324",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0324",
+      "url": "https://wikipedia.org/325",
+      "name": "参考手册 #325",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0325",
+      "url": "https://reactjs.org/326",
+      "name": "社区论坛 #326",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0326",
+      "url": "https://vitejs.dev/327",
+      "name": "框架官网 #327",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0327",
+      "url": "https://tailwindcss.com/328",
+      "name": "组件库 #328",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0328",
+      "url": "https://typescriptlang.org/329",
+      "name": "语言规范 #329",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0329",
+      "url": "https://shadcn-ui.com/330",
+      "name": "设计系统 #330",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0330",
+      "url": "https://example.com/331",
+      "name": "文档站 #331",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0331",
+      "url": "https://github.com/332",
+      "name": "工具集 #332",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0332",
+      "url": "https://stackoverflow.com/333",
+      "name": "学习资源 #333",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0333",
+      "url": "https://developer.mozilla.org/334",
+      "name": "开发工具 #334",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0334",
+      "url": "https://wikipedia.org/335",
+      "name": "参考手册 #335",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0335",
+      "url": "https://reactjs.org/336",
+      "name": "社区论坛 #336",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0336",
+      "url": "https://vitejs.dev/337",
+      "name": "框架官网 #337",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0337",
+      "url": "https://tailwindcss.com/338",
+      "name": "组件库 #338",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0338",
+      "url": "https://typescriptlang.org/339",
+      "name": "语言规范 #339",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0339",
+      "url": "https://shadcn-ui.com/340",
+      "name": "设计系统 #340",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0340",
+      "url": "https://example.com/341",
+      "name": "文档站 #341",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0341",
+      "url": "https://github.com/342",
+      "name": "工具集 #342",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0342",
+      "url": "https://stackoverflow.com/343",
+      "name": "学习资源 #343",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0343",
+      "url": "https://developer.mozilla.org/344",
+      "name": "开发工具 #344",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0344",
+      "url": "https://wikipedia.org/345",
+      "name": "参考手册 #345",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0345",
+      "url": "https://reactjs.org/346",
+      "name": "社区论坛 #346",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0346",
+      "url": "https://vitejs.dev/347",
+      "name": "框架官网 #347",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0347",
+      "url": "https://tailwindcss.com/348",
+      "name": "组件库 #348",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0348",
+      "url": "https://typescriptlang.org/349",
+      "name": "语言规范 #349",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0349",
+      "url": "https://shadcn-ui.com/350",
+      "name": "设计系统 #350",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0350",
+      "url": "https://example.com/351",
+      "name": "文档站 #351",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0351",
+      "url": "https://github.com/352",
+      "name": "工具集 #352",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0352",
+      "url": "https://stackoverflow.com/353",
+      "name": "学习资源 #353",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0353",
+      "url": "https://developer.mozilla.org/354",
+      "name": "开发工具 #354",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0354",
+      "url": "https://wikipedia.org/355",
+      "name": "参考手册 #355",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0355",
+      "url": "https://reactjs.org/356",
+      "name": "社区论坛 #356",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0356",
+      "url": "https://vitejs.dev/357",
+      "name": "框架官网 #357",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0357",
+      "url": "https://tailwindcss.com/358",
+      "name": "组件库 #358",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0358",
+      "url": "https://typescriptlang.org/359",
+      "name": "语言规范 #359",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0359",
+      "url": "https://shadcn-ui.com/360",
+      "name": "设计系统 #360",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0360",
+      "url": "https://example.com/361",
+      "name": "文档站 #361",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0361",
+      "url": "https://github.com/362",
+      "name": "工具集 #362",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0362",
+      "url": "https://stackoverflow.com/363",
+      "name": "学习资源 #363",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0363",
+      "url": "https://developer.mozilla.org/364",
+      "name": "开发工具 #364",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0364",
+      "url": "https://wikipedia.org/365",
+      "name": "参考手册 #365",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0365",
+      "url": "https://reactjs.org/366",
+      "name": "社区论坛 #366",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0366",
+      "url": "https://vitejs.dev/367",
+      "name": "框架官网 #367",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0367",
+      "url": "https://tailwindcss.com/368",
+      "name": "组件库 #368",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0368",
+      "url": "https://typescriptlang.org/369",
+      "name": "语言规范 #369",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0369",
+      "url": "https://shadcn-ui.com/370",
+      "name": "设计系统 #370",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0370",
+      "url": "https://example.com/371",
+      "name": "文档站 #371",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0371",
+      "url": "https://github.com/372",
+      "name": "工具集 #372",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0372",
+      "url": "https://stackoverflow.com/373",
+      "name": "学习资源 #373",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0373",
+      "url": "https://developer.mozilla.org/374",
+      "name": "开发工具 #374",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0374",
+      "url": "https://wikipedia.org/375",
+      "name": "参考手册 #375",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0375",
+      "url": "https://reactjs.org/376",
+      "name": "社区论坛 #376",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0376",
+      "url": "https://vitejs.dev/377",
+      "name": "框架官网 #377",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0377",
+      "url": "https://tailwindcss.com/378",
+      "name": "组件库 #378",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0378",
+      "url": "https://typescriptlang.org/379",
+      "name": "语言规范 #379",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0379",
+      "url": "https://shadcn-ui.com/380",
+      "name": "设计系统 #380",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0380",
+      "url": "https://example.com/381",
+      "name": "文档站 #381",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0381",
+      "url": "https://github.com/382",
+      "name": "工具集 #382",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0382",
+      "url": "https://stackoverflow.com/383",
+      "name": "学习资源 #383",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0383",
+      "url": "https://developer.mozilla.org/384",
+      "name": "开发工具 #384",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0384",
+      "url": "https://wikipedia.org/385",
+      "name": "参考手册 #385",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0385",
+      "url": "https://reactjs.org/386",
+      "name": "社区论坛 #386",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0386",
+      "url": "https://vitejs.dev/387",
+      "name": "框架官网 #387",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0387",
+      "url": "https://tailwindcss.com/388",
+      "name": "组件库 #388",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0388",
+      "url": "https://typescriptlang.org/389",
+      "name": "语言规范 #389",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0389",
+      "url": "https://shadcn-ui.com/390",
+      "name": "设计系统 #390",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0390",
+      "url": "https://example.com/391",
+      "name": "文档站 #391",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0391",
+      "url": "https://github.com/392",
+      "name": "工具集 #392",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0392",
+      "url": "https://stackoverflow.com/393",
+      "name": "学习资源 #393",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0393",
+      "url": "https://developer.mozilla.org/394",
+      "name": "开发工具 #394",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0394",
+      "url": "https://wikipedia.org/395",
+      "name": "参考手册 #395",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0395",
+      "url": "https://reactjs.org/396",
+      "name": "社区论坛 #396",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0396",
+      "url": "https://vitejs.dev/397",
+      "name": "框架官网 #397",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0397",
+      "url": "https://tailwindcss.com/398",
+      "name": "组件库 #398",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0398",
+      "url": "https://typescriptlang.org/399",
+      "name": "语言规范 #399",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0399",
+      "url": "https://shadcn-ui.com/400",
+      "name": "设计系统 #400",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0400",
+      "url": "https://example.com/401",
+      "name": "文档站 #401",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0401",
+      "url": "https://github.com/402",
+      "name": "工具集 #402",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0402",
+      "url": "https://stackoverflow.com/403",
+      "name": "学习资源 #403",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0403",
+      "url": "https://developer.mozilla.org/404",
+      "name": "开发工具 #404",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0404",
+      "url": "https://wikipedia.org/405",
+      "name": "参考手册 #405",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0405",
+      "url": "https://reactjs.org/406",
+      "name": "社区论坛 #406",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0406",
+      "url": "https://vitejs.dev/407",
+      "name": "框架官网 #407",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0407",
+      "url": "https://tailwindcss.com/408",
+      "name": "组件库 #408",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0408",
+      "url": "https://typescriptlang.org/409",
+      "name": "语言规范 #409",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0409",
+      "url": "https://shadcn-ui.com/410",
+      "name": "设计系统 #410",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0410",
+      "url": "https://example.com/411",
+      "name": "文档站 #411",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0411",
+      "url": "https://github.com/412",
+      "name": "工具集 #412",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0412",
+      "url": "https://stackoverflow.com/413",
+      "name": "学习资源 #413",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0413",
+      "url": "https://developer.mozilla.org/414",
+      "name": "开发工具 #414",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0414",
+      "url": "https://wikipedia.org/415",
+      "name": "参考手册 #415",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0415",
+      "url": "https://reactjs.org/416",
+      "name": "社区论坛 #416",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0416",
+      "url": "https://vitejs.dev/417",
+      "name": "框架官网 #417",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0417",
+      "url": "https://tailwindcss.com/418",
+      "name": "组件库 #418",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0418",
+      "url": "https://typescriptlang.org/419",
+      "name": "语言规范 #419",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0419",
+      "url": "https://shadcn-ui.com/420",
+      "name": "设计系统 #420",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0420",
+      "url": "https://example.com/421",
+      "name": "文档站 #421",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0421",
+      "url": "https://github.com/422",
+      "name": "工具集 #422",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0422",
+      "url": "https://stackoverflow.com/423",
+      "name": "学习资源 #423",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0423",
+      "url": "https://developer.mozilla.org/424",
+      "name": "开发工具 #424",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0424",
+      "url": "https://wikipedia.org/425",
+      "name": "参考手册 #425",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0425",
+      "url": "https://reactjs.org/426",
+      "name": "社区论坛 #426",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0426",
+      "url": "https://vitejs.dev/427",
+      "name": "框架官网 #427",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0427",
+      "url": "https://tailwindcss.com/428",
+      "name": "组件库 #428",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0428",
+      "url": "https://typescriptlang.org/429",
+      "name": "语言规范 #429",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0429",
+      "url": "https://shadcn-ui.com/430",
+      "name": "设计系统 #430",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0430",
+      "url": "https://example.com/431",
+      "name": "文档站 #431",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0431",
+      "url": "https://github.com/432",
+      "name": "工具集 #432",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0432",
+      "url": "https://stackoverflow.com/433",
+      "name": "学习资源 #433",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0433",
+      "url": "https://developer.mozilla.org/434",
+      "name": "开发工具 #434",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0434",
+      "url": "https://wikipedia.org/435",
+      "name": "参考手册 #435",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0435",
+      "url": "https://reactjs.org/436",
+      "name": "社区论坛 #436",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0436",
+      "url": "https://vitejs.dev/437",
+      "name": "框架官网 #437",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0437",
+      "url": "https://tailwindcss.com/438",
+      "name": "组件库 #438",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0438",
+      "url": "https://typescriptlang.org/439",
+      "name": "语言规范 #439",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0439",
+      "url": "https://shadcn-ui.com/440",
+      "name": "设计系统 #440",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0440",
+      "url": "https://example.com/441",
+      "name": "文档站 #441",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0441",
+      "url": "https://github.com/442",
+      "name": "工具集 #442",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0442",
+      "url": "https://stackoverflow.com/443",
+      "name": "学习资源 #443",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0443",
+      "url": "https://developer.mozilla.org/444",
+      "name": "开发工具 #444",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0444",
+      "url": "https://wikipedia.org/445",
+      "name": "参考手册 #445",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0445",
+      "url": "https://reactjs.org/446",
+      "name": "社区论坛 #446",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0446",
+      "url": "https://vitejs.dev/447",
+      "name": "框架官网 #447",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0447",
+      "url": "https://tailwindcss.com/448",
+      "name": "组件库 #448",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0448",
+      "url": "https://typescriptlang.org/449",
+      "name": "语言规范 #449",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0449",
+      "url": "https://shadcn-ui.com/450",
+      "name": "设计系统 #450",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0450",
+      "url": "https://example.com/451",
+      "name": "文档站 #451",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0451",
+      "url": "https://github.com/452",
+      "name": "工具集 #452",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0452",
+      "url": "https://stackoverflow.com/453",
+      "name": "学习资源 #453",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0453",
+      "url": "https://developer.mozilla.org/454",
+      "name": "开发工具 #454",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0454",
+      "url": "https://wikipedia.org/455",
+      "name": "参考手册 #455",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0455",
+      "url": "https://reactjs.org/456",
+      "name": "社区论坛 #456",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0456",
+      "url": "https://vitejs.dev/457",
+      "name": "框架官网 #457",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0457",
+      "url": "https://tailwindcss.com/458",
+      "name": "组件库 #458",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0458",
+      "url": "https://typescriptlang.org/459",
+      "name": "语言规范 #459",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0459",
+      "url": "https://shadcn-ui.com/460",
+      "name": "设计系统 #460",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0460",
+      "url": "https://example.com/461",
+      "name": "文档站 #461",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0461",
+      "url": "https://github.com/462",
+      "name": "工具集 #462",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0462",
+      "url": "https://stackoverflow.com/463",
+      "name": "学习资源 #463",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0463",
+      "url": "https://developer.mozilla.org/464",
+      "name": "开发工具 #464",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0464",
+      "url": "https://wikipedia.org/465",
+      "name": "参考手册 #465",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0465",
+      "url": "https://reactjs.org/466",
+      "name": "社区论坛 #466",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0466",
+      "url": "https://vitejs.dev/467",
+      "name": "框架官网 #467",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0467",
+      "url": "https://tailwindcss.com/468",
+      "name": "组件库 #468",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0468",
+      "url": "https://typescriptlang.org/469",
+      "name": "语言规范 #469",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0469",
+      "url": "https://shadcn-ui.com/470",
+      "name": "设计系统 #470",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0470",
+      "url": "https://example.com/471",
+      "name": "文档站 #471",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0471",
+      "url": "https://github.com/472",
+      "name": "工具集 #472",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0472",
+      "url": "https://stackoverflow.com/473",
+      "name": "学习资源 #473",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0473",
+      "url": "https://developer.mozilla.org/474",
+      "name": "开发工具 #474",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0474",
+      "url": "https://wikipedia.org/475",
+      "name": "参考手册 #475",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0475",
+      "url": "https://reactjs.org/476",
+      "name": "社区论坛 #476",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0476",
+      "url": "https://vitejs.dev/477",
+      "name": "框架官网 #477",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0477",
+      "url": "https://tailwindcss.com/478",
+      "name": "组件库 #478",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0478",
+      "url": "https://typescriptlang.org/479",
+      "name": "语言规范 #479",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0479",
+      "url": "https://shadcn-ui.com/480",
+      "name": "设计系统 #480",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0480",
+      "url": "https://example.com/481",
+      "name": "文档站 #481",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0481",
+      "url": "https://github.com/482",
+      "name": "工具集 #482",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0482",
+      "url": "https://stackoverflow.com/483",
+      "name": "学习资源 #483",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0483",
+      "url": "https://developer.mozilla.org/484",
+      "name": "开发工具 #484",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0484",
+      "url": "https://wikipedia.org/485",
+      "name": "参考手册 #485",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0485",
+      "url": "https://reactjs.org/486",
+      "name": "社区论坛 #486",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0486",
+      "url": "https://vitejs.dev/487",
+      "name": "框架官网 #487",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0487",
+      "url": "https://tailwindcss.com/488",
+      "name": "组件库 #488",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0488",
+      "url": "https://typescriptlang.org/489",
+      "name": "语言规范 #489",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0489",
+      "url": "https://shadcn-ui.com/490",
+      "name": "设计系统 #490",
+      "icon": "https://www.google.com/s2/favicons?domain=shadcn-ui.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0490",
+      "url": "https://example.com/491",
+      "name": "文档站 #491",
+      "icon": "https://www.google.com/s2/favicons?domain=example.com",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0491",
+      "url": "https://github.com/492",
+      "name": "工具集 #492",
+      "icon": "https://www.google.com/s2/favicons?domain=github.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0492",
+      "url": "https://stackoverflow.com/493",
+      "name": "学习资源 #493",
+      "icon": "https://www.google.com/s2/favicons?domain=stackoverflow.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0493",
+      "url": "https://developer.mozilla.org/494",
+      "name": "开发工具 #494",
+      "icon": "https://www.google.com/s2/favicons?domain=developer.mozilla.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0494",
+      "url": "https://wikipedia.org/495",
+      "name": "参考手册 #495",
+      "icon": "https://www.google.com/s2/favicons?domain=wikipedia.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0495",
+      "url": "https://reactjs.org/496",
+      "name": "社区论坛 #496",
+      "icon": "https://www.google.com/s2/favicons?domain=reactjs.org",
+      "categoryId": "seed-cat-0",
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-0496",
+      "url": "https://vitejs.dev/497",
+      "name": "框架官网 #497",
+      "icon": "https://www.google.com/s2/favicons?domain=vitejs.dev",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0497",
+      "url": "https://tailwindcss.com/498",
+      "name": "组件库 #498",
+      "icon": "https://www.google.com/s2/favicons?domain=tailwindcss.com",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-0498",
+      "url": "https://typescriptlang.org/499",
+      "name": "语言规范 #499",
+      "icon": "https://www.google.com/s2/favicons?domain=typescriptlang.org",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": "2026-07-27T16:00:00.000Z"
+    },
+    {
+      "id": "seed-bm-extreme-1",
+      "url": "https://example.com/very/long/path/that/exceeds/normal/display/width/and/should/be/handled/gracefully/without/breaking/layout/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "name": "超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题超长标题",
+      "icon": "https://invalid.example.invalid/favicon.ico",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    },
+    {
+      "id": "seed-bm-extreme-2",
+      "url": "not-a-valid-url",
+      "name": "无效URL测试",
+      "icon": "",
+      "categoryId": null,
+      "createdAt": "2025-12-31T16:00:00.000Z",
+      "lastVisitedAt": null
+    }
+  ]
+}
