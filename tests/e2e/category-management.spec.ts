@@ -13,7 +13,8 @@ async function addBookmark(page: Page, name: string, category: string) {
   const dialog = page.getByRole('dialog')
   await dialog.locator('[placeholder="https://example.com"]').fill('https://example.com')
   await dialog.locator('[placeholder="书签名称"]').fill(name)
-  await dialog.locator('#bookmark-category').selectOption({ label: category })
+  await dialog.locator('#bookmark-category').click()
+  await page.getByRole('option', { name: category, exact: true }).click()
   await dialog.locator('button[type="submit"]').click()
   await expect(dialog).toBeHidden()
 }
@@ -71,7 +72,7 @@ test('删除分类后编辑书签不会把悬空分类 ID 写回', async ({ page
 
   const bookmarkDialog = page.getByRole('dialog')
   await expect(bookmarkDialog).toBeVisible()
-  await expect(bookmarkDialog.locator('#bookmark-category')).toHaveValue('')
+  await expect(bookmarkDialog.locator('#bookmark-category')).toContainText('未分类')
   await bookmarkDialog.locator('button[type="submit"]').click()
   await expect(bookmarkDialog).toBeHidden()
 

@@ -15,10 +15,20 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
 import { validateAndNormalizeUrl } from '@/utils/url'
 import { resolveIcon } from '@/services/favicon'
 import { describeStorageError } from '@/utils/storage'
+
+/** Radix Select 不允许空字符串作为 item value,用哨兵表示“未分类” */
+const UNCATEGORIZED = '__uncategorized__'
 
 export interface BookmarkFormProps {
   open: boolean
@@ -202,19 +212,22 @@ export function BookmarkForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="bookmark-category">分类（可选）</Label>
-            <select
-              id="bookmark-category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="focus-ring flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-body ring-offset-background"
+            <Select
+              value={categoryId || UNCATEGORIZED}
+              onValueChange={(value) => setCategoryId(value === UNCATEGORIZED ? '' : value)}
             >
-              <option value="">未分类</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="bookmark-category" className="text-body" aria-label="分类（可选）">
+                <SelectValue placeholder="未分类" />
+              </SelectTrigger>
+              <SelectContent className="z-[60]">
+                <SelectItem value={UNCATEGORIZED}>未分类</SelectItem>
+                {categories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>

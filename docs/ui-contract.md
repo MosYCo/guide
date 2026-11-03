@@ -101,8 +101,9 @@ token 集中于 `src/styles/tokens.css`,由 `src/index.css` `@import`;`tailwind.
 | 打开       | `BookmarkForm` 由添加书签按钮或 `Ctrl/Cmd+N` 打开;`CategoryForm` 由新建分类入口打开;均在 Dialog 内,首项自动聚焦 | 键盘可达 / 焦点可见 |
 | 书签字段   | URL 必填并经 `validateAndNormalizeUrl` 校验;名称必填;图标可选(留空自动解析);分类可选                            | 表单校验            |
 | 分类字段   | 名称必填,长度不超过 50 字符                                                                                     | 表单校验            |
-| 错误呈现   | 行内错误文本与字段关联(当前实现使用 `aria-invalid` / `aria-describedby`);错误后已填字段保留                     | 错误不丢输入        |
-| 提交反馈   | 成功/失败以 toast 反馈;提交中禁用取消与提交按钮,避免重复提交                                                    | 非阻塞反馈          |
+| 错误呈现   | 行内错误文本与字段关联(当前实现使用 `aria-invalid` / `aria-describedby` / `role="alert"`);错误后已填字段保留    | 错误不丢输入        |
+| 提交反馈   | 成功 toast;失败在表单内展示并保留输入,不关闭对话框;提交中禁用取消与提交按钮                                     | 非阻塞反馈          |
+| 下拉控件   | 分类选择使用标准 shadcn `Select`(Radix);不修改 `ui/*` 源码,只通过 props/className 组合                          | 设计系统一致        |
 | 视觉与可达 | 表单控件复用 type scale、focus ring;移动端可交互控件热区 ≥44×44px                                               | 触摸热区            |
 
 ## 主题切换契约(FOUC 防护)
