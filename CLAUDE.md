@@ -2,7 +2,7 @@
 
 本文件是编码代理在本仓库内的逐行工作约定,只承载项目规则与操作指令。
 
-项目概况:基于浏览器的本地书签导航应用,React 18 + Vite + TypeScript + Tailwind + shadcn/ui,数据持久化在 IndexedDB,无后端。技术栈与脚本详见 [`README.md`](./README.md)。
+项目概况:基于浏览器的本地书签导航应用,React 18 + Vite + TypeScript + Tailwind + shadcn/ui,数据持久化在 IndexedDB,无后端。技术栈与脚本详见 [`README.md`](./README.md),架构、设计决策与质量基线见 [`docs/README.md`](./docs/README.md)。
 
 ## 语言规则(混合语言操作)
 
