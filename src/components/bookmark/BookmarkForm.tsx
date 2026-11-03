@@ -26,6 +26,7 @@ import type { Bookmark, BookmarkFormData, Category } from '@/types'
 import { validateAndNormalizeUrl } from '@/utils/url'
 import { resolveIcon } from '@/services/favicon'
 import { describeStorageError } from '@/utils/storage'
+import { countByUrl } from '@/services/db'
 
 /** Radix Select 不允许空字符串作为 item value,用哨兵表示“未分类” */
 const UNCATEGORIZED = '__uncategorized__'
@@ -57,7 +58,32 @@ export function BookmarkForm({
   const [nameError, setNameError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [duplicateCount, setDuplicateCount] = useState(0)
   const urlInputRef = useRef<HTMLInputElement>(null)
+
+  // 重复 URL 仅提示,不阻止保存(数据模型允许重复)
+  useEffect(() => {
+    let cancelled = false
+    const validation = validateAndNormalizeUrl(url)
+    if (!validation.valid) {
+      setDuplicateCount(0)
+      return
+    }
+    const normalized = validation.normalized!
+    countByUrl(normalized)
+      .then((count) => {
+        if (cancelled) return
+        const editingSameUrl =
+          bookmark && validateAndNormalizeUrl(bookmark.url).normalized === normalized
+        setDuplicateCount(Math.max(0, count - (editingSameUrl ? 1 : 0)))
+      })
+      .catch(() => {
+        if (!cancelled) setDuplicateCount(0)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [url, bookmark])
 
   // 预填充（编辑模式）;新增时默认选中当前筛选分类
   useEffect(() => {
@@ -156,12 +182,21 @@ export function BookmarkForm({
               onBlur={(e) => validateUrl(e.target.value)}
               aria-invalid={!!urlError}
               aria-required="true"
-              aria-describedby={urlError ? 'url-error' : undefined}
+              aria-describedby={
+                [urlError ? 'url-error' : null, duplicateCount > 0 ? 'url-duplicate' : null]
+                  .filter(Boolean)
+                  .join(' ') || undefined
+              }
               ref={urlInputRef}
             />
             {urlError && (
               <p id="url-error" role="alert" className="text-caption text-destructive">
                 {urlError}
+              </p>
+            )}
+            {duplicateCount > 0 && (
+              <p id="url-duplicate" className="text-caption text-warning">
+                已存在 {duplicateCount} 个相同 URL 的书签，仍可保存。
               </p>
             )}
           </div>

@@ -209,6 +209,11 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
                   已跳过 {preview.data.skipped} 条（非 http/https）
                 </p>
               )}
+              {preview.data && (preview.data.duplicates ?? 0) > 0 && (
+                <p className="text-warning">
+                  其中 {preview.data.duplicates} 条与现有书签 URL 重复（仍会导入）
+                </p>
+              )}
             </div>
           )}
           <DialogFooter>

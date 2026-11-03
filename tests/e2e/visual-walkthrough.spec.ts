@@ -73,18 +73,32 @@ test.describe('视觉走查 SC-001', () => {
     await page.goto('/')
     await page.waitForSelector('text=书签导航')
     await addBookmark(page, 'https://example.com', '对比度测试')
-    // 抽取卡片标题文本的对比度
+    // 在页面内按 WCAG 相对亮度公式计算真实对比度
     const ratio = await page.evaluate(() => {
-      const el = document.querySelector('p.text-body') as HTMLElement
-      if (!el) return ''
-      const styles = getComputedStyle(el)
-      const fg = styles.color
-      const bg = getComputedStyle(el.closest('.bg-card') ?? document.body).backgroundColor
-      // 简化:返回 fg/bg 字符串供断言非空(完整对比度计算需 canvas)
-      return fg + '|' + bg
+      const parse = (value: string): [number, number, number] | null => {
+        const match = value.match(/rgba?\(([^)]+)\)/)
+        if (!match) return null
+        const [r, g, b] = match[1].split(',').slice(0, 3).map(Number)
+        return [r, g, b]
+      }
+      const luminance = ([r, g, b]: [number, number, number]) => {
+        const linear = (channel: number) => {
+          const value = channel / 255
+          return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+      }
+      const el = document.querySelector('p.text-body') as HTMLElement | null
+      if (!el) return 0
+      const foreground = parse(getComputedStyle(el).color)
+      const background = parse(
+        getComputedStyle(el.closest('.bg-card') ?? document.body).backgroundColor,
+      )
+      if (!foreground || !background) return 0
+      const first = luminance(foreground)
+      const second = luminance(background)
+      return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05)
     })
-    // ratio 为非空字符串(前景/背景色已采集)
-    expect(typeof ratio).toBe('string')
-    expect(ratio.length).toBeGreaterThan(0)
+    expect(ratio).toBeGreaterThanOrEqual(4.5)
   })
 })

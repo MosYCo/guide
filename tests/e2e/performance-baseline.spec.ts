@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { seedBookmarks } from './seed'
 
 /**
  * T030: 性能基线 E2E
@@ -16,50 +17,13 @@ interface PerfMetrics {
   inp?: number
 }
 
-async function injectBookmarks(page: Page, count: number) {
-  await page.addInitScript((n) => {
-    return new Promise<void>((resolve) => {
-      const req = indexedDB.open('bookmark-navigation', 1)
-      req.onupgradeneeded = () => {
-        const db = req.result
-        if (!db.objectStoreNames.contains('bookmarks')) {
-          const store = db.createObjectStore('bookmarks', { keyPath: 'id' })
-          store.createIndex('categoryId', 'categoryId')
-          store.createIndex('createdAt', 'createdAt')
-          store.createIndex('lastVisitedAt', 'lastVisitedAt')
-          store.createIndex('url', 'url')
-        }
-        if (!db.objectStoreNames.contains('categories')) {
-          const cstore = db.createObjectStore('categories', { keyPath: 'id' })
-          cstore.createIndex('order', 'order')
-          cstore.createIndex('name', 'name')
-        }
-      }
-      req.onsuccess = () => {
-        const db = req.result
-        const tx = db.transaction('bookmarks', 'readwrite')
-        const store = tx.objectStore('bookmarks')
-        for (let i = 0; i < n; i++) {
-          store.add({
-            id: `perf-bm-${i}`,
-            url: `https://example${i % 10}.com/${i}`,
-            name: `站点 ${i}`,
-            icon: `https://www.google.com/s2/favicons?domain=example${i % 10}.com`,
-            categoryId: null,
-            createdAt: new Date(2026, 0, i + 1).toISOString(),
-            lastVisitedAt: i % 3 === 0 ? new Date().toISOString() : null,
-          })
-        }
-        tx.oncomplete = () => resolve()
-      }
-    })
-  }, count)
-}
-
 // 注入原生 PerformanceObserver 采集 LCP/CLS/INP(无外部依赖,无 any)
 async function injectPerfObservers(page: Page) {
   await page.addInitScript(() => {
-    const metrics: { lcp?: number; cls?: number; inp?: number } = {}
+    const metrics: { lcp?: number; cls?: number; inp?: number } = {
+      // 没有任何 layout-shift entry 时 CLS 语义上为 0
+      cls: 0,
+    }
     ;(window as unknown as { __perfMetrics: typeof metrics }).__perfMetrics = metrics
 
     // LCP
@@ -87,7 +51,12 @@ async function injectPerfObservers(page: Page) {
         if (dur > worstInp) worstInp = dur
       }
       metrics.inp = worstInp
-    }).observe({ type: 'event', buffered: true })
+    }).observe({
+      type: 'event',
+      buffered: true,
+      // 默认阈值 104ms 会漏掉快速交互,压低到 16ms 才能采集 INP
+      durationThreshold: 16,
+    } as PerformanceObserverInit)
   })
 }
 
@@ -97,7 +66,7 @@ test.describe('性能基线 SC-004', () => {
       viewport: { width: 375, height: 667 },
     })
     const page = await context.newPage()
-    await injectBookmarks(page, 500)
+    await seedBookmarks(page, 500, 'baseline')
     await injectPerfObservers(page)
 
     await page.goto('/')
@@ -105,28 +74,28 @@ test.describe('性能基线 SC-004', () => {
 
     // 触发交互以采集 INP
     await page.keyboard.press('Control+K')
-    await page.waitForTimeout(200)
+    await page.waitForSelector('[role="dialog"]')
     await page.keyboard.press('Escape')
-    await page.waitForTimeout(500)
+    await page.waitForSelector('[role="dialog"]', { state: 'detached' })
+    await page.waitForTimeout(100)
 
     const metrics = (await page.evaluate(
       () => (window as unknown as { __perfMetrics: PerfMetrics }).__perfMetrics,
     )) as PerfMetrics
 
     // 断言基线(CI 放宽阈值,本地移动+3G 复核严格值)
+    // 指标缺失直接失败,避免条件断言全部跳过造成假通过
+    if (metrics.lcp === undefined) throw new Error('LCP metric missing')
+    if (metrics.cls === undefined) throw new Error('CLS metric missing')
+    if (metrics.inp === undefined) throw new Error('INP metric missing')
+
     // LCP < 2.5s(CI 宽容,本地移动+3G 应 <1.5s)
-    if (metrics.lcp !== undefined) {
-      expect(metrics.lcp).toBeLessThan(2500)
-    }
+    expect(metrics.lcp).toBeLessThan(2500)
     // CLS < 0.1
-    if (metrics.cls !== undefined) {
-      expect(metrics.cls).toBeLessThan(0.1)
-    }
+    expect(metrics.cls).toBeLessThan(0.1)
     // INP 严格目标 <200ms;dev server + 并行 worker 下测量含调度噪声,
     // E2E 用宽容阈值防止误报,生产构建/Lighthouse 复核严格值。
-    if (metrics.inp !== undefined) {
-      expect(metrics.inp).toBeLessThan(process.env.CI ? 500 : 300)
-    }
+    expect(metrics.inp).toBeLessThan(process.env.CI ? 500 : 300)
 
     await context.close()
   })

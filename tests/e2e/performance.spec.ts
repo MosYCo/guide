@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect } from '@playwright/test'
+import { seedBookmarks } from './seed'
 
 /**
  * T057/T070: 性能验证
@@ -12,53 +13,8 @@ import { test, expect, type Page } from '@playwright/test'
 const LOAD_BUDGET_MS = process.env.CI ? 4000 : 2000
 const SEARCH_BUDGET_MS = process.env.CI ? 1500 : 500
 
-async function injectBookmarks(page: Page, count: number) {
-  // 先让应用建好 schema,再在同一页面里 await 事务完成,最后 reload 让 hook 读到数据
-  await page.goto('/')
-  await page.evaluate(async (n) => {
-    await new Promise<void>((resolve, reject) => {
-      const req = indexedDB.open('bookmark-navigation', 1)
-      req.onupgradeneeded = () => {
-        const db = req.result
-        if (!db.objectStoreNames.contains('bookmarks')) {
-          const store = db.createObjectStore('bookmarks', { keyPath: 'id' })
-          store.createIndex('categoryId', 'categoryId')
-          store.createIndex('createdAt', 'createdAt')
-          store.createIndex('lastVisitedAt', 'lastVisitedAt')
-          store.createIndex('url', 'url')
-        }
-        if (!db.objectStoreNames.contains('categories')) {
-          const cstore = db.createObjectStore('categories', { keyPath: 'id' })
-          cstore.createIndex('order', 'order')
-          cstore.createIndex('name', 'name')
-        }
-      }
-      req.onerror = () => reject(req.error)
-      req.onsuccess = () => {
-        const db = req.result
-        const tx = db.transaction('bookmarks', 'readwrite')
-        const store = tx.objectStore('bookmarks')
-        for (let i = 0; i < n; i++) {
-          store.add({
-            id: `perf-bm-${i}`,
-            url: `https://example${i}.com`,
-            name: `Site ${i}`,
-            icon: '',
-            categoryId: null,
-            createdAt: new Date().toISOString(),
-            lastVisitedAt: null,
-          })
-        }
-        tx.oncomplete = () => resolve()
-        tx.onerror = () => reject(tx.error)
-      }
-    })
-  }, count)
-  await page.reload()
-}
-
 test('100 个书签页面加载 <2s', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
 
   // 虚拟列表只渲染可视区,不能假设 Site 0 在首屏
   await page
@@ -71,7 +27,7 @@ test('100 个书签页面加载 <2s', async ({ page }) => {
 })
 
 test('搜索响应 <500ms', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   await page
     .getByRole('button', { name: /打开书签：Site \d+/ })
     .first()
@@ -86,7 +42,7 @@ test('搜索响应 <500ms', async ({ page }) => {
 })
 
 test('>60 条书签使用多列虚拟网格', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
 
   const list = page.getByTestId('bookmark-virtual-list')
   await expect(list).toBeVisible()
@@ -116,7 +72,7 @@ test('>60 条书签使用多列虚拟网格', async ({ page }) => {
 })
 
 test('命令面板方向键滚动跟随高亮项', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   await page
     .getByRole('button', { name: /打开书签：Site \d+/ })
     .first()
@@ -137,7 +93,7 @@ test('命令面板方向键滚动跟随高亮项', async ({ page }) => {
 })
 
 test('虚拟滚动不会把键盘焦点丢到 body', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   const first = page.getByRole('button', { name: /打开书签：Site \d+/ }).first()
   await first.focus()
 
@@ -150,7 +106,7 @@ test('虚拟滚动不会把键盘焦点丢到 body', async ({ page }) => {
 })
 
 test('根字号 20px 时虚拟度量同步缩放', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   await page.addStyleTag({ content: 'html { font-size: 20px !important; }' })
   await page.waitForFunction(() => getComputedStyle(document.documentElement).fontSize === '20px')
   await page.evaluate(() => window.dispatchEvent(new Event('resize')))
@@ -172,7 +128,7 @@ test('根字号 20px 时虚拟度量同步缩放', async ({ page }) => {
 })
 
 test('虚拟列表方向键使用 roving tabindex 移动焦点', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   const first = page.getByRole('button', { name: /打开书签：Site \d+/ }).first()
   await first.focus()
   await page.keyboard.press('ArrowRight')
@@ -183,7 +139,7 @@ test('虚拟列表方向键使用 roving tabindex 移动焦点', async ({ page }
 })
 
 test('命令面板滚轮滚动后高亮项仍在可视区', async ({ page }) => {
-  await injectBookmarks(page, 100)
+  await seedBookmarks(page, 100, 'perf')
   await page.keyboard.press('Control+k')
 
   const dialog = page.getByRole('dialog')

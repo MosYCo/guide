@@ -87,15 +87,20 @@ test.describe('键盘流 SC-002', () => {
     await expect(more).toBeFocused()
   })
 
-  test('书签卡菜单键盘操作不会同时打开书签', async ({ page, context }) => {
+  test('书签卡菜单键盘操作不会同时打开书签', async ({ page }) => {
     await resetDB(page)
     await page.goto('/')
     await page.waitForSelector('text=书签导航')
     await addBookmark(page, 'https://example.com', '键盘菜单测试')
 
-    let popups = 0
-    context.on('page', () => {
-      popups++
+    // 直接计数 window.open,避免 popup 拦截造成的假通过
+    await page.evaluate(() => {
+      const w = window as Window & { __openCalls?: number }
+      w.__openCalls = 0
+      w.open = (() => {
+        w.__openCalls = (w.__openCalls ?? 0) + 1
+        return null
+      }) as typeof window.open
     })
 
     const more = page.getByRole('button', { name: /更多操作/ })
@@ -103,7 +108,10 @@ test.describe('键盘流 SC-002', () => {
     await page.keyboard.press('Enter')
 
     await expect(page.getByRole('menu')).toBeVisible()
-    expect(popups).toBe(0)
+    const openCalls = await page.evaluate(
+      () => (window as Window & { __openCalls?: number }).__openCalls ?? 0,
+    )
+    expect(openCalls).toBe(0)
   })
 
   test('Ctrl+K 打开命令面板,键盘选择并跳转', async ({ page }) => {

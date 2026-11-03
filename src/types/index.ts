@@ -92,4 +92,6 @@ export interface ImportPreview {
   bookmarks: number
   categories: number
   skipped: number
+  /** 与现有库中 URL 重复的条数(仅提示,不阻止导入) */
+  duplicates?: number
 }

@@ -149,6 +149,54 @@ describe('导入导出服务', () => {
       await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
     })
 
+    it('预览统计与现有书签 URL 重复的条数', async () => {
+      await addBookmark(makeBookmark({ url: 'https://dup.example', name: 'Existing' }))
+      const exportData: ExportData = {
+        version: '1.0.0',
+        exportedAt: '2026-07-28T00:00:00Z',
+        bookmarkCount: 1,
+        categoryCount: 0,
+        categories: [],
+        bookmarks: [makeBookmark({ url: 'https://dup.example', name: 'Incoming' })],
+      }
+      const { preview } = await parseJsonFile(makeFile(JSON.stringify(exportData)))
+      expect(preview.duplicates).toBe(1)
+    })
+
+    it('导入时同名分类合并到现有分类', async () => {
+      const existing = makeCategory({ name: 'Work' })
+      await addCategory(existing)
+      const exportData: ExportData = {
+        version: '1.0.0',
+        exportedAt: '2026-07-28T00:00:00Z',
+        bookmarkCount: 1,
+        categoryCount: 1,
+        categories: [
+          {
+            id: 'imported-work',
+            name: 'Work',
+            order: 0,
+            createdAt: '2026-07-28T00:00:00Z',
+          },
+        ],
+        bookmarks: [
+          makeBookmark({
+            url: 'https://work.example',
+            name: 'Work bookmark',
+            categoryId: 'imported-work',
+          }),
+        ],
+      }
+
+      const result = await importFromJson(exportData)
+      expect(result.success).toBe(true)
+      expect(result.categoryCount).toBe(0)
+      const categories = await getAllCategories()
+      expect(categories).toHaveLength(1)
+      const bookmarks = await getAllBookmarks()
+      expect(bookmarks[0].categoryId).toBe(existing.id)
+    })
+
     it('拒绝不支持的版本', async () => {
       const file = makeFile(
         JSON.stringify({

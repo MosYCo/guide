@@ -5,13 +5,65 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, Category, ExportData, ImportPreview, ImportResult } from '@/types'
-import { bulkImport, getAllDataForExport } from '@/services/db'
+import { bulkImport, getAllBookmarks, getAllCategories, getAllDataForExport } from '@/services/db'
 import { validateAndNormalizeUrl } from '@/utils/url'
 
 const EXPORT_VERSION = '1.0.0'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 const MAX_ITEMS = 50_000
 const MAX_HTML_DEPTH = 100
+
+async function countDuplicateUrls(bookmarks: Bookmark[]): Promise<number> {
+  const existing = await getAllBookmarks()
+  const urls = new Set(
+    existing.map((bookmark) => {
+      const validation = validateAndNormalizeUrl(bookmark.url)
+      return validation.valid ? validation.normalized! : bookmark.url
+    }),
+  )
+  let duplicates = 0
+  for (const bookmark of bookmarks) {
+    const validation = validateAndNormalizeUrl(bookmark.url)
+    if (validation.valid && urls.has(validation.normalized!)) duplicates++
+  }
+  return duplicates
+}
+
+/**
+ * 按名称合并到现有分类:同名分类复用现有 ID,新分类 order 追加到现有 max 之后。
+ * 书签的 categoryId 同步重映射,避免重复分类与 order 冲突。
+ */
+async function mergeCategoriesWithExisting(
+  categories: Category[],
+  bookmarks: Bookmark[],
+): Promise<{ categories: Category[]; bookmarks: Bookmark[] }> {
+  const existing = await getAllCategories()
+  const byName = new Map(existing.map((category) => [category.name, category]))
+  let nextOrder = existing.reduce((max, category) => Math.max(max, category.order), -1) + 1
+  const idMap = new Map<string, string>()
+  const merged: Category[] = []
+
+  for (const category of categories) {
+    const name = category.name.trim().slice(0, 50) || '未命名'
+    const found = byName.get(name)
+    if (found) {
+      idMap.set(category.id, found.id)
+      continue
+    }
+    const created: Category = { ...category, name, order: nextOrder++ }
+    byName.set(name, created)
+    merged.push(created)
+    idMap.set(category.id, created.id)
+  }
+
+  return {
+    categories: merged,
+    bookmarks: bookmarks.map((bookmark) => ({
+      ...bookmark,
+      categoryId: bookmark.categoryId ? (idMap.get(bookmark.categoryId) ?? null) : null,
+    })),
+  }
+}
 
 /**
  * 兼容 Node/jsdom 环境读取文件文本。
@@ -167,6 +219,7 @@ export async function parseJsonFile(file: File): Promise<{
       bookmarks: data.bookmarks.length,
       categories: data.categories.length,
       skipped,
+      duplicates: await countDuplicateUrls(data.bookmarks),
     },
     data,
   }
@@ -217,12 +270,13 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
       })
     }
 
-    await bulkImport(newCategories, newBookmarks)
+    const merged = await mergeCategoriesWithExisting(newCategories, newBookmarks)
+    await bulkImport(merged.categories, merged.bookmarks)
 
     return {
       success: true,
-      bookmarkCount: newBookmarks.length,
-      categoryCount: newCategories.length,
+      bookmarkCount: merged.bookmarks.length,
+      categoryCount: merged.categories.length,
       skipped,
     }
   } catch (e) {
@@ -335,6 +389,7 @@ export async function parseHtmlFile(file: File): Promise<{
       bookmarks: bookmarks.length,
       categories: categories.length,
       skipped,
+      duplicates: await countDuplicateUrls(bookmarks),
     },
     categories,
     bookmarks,
@@ -351,11 +406,12 @@ export async function importFromHtml(
   skipped = 0,
 ): Promise<ImportResult> {
   try {
-    await bulkImport(categories, bookmarks)
+    const merged = await mergeCategoriesWithExisting(categories, bookmarks)
+    await bulkImport(merged.categories, merged.bookmarks)
     return {
       success: true,
-      bookmarkCount: bookmarks.length,
-      categoryCount: categories.length,
+      bookmarkCount: merged.bookmarks.length,
+      categoryCount: merged.categories.length,
       skipped,
     }
   } catch (e) {

@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
+import { chromium, test, expect, type Page } from '@playwright/test'
+import { rm } from 'node:fs/promises'
 
 /**
  * US5 E2E: 数据持久化
@@ -35,6 +36,26 @@ test('添加书签后刷新页面，数据保留', async ({ page }) => {
   await page.reload()
   await page.waitForSelector('text=书签导航')
   await expect(page.getByRole('button', { name: '打开书签：Persisted' })).toBeVisible()
+})
+
+test('关闭浏览器后重新打开，数据保留', async () => {
+  const baseURL = test.info().project.use.baseURL ?? 'http://localhost:5173'
+  const userDataDir = test.info().outputPath('profile')
+  await rm(userDataDir, { recursive: true, force: true })
+
+  let context = await chromium.launchPersistentContext(userDataDir, {})
+  let page = await context.newPage()
+  await page.goto(baseURL)
+  await page.waitForSelector('text=书签导航')
+  await addBookmark(page, 'https://restart.com', 'Restart')
+  await expect(page.getByRole('button', { name: '打开书签：Restart' })).toBeVisible()
+  await context.close()
+
+  context = await chromium.launchPersistentContext(userDataDir, {})
+  page = await context.newPage()
+  await page.goto(baseURL)
+  await expect(page.getByRole('button', { name: '打开书签：Restart' })).toBeVisible()
+  await context.close()
 })
 
 test('添加多个书签后刷新，全部保留', async ({ page }) => {
