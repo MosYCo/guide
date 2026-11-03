@@ -2,11 +2,11 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/guide/favicon.webp" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/webp" href="/guide/favicon.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <title>书签导航</title>
-    <!-- FR-017 FOUC 防护:在 React 挂载前读 localStorage 主题键 bookmark-theme
+    <!--  FOUC 防护:在 React 挂载前读 localStorage 主题键 bookmark-theme
          (单一事实源,见 @/utils/storage 的 THEME_KEY),提前设 .dark class,
          避免首屏亮→暗闪烁。内联脚本无法 import 模块,故硬编码键名。 -->
     <script>
@@ -14,21 +14,24 @@
         try {
           var key = 'bookmark-theme'
           var stored = localStorage.getItem(key)
-          var theme = stored // 'light' | 'dark' | 'system' | null
+          // 非法值统一按 system 处理,与 storage/useTheme 的解析保持一致
+          var theme =
+            stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
           var prefersDark =
-            window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches
-          var isDark =
-            theme === 'dark' || ((theme === 'system' || theme === null) && prefersDark)
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+          var isDark = theme === 'dark' || ((theme === 'system' || theme === null) && prefersDark)
           if (isDark) document.documentElement.classList.add('dark')
+          var meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', isDark ? '#1a1a1a' : '#ffffff')
         } catch (e) {
           /* localStorage 不可用(隐私模式)时静默降级 */
         }
       })()
     </script>
-    <script type="module" crossorigin src="/guide/assets/index-C412EeZr.js"></script>
-    <link rel="modulepreload" crossorigin href="/guide/assets/radix-vendor-DsCA9z0c.js">
-    <link rel="stylesheet" crossorigin href="/guide/assets/index-w0ljrm_l.css">
+    <script type="module" crossorigin src="/guide/assets/index-CvFLXxDe.js"></script>
+    <link rel="modulepreload" crossorigin href="/guide/assets/react-vendor-DpbF7dbh.js">
+    <link rel="modulepreload" crossorigin href="/guide/assets/radix-vendor-CtohEt2I.js">
+    <link rel="stylesheet" crossorigin href="/guide/assets/index-ZSa63dBF.css">
   </head>
   <body>
     <div id="root"></div>
