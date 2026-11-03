@@ -21,6 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      # 部署动作需要在 git 仓库内配置 user/commit,必须先把仓库检出到工作区;
+      # 且必须在下载产物之前,checkout 会清理未跟踪文件。
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
