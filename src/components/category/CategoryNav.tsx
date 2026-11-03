@@ -38,7 +38,7 @@ import {
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 // T039: CategoryDrawer 静态导入(非 React.lazy)。有意偏离 T021 的"懒加载"注记:
 // 抽屉体量小,随 CategoryNav 同 chunk 不影响首屏(首屏不渲染移动端分支),
-// 静态导入更简洁(宪法 II 简洁优先),避免 lazy+Suspense 的额外复杂度。
+// 静态导入更简洁,避免 lazy+Suspense 的额外复杂度。
 import { CategoryDrawer } from '@/components/category/CategoryDrawer'
 import type { Category } from '@/types'
 import { cn } from '@/lib/utils'
