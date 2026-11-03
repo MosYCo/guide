@@ -9,11 +9,10 @@ import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, BookmarkFormData } from '@/types'
 import {
   addBookmark,
-  categoryExists,
   deleteBookmark,
   getAllBookmarks,
   getRecentBookmarks,
-  putBookmark,
+  putBookmarkWithValidCategory,
   updateLastVisited,
 } from '@/services/db'
 import { resolveIcon } from '@/services/favicon'
@@ -93,21 +92,15 @@ export function useBookmarks(): UseBookmarksReturn {
       }
       const existing = bookmarks.find((b) => b.id === id)
       if (!existing) throw new Error('书签不存在')
-      const requestedCategoryId = data.categoryId ?? null
-      // 多标签/并发删除后,不要把已不存在的分类 ID 写回
-      const categoryId =
-        requestedCategoryId && (await categoryExists(requestedCategoryId))
-          ? requestedCategoryId
-          : null
       const icon = resolveIcon(validation.normalized!, data.name, data.icon)
-      const updated: Bookmark = {
+      // 分类校验与写入在同一事务内,避免多标签删除分类的 check-then-write 窗口
+      const updated = await putBookmarkWithValidCategory({
         ...existing,
         url: validation.normalized!,
         name: data.name.trim(),
         icon,
-        categoryId,
-      }
-      await putBookmark(updated)
+        categoryId: data.categoryId ?? null,
+      })
       setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
       return updated
     },
@@ -174,10 +167,10 @@ export function useBookmarks(): UseBookmarksReturn {
       async (id: string, categoryId: string | null): Promise<void> => {
         const existing = bookmarks.find((b) => b.id === id)
         if (!existing) throw new Error('书签不存在')
-        const resolvedCategoryId =
-          categoryId && (await categoryExists(categoryId)) ? categoryId : null
-        const updated = { ...existing, categoryId: resolvedCategoryId }
-        await putBookmark(updated)
+        const updated = await putBookmarkWithValidCategory({
+          ...existing,
+          categoryId,
+        })
         setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
       },
       [bookmarks],

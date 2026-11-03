@@ -178,9 +178,25 @@ export async function getMaxCategoryOrder(): Promise<number> {
   return Math.max(...all.map((c) => c.order))
 }
 
-export async function categoryExists(id: string): Promise<boolean> {
+/**
+ * 写入书签时在同一事务内校验目标分类:
+ * 分类已被并发删除则把 categoryId 置空,避免写回悬空引用。
+ */
+export async function putBookmarkWithValidCategory(
+  bookmark: Bookmark,
+): Promise<Bookmark> {
   const db = await getDB()
-  return (await db.get('categories', id)) !== undefined
+  const tx = db.transaction(['categories', 'bookmarks'], 'readwrite')
+  const category = bookmark.categoryId
+    ? await tx.objectStore('categories').get(bookmark.categoryId)
+    : undefined
+  const updated: Bookmark = {
+    ...bookmark,
+    categoryId: category ? bookmark.categoryId : null,
+  }
+  await tx.objectStore('bookmarks').put(updated)
+  await tx.done
+  return updated
 }
 
 // ===== Bulk operations（导入用）=====

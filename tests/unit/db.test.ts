@@ -19,6 +19,7 @@ import {
   bulkAddBookmarks,
   bulkAddCategories,
   bulkImport,
+  putBookmarkWithValidCategory,
 } from '@/services/db'
 import type { Bookmark, Category } from '@/types'
 
@@ -52,6 +53,24 @@ describe('IndexedDB 服务', () => {
     await db.clear('bookmarks')
     await db.clear('categories')
   })
+  describe('putBookmarkWithValidCategory', () => {
+    it('分类不存在时把 categoryId 置空', async () => {
+      const bookmark = makeBookmark({ categoryId: 'missing-category' })
+      const saved = await putBookmarkWithValidCategory(bookmark)
+      expect(saved.categoryId).toBeNull()
+      expect((await getAllBookmarks())[0].categoryId).toBeNull()
+    })
+
+    it('分类存在时保留 categoryId', async () => {
+      const category = makeCategory({ name: '有效分类' })
+      await addCategory(category)
+      const bookmark = makeBookmark({ categoryId: category.id })
+      const saved = await putBookmarkWithValidCategory(bookmark)
+      expect(saved.categoryId).toBe(category.id)
+      expect((await getAllBookmarks())[0].categoryId).toBe(category.id)
+    })
+  })
+
   describe('bulkImport', () => {
     it('在单个事务中写入分类与书签', async () => {
       const category = makeCategory({ name: '导入分类' })
