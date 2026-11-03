@@ -2,21 +2,17 @@
  * CommandPalette 组件 - 全屏命令面板
  * FR-008: Ctrl+K 弹出全屏命令面板,含结果列表 + 键盘上下选择 + Enter 跳转 + Esc 关闭
  * T013: Spotlight/Raycast 风格,复用 shadcn Dialog;结果列表接 useVirtualList
- * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §4
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { StateEmpty } from '@/components/ui/state-feedback'
+import { useRootFontSize } from '@/hooks/useRootFontSize'
 import { useVirtualList } from '@/hooks/useVirtualList'
-import { extractDomain } from '@/utils/url'
-import { fallbackIcon } from '@/services/favicon'
+import { searchBookmarks } from '@/utils/search'
+import { displayDomain } from '@/utils/url'
+import { fallbackIcon, resolveIcon } from '@/services/favicon'
 import { cn } from '@/lib/utils'
 import type { Bookmark } from '@/types'
 
@@ -29,8 +25,8 @@ export interface CommandPaletteProps {
   onCreate?: () => void
 }
 
-const ITEM_HEIGHT = 56 // 单项高度(图标+标题+域名)
-const CONTAINER_HEIGHT = 400 // 结果列表可视高度
+const ITEM_HEIGHT_REM = 3.5 // h-14
+const CONTAINER_HEIGHT_REM = 25 // 400px @ 16px root
 
 export function CommandPalette({
   open,
@@ -43,21 +39,21 @@ export function CommandPalette({
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // 过滤结果(内联过滤逻辑:按名称与 URL 匹配)
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return bookmarks.slice(0, 50) // 无查询时展示前 50 条
-    return bookmarks
-      .filter(
-        (b) =>
-          b.name.toLowerCase().includes(q) || b.url.toLowerCase().includes(q),
-      )
-      .slice(0, 200) // 限制最大结果数
-  }, [bookmarks, query])
+  // 统一搜索实现:NFKC/去重音/多 token/Unicode 域名
+  const results = useMemo(
+    () =>
+      searchBookmarks(bookmarks, query, {
+        limit: query.trim() ? 200 : 50,
+      }),
+    [bookmarks, query],
+  )
 
-  // 虚拟滚动(结果数大于一屏时启用,否则全量)
-  const useVirtual = results.length * ITEM_HEIGHT > CONTAINER_HEIGHT
-  const virtual = useVirtualList(results, ITEM_HEIGHT, CONTAINER_HEIGHT, {
+  // 虚拟滚动(结果数大于一屏时启用,否则全量);尺寸随根字号缩放
+  const rootFontSize = useRootFontSize()
+  const itemHeight = ITEM_HEIGHT_REM * rootFontSize
+  const containerHeight = CONTAINER_HEIGHT_REM * rootFontSize
+  const useVirtual = results.length * itemHeight > containerHeight
+  const virtual = useVirtualList(results, itemHeight, containerHeight, {
     resetKey: query,
   })
 
@@ -81,9 +77,7 @@ export function CommandPalette({
     if (!useVirtual) return
     const first = virtual.startIndex
     const last = first + virtual.visibleItems.length - 1
-    setActiveIndex((current) =>
-      current >= first && current <= last ? current : first,
-    )
+    setActiveIndex((current) => (current >= first && current <= last ? current : first))
   }, [useVirtual, virtual.startIndex, virtual.visibleItems.length])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -100,8 +94,7 @@ export function CommandPalette({
       e.preventDefault()
       const first = virtual.startIndex
       const last = first + virtual.visibleItems.length - 1
-      const activeRendered =
-        !useVirtual || (activeIndex >= first && activeIndex <= last)
+      const activeRendered = !useVirtual || (activeIndex >= first && activeIndex <= last)
       if (activeRendered && results[activeIndex]) {
         onSelect(results[activeIndex])
         onClose()
@@ -124,6 +117,11 @@ export function CommandPalette({
           <Input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-expanded={results.length > 0}
+            aria-controls="command-results"
+            aria-autocomplete="list"
+            aria-activedescendant={results.length > 0 ? `command-option-${activeIndex}` : undefined}
             placeholder="搜索书签（上下选择,回车打开）"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -132,11 +130,17 @@ export function CommandPalette({
             aria-label="搜索书签"
           />
         </div>
+        <p className="sr-only" aria-live="polite">
+          共 {results.length} 个结果
+        </p>
         <div
           ref={useVirtual ? virtual.containerRef : undefined}
+          id="command-results"
+          role={results.length > 0 ? 'listbox' : undefined}
+          aria-label={results.length > 0 ? '搜索结果' : undefined}
           data-testid="command-results"
-          className="max-h-[400px] overflow-y-auto"
-          style={useVirtual ? { height: CONTAINER_HEIGHT } : undefined}
+          className="max-h-[25rem] overflow-y-auto"
+          style={useVirtual ? { height: containerHeight } : undefined}
         >
           {results.length === 0 ? (
             <StateEmpty
@@ -162,13 +166,14 @@ export function CommandPalette({
                 return (
                   <CommandPaletteItem
                     key={b.id}
+                    id={`command-option-${actualIndex}`}
                     bookmark={b}
                     active={actualIndex === activeIndex}
                     onSelect={() => {
                       onSelect(b)
                       onClose()
                     }}
-                    style={{ position: 'absolute', top: actualIndex * ITEM_HEIGHT }}
+                    style={{ position: 'absolute', top: actualIndex * itemHeight }}
                   />
                 )
               })}
@@ -177,6 +182,7 @@ export function CommandPalette({
             results.map((b, i) => (
               <CommandPaletteItem
                 key={b.id}
+                id={`command-option-${i}`}
                 bookmark={b}
                 active={i === activeIndex}
                 onSelect={() => {
@@ -193,34 +199,46 @@ export function CommandPalette({
 }
 
 function CommandPaletteItem({
+  id,
   bookmark,
   active,
   onSelect,
   style,
 }: {
+  id: string
   bookmark: Bookmark
   active: boolean
   onSelect: () => void
   style?: React.CSSProperties
 }) {
-  const domain = extractDomain(bookmark.url)
+  const domain = displayDomain(bookmark.url)
   return (
-    <button
-      type="button"
+    <div
+      id={id}
+      role="option"
+      aria-selected={active}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
+      tabIndex={-1}
       style={style}
-      aria-label={`打开书签：${bookmark.name}`}
+      aria-label={`打开书签：${bookmark.name}（${domain}）`}
       data-active={active}
       className={cn(
-        'flex h-14 w-full items-center gap-3 px-4 text-left',
+        'flex h-14 w-full cursor-pointer items-center gap-3 px-4 text-left',
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
       )}
     >
       <img
-        src={bookmark.icon || fallbackIcon(bookmark.name)}
+        src={bookmark.icon || resolveIcon(bookmark.url, bookmark.name)}
         alt=""
         loading="lazy"
         decoding="async"
+        referrerPolicy="no-referrer"
         onError={(e) => {
           e.currentTarget.src = fallbackIcon(bookmark.name)
         }}
@@ -228,10 +246,8 @@ function CommandPaletteItem({
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="text-body truncate font-medium">{bookmark.name}</span>
-        <span className="text-caption truncate text-muted-foreground">
-          {domain}
-        </span>
+        <span className="text-caption truncate text-muted-foreground">{domain}</span>
       </div>
-    </button>
+    </div>
   )
 }

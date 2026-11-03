@@ -4,7 +4,6 @@ import { test, expect, type Page } from '@playwright/test'
  * T029: 断点矩阵 E2E
  * SC-003: 标准断点逐档无横向溢出,减少动效降级
  * FR-011/012
- * @see specs/001-ui-ux-overhaul/quickstart.md §场景3
  */
 
 const BREAKPOINTS = [
@@ -55,9 +54,7 @@ test.describe('断点矩阵 SC-003', () => {
 
       // 平板及 PC 应使用侧栏列表,而不是空侧栏 + 全屏底部 Tab
       if (bp.width >= 768) {
-        await expect(
-          page.locator('aside').getByText('分类', { exact: true }),
-        ).toBeVisible()
+        await expect(page.locator('aside').getByText('分类', { exact: true })).toBeVisible()
         await expect(page.locator('nav.fixed.bottom-0')).toHaveCount(0)
       }
 

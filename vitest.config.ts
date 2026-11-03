@@ -19,6 +19,14 @@ export default defineConfig({
     ],
     coverage: {
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/main.tsx', 'src/types/**', 'src/components/ui/**'],
+      thresholds: {
+        lines: 30,
+        statements: 30,
+        functions: 55,
+        branches: 60,
+      },
     },
   },
 })

@@ -57,9 +57,7 @@ describe('US4 编辑与删除流程', () => {
     await user.click(screen.getByRole('button', { name: '保存' }))
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Renamed' }),
-    )
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: 'Renamed' }))
   })
 
   it('删除书签：点击删除弹出确认对话框', async () => {
@@ -67,16 +65,11 @@ describe('US4 编辑与删除流程', () => {
     const onEdit = vi.fn()
     const onClick = vi.fn()
     render(
-      <BookmarkCard
-        bookmark={bookmark}
-        onEdit={onEdit}
-        onDelete={onDelete}
-        onClick={onClick}
-      />,
+      <BookmarkCard bookmark={bookmark} onEdit={onEdit} onDelete={onDelete} onClick={onClick} />,
     )
 
     const user = userEvent.setup()
-    const moreBtn = screen.getByLabelText('更多操作')
+    const moreBtn = screen.getByLabelText(/更多操作/)
     await user.click(moreBtn)
     const deleteItem = await screen.findByText('删除')
     await user.click(deleteItem)

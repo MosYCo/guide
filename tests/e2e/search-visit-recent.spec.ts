@@ -41,9 +41,7 @@ test('添加书签后可通过命令面板搜索定位', async ({ page }) => {
   // 命令面板内的输入框 placeholder 为新文案;结果与背后的卡片同名,需限定在 dialog 内
   const dialog = page.getByRole('dialog')
   await page.fill('[placeholder="搜索书签（上下选择,回车打开）"]', 'github')
-  await expect(
-    dialog.getByRole('button', { name: '打开书签：GitHub' }),
-  ).toBeVisible()
+  await expect(dialog.getByRole('option', { name: /打开书签：GitHub/ })).toBeVisible()
   await page.keyboard.press('Escape')
   await page.waitForSelector('[role="dialog"]', { state: 'detached' })
 })
@@ -69,9 +67,7 @@ test('Ctrl+K 快捷键打开命令面板并聚焦输入框', async ({ page }) =>
   await page.keyboard.press('Control+K')
   await page.waitForSelector('[role="dialog"]')
   // 命令面板打开后焦点应落输入框
-  const focusedTag = await page.evaluate(() =>
-    document.activeElement?.tagName.toLowerCase(),
-  )
+  const focusedTag = await page.evaluate(() => document.activeElement?.tagName.toLowerCase())
   expect(focusedTag).toBe('input')
   await page.keyboard.press('Escape')
 })

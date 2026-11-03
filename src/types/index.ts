@@ -1,6 +1,5 @@
 /**
  * 书签导航页 - 核心类型定义
- * @see specs/001-bookmark-navigation/data-model.md
  */
 
 /** 书签实体 */

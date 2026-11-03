@@ -3,21 +3,52 @@
  * - localStorage 读写（主题持久化）
  * - 无痕模式检测（SC-003 边界）
  * - navigator.storage.persist 请求
- * @see specs/001-bookmark-navigation/research.md §2
  */
 
 const THEME_KEY = 'bookmark-theme'
+const memoryFallback = new Map<string, string>()
+
+/**
+ * localStorage 可能因禁用站点数据/沙箱 iframe 抛 SecurityError。
+ * 失败时退回进程内 Map,保证首屏不崩溃(本次会话内仍可读写)。
+ */
+export function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return memoryFallback.get(key) ?? null
+  }
+}
+
+export function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    memoryFallback.set(key, value)
+  }
+}
 
 /** 读取持久化的主题偏好 */
 export function getStoredTheme(): 'light' | 'dark' | 'system' | null {
-  const v = localStorage.getItem(THEME_KEY)
+  const v = safeGetItem(THEME_KEY)
   if (v === 'light' || v === 'dark' || v === 'system') return v
   return null
 }
 
 /** 持久化主题偏好 */
 export function setStoredTheme(theme: 'light' | 'dark' | 'system'): void {
-  localStorage.setItem(THEME_KEY, theme)
+  safeSetItem(THEME_KEY, theme)
+}
+
+/** 把存储/配额异常翻译成可操作的用户提示 */
+export function describeStorageError(error: unknown): string {
+  if (
+    error instanceof DOMException &&
+    (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+  ) {
+    return '存储空间不足,请先导出书签并清理旧数据'
+  }
+  return error instanceof Error ? error.message : '操作失败'
 }
 
 /**
@@ -25,12 +56,14 @@ export function setStoredTheme(theme: 'light' | 'dark' | 'system'): void {
  * 返回是否已持久化或请求成功。
  */
 export async function requestPersistentStorage(): Promise<boolean> {
-  if (navigator.storage && navigator.storage.persist) {
+  if (!navigator.storage?.persist) return false
+  try {
     const isPersisted = await navigator.storage.persisted?.()
     if (isPersisted) return true
-    return navigator.storage.persist()
+    return await navigator.storage.persist()
+  } catch {
+    return false
   }
-  return false
 }
 
 /**

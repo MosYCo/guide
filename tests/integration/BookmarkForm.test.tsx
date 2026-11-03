@@ -51,7 +51,7 @@ describe('BookmarkForm（添加模式）', () => {
     await user.type(screen.getByPlaceholderText('https://example.com'), 'javascript:alert(1)')
     await user.type(screen.getByPlaceholderText('书签名称'), 'Bad')
     await user.click(screen.getByRole('button', { name: '添加' }))
-    await waitFor(() => expect(screen.getByText(/http\/https/)).toBeInTheDocument())
+    expect(await screen.findByText(/http\/https/)).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })
 
@@ -69,10 +69,7 @@ describe('BookmarkForm（添加模式）', () => {
     await user.type(screen.getByPlaceholderText('https://example.com'), 'example.com')
     await user.type(screen.getByPlaceholderText('书签名称'), 'Example')
     const previewImg = screen.getByAltText('图标预览')
-    expect(previewImg).toHaveAttribute(
-      'src',
-      expect.stringContaining('google.com/s2/favicons'),
-    )
+    expect(previewImg).toHaveAttribute('src', expect.stringContaining('google.com/s2/favicons'))
   })
 })
 
@@ -102,8 +99,6 @@ describe('BookmarkForm（编辑模式）', () => {
     await user.type(nameInput, 'New Name')
     await user.click(screen.getByRole('button', { name: '保存' }))
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
-    expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'New Name' }),
-    )
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Name' }))
   })
 })

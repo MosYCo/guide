@@ -44,6 +44,8 @@ tests/
 - Node >= 24(见 `.nvmrc`)
 - pnpm 11(见 `package.json` 的 `packageManager`)
 
+Favicon 默认通过 Google S2 API 获取,图片请求带 `referrerPolicy="no-referrer"`;设置 `VITE_FAVICON_REMOTE=false` 可禁用外部图标请求,回退为首字母/纯色块。
+
 ## 开发
 
 ```bash
@@ -66,9 +68,11 @@ pnpm test:e2e     # Playwright E2E
 ## 代码质量
 
 ```bash
-pnpm lint         # ESLint
-pnpm format       # Prettier
-pnpm typecheck    # tsc --noEmit
+pnpm lint          # ESLint,零警告
+pnpm format        # Prettier 写入
+pnpm format:check  # Prettier 校验
+pnpm typecheck     # tsc -b
+pnpm check         # lint + typecheck + test + build
 ```
 
 ## 部署

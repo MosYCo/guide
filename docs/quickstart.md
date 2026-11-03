@@ -119,14 +119,14 @@ pnpm build         # 类型检查 + 生产构建
 
 E2E 覆盖与手工场景的对应关系:
 
-| 手工场景 | E2E 测试文件 |
-|---|---|
-| 视觉走查 | `tests/e2e/visual-walkthrough.spec.ts` |
-| 键盘流 | `tests/e2e/keyboard-flow.spec.ts` |
+| 手工场景   | E2E 测试文件                               |
+| ---------- | ------------------------------------------ |
+| 视觉走查   | `tests/e2e/visual-walkthrough.spec.ts`     |
+| 键盘流     | `tests/e2e/keyboard-flow.spec.ts`          |
 | 响应式断点 | `tests/e2e/responsive-breakpoints.spec.ts` |
-| 性能基线 | `tests/e2e/performance-baseline.spec.ts` |
-| 主题无闪烁 | `tests/e2e/theme-fouc.spec.ts` |
-| 极端字段 | `tests/e2e/extreme-fields.spec.ts` |
-| 导入导出 | `tests/e2e/import-export.spec.ts` |
+| 性能基线   | `tests/e2e/performance-baseline.spec.ts`   |
+| 主题无闪烁 | `tests/e2e/theme-fouc.spec.ts`             |
+| 极端字段   | `tests/e2e/extreme-fields.spec.ts`         |
+| 导入导出   | `tests/e2e/import-export.spec.ts`          |
 
 E2E 的具体断言与覆盖范围见 [ui-contract.md](./ui-contract.md) 与 [quality-baseline.md](./quality-baseline.md)。

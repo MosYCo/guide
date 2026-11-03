@@ -26,7 +26,7 @@ import {
 import type { ImportPreview } from '@/types'
 
 export interface ImportExportButtonsProps {
-  onDataChanged: () => Promise<void> | void
+  onDataChanged: () => Promise<boolean | void> | boolean | void
 }
 
 export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps) {
@@ -36,7 +36,13 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
   const [preview, setPreview] = useState<{
     open: boolean
     data?: ImportPreview
-    importFn?: () => Promise<{ success: boolean; bookmarkCount: number; error?: string }>
+    importFn?: () => Promise<{
+      success: boolean
+      bookmarkCount: number
+      skipped?: number
+      refreshFailed?: boolean
+      error?: string
+    }>
     error?: string
   }>({ open: false })
 
@@ -64,28 +70,29 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
             data: p,
             importFn: async () => {
               const result = await importFromJson(data)
-              await onDataChanged()
+              const refreshed = await onDataChanged()
               return {
                 success: result.success,
                 bookmarkCount: result.bookmarkCount,
+                skipped: result.skipped,
+                refreshFailed: refreshed === false,
                 error: result.error,
               }
             },
           })
-        } else if (
-          file.name.endsWith('.html') ||
-          file.type.includes('html')
-        ) {
+        } else if (file.name.endsWith('.html') || file.type.includes('html')) {
           const { preview: p, categories, bookmarks } = await parseHtmlFile(file)
           setPreview({
             open: true,
             data: p,
             importFn: async () => {
-              const result = await importFromHtml(categories, bookmarks)
-              await onDataChanged()
+              const result = await importFromHtml(categories, bookmarks, p.skipped)
+              const refreshed = await onDataChanged()
               return {
                 success: result.success,
                 bookmarkCount: result.bookmarkCount,
+                skipped: result.skipped,
+                refreshFailed: refreshed === false,
                 error: result.error,
               }
             },
@@ -118,7 +125,16 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
         })
       } else {
         setPreview({ open: false })
-        toast(`已导入 ${result.bookmarkCount} 个书签`)
+        const skipped = result.skipped ?? 0
+        if (result.refreshFailed) {
+          toast(`已导入 ${result.bookmarkCount} 个书签，但界面刷新失败，请刷新页面`, 'warning')
+        } else {
+          toast(
+            skipped > 0
+              ? `已导入 ${result.bookmarkCount} 个书签，跳过 ${skipped} 条`
+              : `已导入 ${result.bookmarkCount} 个书签`,
+          )
+        }
       }
     } catch (e) {
       setPreview({
@@ -132,17 +148,26 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={handleExport} className="focus-ring min-h-11 gap-1">
-        <Download className="h-4 w-4" />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          void handleExport()
+        }}
+        className="focus-ring min-h-11 min-w-11 gap-1"
+        aria-label="导出数据"
+      >
+        <Download className="h-4 w-4" aria-hidden />
         <span className="hidden sm:inline">导出</span>
       </Button>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => fileInputRef.current?.click()}
-        className="focus-ring min-h-11 gap-1"
+        className="focus-ring min-h-11 min-w-11 gap-1"
+        aria-label="导入数据"
       >
-        <Upload className="h-4 w-4" />
+        <Upload className="h-4 w-4" aria-hidden />
         <span className="hidden sm:inline">导入</span>
       </Button>
       <input
@@ -150,7 +175,9 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
         type="file"
         accept=".json,.html,text/html,application/json"
         className="hidden"
-        onChange={handleFileSelect}
+        onChange={(e) => {
+          void handleFileSelect(e)
+        }}
         aria-label="选择导入文件"
       />
 
@@ -165,9 +192,7 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
           <DialogHeader>
             <DialogTitle>导入预览</DialogTitle>
             <DialogDescription>
-              {preview.error
-                ? '导入失败，原数据保持不变'
-                : '请确认以下数据将被导入'}
+              {preview.error ? '导入失败，原数据保持不变' : '请确认以下数据将被导入'}
             </DialogDescription>
           </DialogHeader>
           {preview.error ? (
@@ -188,7 +213,12 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
           )}
           <DialogFooter>
             {!preview.error && (
-              <Button onClick={handleConfirmImport} disabled={importing}>
+              <Button
+                onClick={() => {
+                  void handleConfirmImport()
+                }}
+                disabled={importing}
+              >
                 {importing ? '导入中…' : '确认导入'}
               </Button>
             )}

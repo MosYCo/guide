@@ -4,14 +4,14 @@ Moss Guide 书签导航的工程文档。原 Spec Kit 工作流已于 2026-11-03
 
 ## 现行文档
 
-| 文档 | 内容 |
-|---|---|
-| [engineering-principles.md](./engineering-principles.md) | 工程原则 I–IV、语言与文档约束、质量门、治理 |
-| [design-decisions.md](./design-decisions.md) | 2026-07-28 UI/UX 系统性优化的技术决策、理由与备选方案 |
-| [data-model.md](./data-model.md) | 实体字段与约束、IndexedDB schema、导入导出格式、展示层 token |
-| [ui-contract.md](./ui-contract.md) | 设计 token、组件/交互/响应式/可访问性契约 |
-| [quality-baseline.md](./quality-baseline.md) | 性能、可访问性、响应式、虚拟滚动等目标基线与验收判定 |
-| [quickstart.md](./quickstart.md) | 手工验收场景与自动化测试入口 |
+| 文档                                                     | 内容                                                         |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| [engineering-principles.md](./engineering-principles.md) | 工程原则 I–IV、语言与文档约束、质量门、治理                  |
+| [design-decisions.md](./design-decisions.md)             | 2026-07-28 UI/UX 系统性优化的技术决策、理由与备选方案        |
+| [data-model.md](./data-model.md)                         | 实体字段与约束、IndexedDB schema、导入导出格式、展示层 token |
+| [ui-contract.md](./ui-contract.md)                       | 设计 token、组件/交互/响应式/可访问性契约                    |
+| [quality-baseline.md](./quality-baseline.md)             | 性能、可访问性、响应式、虚拟滚动等目标基线与验收判定         |
+| [quickstart.md](./quickstart.md)                         | 手工验收场景与自动化测试入口                                 |
 
 ## 历史归档
 

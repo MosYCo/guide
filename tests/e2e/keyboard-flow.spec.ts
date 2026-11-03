@@ -4,7 +4,6 @@ import { test, expect, type Page } from '@playwright/test'
  * T028: 键盘流 E2E
  * SC-002: 仅键盘完成核心流程,焦点可见且顺序合理
  * FR-004/005/006
- * @see specs/001-ui-ux-overhaul/quickstart.md §场景2
  */
 
 async function resetDB(page: Page) {
@@ -61,16 +60,14 @@ test.describe('键盘流 SC-002', () => {
     const card = page.getByRole('button', { name: '打开书签：删除测试' })
     await card.hover()
     // 打开更多操作菜单
-    const more = page.getByRole('button', { name: '更多操作' })
+    const more = page.getByRole('button', { name: /更多操作/ })
     await more.click()
     await page.getByRole('menuitem', { name: '删除' }).click()
 
     // 确认对话框出现,默认焦点应落取消按钮
     const dialog = page.getByRole('alertdialog')
     await expect(dialog).toBeVisible()
-    await expect(
-      dialog.getByRole('button', { name: '取消' }),
-    ).toBeFocused()
+    await expect(dialog.getByRole('button', { name: '取消' })).toBeFocused()
     const focusedText = await page.evaluate(() => {
       const el = document.activeElement
       return el?.textContent?.trim() ?? ''
@@ -80,9 +77,7 @@ test.describe('键盘流 SC-002', () => {
     // Esc 不应关闭 alertdialog
     await page.keyboard.press('Escape')
     await expect(dialog).toBeVisible()
-    await expect(
-      dialog.getByRole('button', { name: '取消' }),
-    ).toBeFocused()
+    await expect(dialog.getByRole('button', { name: '取消' })).toBeFocused()
 
     // Enter 不触发删除(因焦点在取消)
     await page.keyboard.press('Enter')
@@ -103,7 +98,7 @@ test.describe('键盘流 SC-002', () => {
       popups++
     })
 
-    const more = page.getByRole('button', { name: '更多操作' })
+    const more = page.getByRole('button', { name: /更多操作/ })
     await more.focus()
     await page.keyboard.press('Enter')
 
@@ -122,9 +117,7 @@ test.describe('键盘流 SC-002', () => {
     await page.waitForSelector('[role="dialog"]')
 
     // 焦点应在输入框
-    const focusedTag = await page.evaluate(() =>
-      document.activeElement?.tagName.toLowerCase(),
-    )
+    const focusedTag = await page.evaluate(() => document.activeElement?.tagName.toLowerCase())
     expect(focusedTag).toBe('input')
 
     // 输入过滤

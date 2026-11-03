@@ -71,10 +71,22 @@ export default {
       },
       // FR-001 type scale 四档
       fontSize: {
-        display: ['var(--text-display-size)', { lineHeight: 'var(--text-display-line)', fontWeight: 'var(--text-display-weight)' }],
-        h1: ['var(--text-h1-size)', { lineHeight: 'var(--text-h1-line)', fontWeight: 'var(--text-h1-weight)' }],
-        body: ['var(--text-body-size)', { lineHeight: 'var(--text-body-line)', fontWeight: 'var(--text-body-weight)' }],
-        caption: ['var(--text-caption-size)', { lineHeight: 'var(--text-caption-line)', fontWeight: 'var(--text-caption-weight)' }],
+        display: [
+          'var(--text-display-size)',
+          { lineHeight: 'var(--text-display-line)', fontWeight: 'var(--text-display-weight)' },
+        ],
+        h1: [
+          'var(--text-h1-size)',
+          { lineHeight: 'var(--text-h1-line)', fontWeight: 'var(--text-h1-weight)' },
+        ],
+        body: [
+          'var(--text-body-size)',
+          { lineHeight: 'var(--text-body-line)', fontWeight: 'var(--text-body-weight)' },
+        ],
+        caption: [
+          'var(--text-caption-size)',
+          { lineHeight: 'var(--text-caption-line)', fontWeight: 'var(--text-caption-weight)' },
+        ],
       },
       keyframes: {
         'accordion-down': {

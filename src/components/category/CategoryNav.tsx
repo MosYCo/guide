@@ -3,7 +3,6 @@
  * PC(≥md 768): 侧栏列表 + 可折叠(收起/展开,持久化)+ 计数 badge 选中态高亮
  * 移动端(<md 768): 底部固定 Tab(全部/分类)+ 侧滑抽屉承载完整列表
  * T021: 废弃移动端顶部横标签栏,改底部 Tab+抽屉(FR-009/014)
- * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §5
  */
 
 import { useRef, useState } from 'react'
@@ -17,6 +16,8 @@ import {
   GripVertical,
   PanelLeftClose,
   PanelLeft,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,6 +59,8 @@ export interface CategoryNavProps {
   onBookmarkDrop?: (categoryId: string | null) => void
   /** 受控折叠态(PC 侧栏);由 App 上提,AppLayout 据此切宽度 */
   collapsed?: boolean
+  /** 分类是否仍在加载 */
+  loading?: boolean
   /** 切换折叠态(收起/展开) */
   onToggleCollapse?: () => void
 }
@@ -74,12 +77,15 @@ export function CategoryNav({
   onReorder,
   onBookmarkDrop,
   collapsed = false,
+  loading = false,
   onToggleCollapse,
 }: CategoryNavProps) {
   const { isPC, isTablet } = useMediaQuery()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const deleteTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const mobileCategoriesButtonRef = useRef<HTMLButtonElement | null>(null)
 
   const handleDragStart = (id: string) => {
     if (!onReorder) return
@@ -100,19 +106,34 @@ export function CategoryNav({
     setDraggingId(null)
   }
 
+  const moveCategoryBy = (index: number, delta: -1 | 1) => {
+    if (!onReorder) return
+    const target = index + delta
+    if (target < 0 || target >= categories.length) return
+    const ids = categories.map((c) => c.id)
+    ;[ids[index], ids[target]] = [ids[target], ids[index]]
+    onReorder(ids)
+  }
+
   // T021: PC 侧栏(含平板);折叠态受控于 App
   if (isPC || isTablet) {
     // 折叠态:仅图标按钮
     if (collapsed) {
       return (
         <>
-          <nav className="flex h-full flex-col items-center gap-1 p-2">
+          <nav
+            id="category-nav"
+            aria-label="分类导航（折叠）"
+            className="flex h-full flex-col items-center gap-1 overflow-y-auto p-2 scrollbar-thin"
+          >
             <Button
               variant="ghost"
               size="icon"
               className="focus-ring min-h-11 min-w-11"
               onClick={() => onToggleCollapse?.()}
               aria-label="展开侧栏"
+              aria-expanded={false}
+              aria-controls="category-nav"
             >
               <PanelLeft className="h-4 w-4" />
             </Button>
@@ -122,10 +143,11 @@ export function CategoryNav({
               className="focus-ring min-h-11 min-w-11"
               onClick={() => onSelect(null)}
               aria-label="全部书签"
+              aria-current={selectedCategoryId === null ? 'page' : undefined}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
-            {categories.slice(0, 8).map((c) => (
+            {categories.map((c) => (
               <Button
                 key={c.id}
                 variant="ghost"
@@ -136,8 +158,10 @@ export function CategoryNav({
                 )}
                 onClick={() => onSelect(c.id)}
                 aria-label={c.name}
+                aria-current={selectedCategoryId === c.id ? 'page' : undefined}
+                title={c.name}
               >
-                <Folder className="h-4 w-4" />
+                <span className="text-xs font-semibold">{Array.from(c.name)[0]}</span>
               </Button>
             ))}
             <Button
@@ -152,6 +176,7 @@ export function CategoryNav({
           </nav>
           <DeleteConfirm
             open={!!deleteId}
+            returnFocusRef={deleteTriggerRef}
             onCancel={() => setDeleteId(null)}
             onConfirm={() => {
               if (deleteId) onDelete(deleteId)
@@ -165,7 +190,7 @@ export function CategoryNav({
     // 展开态:完整侧栏(沿用既有结构)
     return (
       <>
-        <nav className="flex h-full flex-col p-2">
+        <nav id="category-nav" aria-label="分类导航" className="flex h-full flex-col p-2">
           <div className="mb-2 flex items-center justify-between px-2">
             <span className="text-h1">分类</span>
             <div className="flex items-center gap-1">
@@ -184,6 +209,8 @@ export function CategoryNav({
                 className="focus-ring min-h-11 min-w-11"
                 onClick={() => onToggleCollapse?.()}
                 aria-label="收起侧栏"
+                aria-expanded={true}
+                aria-controls="category-nav"
               >
                 <PanelLeftClose className="h-4 w-4" />
               </Button>
@@ -196,10 +223,9 @@ export function CategoryNav({
               icon={<LayoutGrid className="h-4 w-4" />}
               label="全部"
               count={totalCount}
-              isPC={isPC}
               onDrop={onBookmarkDrop ? () => onBookmarkDrop(null) : undefined}
             />
-            {categories.map((c) => (
+            {categories.map((c, index) => (
               <CategoryNavItem
                 key={c.id}
                 category={c}
@@ -207,26 +233,34 @@ export function CategoryNav({
                 count={bookmarkCounts[c.id] ?? 0}
                 onSelect={() => onSelect(c.id)}
                 onEdit={() => onEdit(c)}
-                onDelete={() => setDeleteId(c.id)}
+                onDelete={(trigger) => {
+                  deleteTriggerRef.current = trigger
+                  setDeleteId(c.id)
+                }}
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onDragEnd={() => setDraggingId(null)}
-                isPC
-                onBookmarkDrop={
-                  onBookmarkDrop ? () => onBookmarkDrop(c.id) : undefined
+                onMoveUp={onReorder && index > 0 ? () => moveCategoryBy(index, -1) : undefined}
+                onMoveDown={
+                  onReorder && index < categories.length - 1
+                    ? () => moveCategoryBy(index, 1)
+                    : undefined
                 }
+                isPC
+                onBookmarkDrop={onBookmarkDrop ? () => onBookmarkDrop(c.id) : undefined}
               />
             ))}
             {categories.length === 0 && (
               <p className="text-caption px-2 py-4 text-muted-foreground">
-                暂无分类，点击上方 + 创建
+                {loading ? '加载中…' : '暂无分类，点击上方 + 创建'}
               </p>
             )}
           </div>
         </nav>
         <DeleteConfirm
           open={!!deleteId}
+          returnFocusRef={deleteTriggerRef}
           onCancel={() => setDeleteId(null)}
           onConfirm={() => {
             if (deleteId) onDelete(deleteId)
@@ -240,14 +274,16 @@ export function CategoryNav({
   // T021: 移动端底部固定 Tab(全部 / 分类)+ 侧滑抽屉
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-background/95 px-2 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <nav
+        aria-label="底部导航"
+        style={{ paddingBottom: 'max(0.25rem, env(safe-area-inset-bottom))' }}
+        className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-background/95 px-2 py-1 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      >
         <button
           onClick={() => onSelect(null)}
           className={cn(
             'focus-ring flex min-h-11 flex-1 flex-col items-center gap-0.5 rounded-md py-1',
-            selectedCategoryId === null
-              ? 'text-primary'
-              : 'text-muted-foreground',
+            selectedCategoryId === null ? 'text-primary' : 'text-muted-foreground',
           )}
           aria-label="全部书签"
           aria-current={selectedCategoryId === null ? 'page' : undefined}
@@ -256,18 +292,34 @@ export function CategoryNav({
           <span className="text-caption">全部</span>
         </button>
         <button
+          ref={mobileCategoriesButtonRef}
           onClick={() => setDrawerOpen(true)}
           className={cn(
             'focus-ring flex min-h-11 flex-1 flex-col items-center gap-0.5 rounded-md py-1',
             selectedCategoryId !== null ? 'text-primary' : 'text-muted-foreground',
           )}
-          aria-label="打开分类列表"
+          aria-label={
+            selectedCategoryId
+              ? `打开分类列表，当前：${
+                  categories.find((c) => c.id === selectedCategoryId)?.name ?? '分类'
+                }`
+              : '打开分类列表'
+          }
+          aria-current={selectedCategoryId !== null ? 'page' : undefined}
+          aria-expanded={drawerOpen}
           aria-haspopup="dialog"
         >
           <Folder className="h-5 w-5" />
-          <span className="text-caption">
+          <span
+            className="text-caption max-w-[6em] truncate"
+            title={
+              selectedCategoryId
+                ? (categories.find((c) => c.id === selectedCategoryId)?.name ?? '分类')
+                : '分类'
+            }
+          >
             {selectedCategoryId
-              ? categories.find((c) => c.id === selectedCategoryId)?.name ?? '分类'
+              ? (categories.find((c) => c.id === selectedCategoryId)?.name ?? '分类')
               : '分类'}
           </span>
         </button>
@@ -288,9 +340,17 @@ export function CategoryNav({
         totalCount={totalCount}
         onSelect={onSelect}
         onClose={() => setDrawerOpen(false)}
+        onEdit={onEdit}
+        onRequestDelete={(id) => {
+          deleteTriggerRef.current = mobileCategoriesButtonRef.current
+          setDeleteId(id)
+        }}
+        onReorder={onReorder}
+        loading={loading}
       />
       <DeleteConfirm
         open={!!deleteId}
+        returnFocusRef={deleteTriggerRef}
         onCancel={() => setDeleteId(null)}
         onConfirm={() => {
           if (deleteId) onDelete(deleteId)
@@ -307,7 +367,6 @@ function NavItem({
   icon,
   label,
   count,
-  isPC,
   onDrop,
 }: {
   active: boolean
@@ -315,19 +374,20 @@ function NavItem({
   icon: React.ReactNode
   label: string
   count: number
-  isPC: boolean
   onDrop?: () => void
 }) {
-  if (!isPC) return null
   return (
     <button
       onClick={onClick}
       onDragOver={(e) => onDrop && e.preventDefault()}
       onDrop={onDrop}
+      aria-current={active ? 'page' : undefined}
       className={cn(
         'focus-ring flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1.5 text-body',
         // T021: 选中态高亮(FR-009)
-        active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+        active
+          ? 'border-l-2 border-primary bg-accent font-semibold text-accent-foreground'
+          : 'hover:bg-accent/50',
       )}
     >
       {icon}
@@ -356,6 +416,8 @@ function CategoryNavItem({
   onDragOver,
   onDrop,
   onDragEnd,
+  onMoveUp,
+  onMoveDown,
   isPC,
   onBookmarkDrop,
 }: {
@@ -364,15 +426,18 @@ function CategoryNavItem({
   count: number
   onSelect: () => void
   onEdit: () => void
-  onDelete: () => void
+  onDelete: (trigger: HTMLButtonElement | null) => void
   onDragStart: (id: string) => void
   onDragOver: (e: React.DragEvent, id: string) => void
   onDrop: (id: string) => void
   onDragEnd?: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   isPC: boolean
   onBookmarkDrop?: () => void
 }) {
   const suppressMenuFocusRef = useRef(false)
+  const menuTriggerRef = useRef<HTMLButtonElement>(null)
 
   return (
     <div
@@ -389,13 +454,19 @@ function CategoryNavItem({
       }}
       className={cn(
         'group flex items-center gap-1 rounded-md px-2 py-1.5 text-sm',
-        active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
+        active
+          ? 'border-l-2 border-primary bg-accent font-semibold text-accent-foreground'
+          : 'hover:bg-accent/50',
       )}
     >
       {isPC && (
         <GripVertical className="h-3 w-3 cursor-grab text-muted-foreground opacity-0 group-hover:opacity-100" />
       )}
-      <button onClick={onSelect} className="flex flex-1 items-center gap-2 text-left">
+      <button
+        onClick={onSelect}
+        aria-current={active ? 'page' : undefined}
+        className="focus-ring flex min-h-9 flex-1 items-center gap-2 rounded-md text-left"
+      >
         <Folder className="h-4 w-4" />
         <span className="flex-1 truncate" title={category.name}>
           {category.name}
@@ -405,10 +476,11 @@ function CategoryNavItem({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
+            ref={menuTriggerRef}
             variant="ghost"
             size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-            aria-label="分类操作"
+            className="h-11 w-11 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 lg:h-6 lg:w-6"
+            aria-label={`分类操作：${category.name}`}
             onClick={(e) => e.stopPropagation()}
           >
             <MoreVertical className="h-3.5 w-3.5" />
@@ -428,12 +500,24 @@ function CategoryNavItem({
             <Pencil className="mr-2 h-4 w-4" />
             重命名
           </DropdownMenuItem>
+          {onMoveUp && (
+            <DropdownMenuItem onClick={onMoveUp}>
+              <ArrowUp className="mr-2 h-4 w-4" />
+              上移
+            </DropdownMenuItem>
+          )}
+          {onMoveDown && (
+            <DropdownMenuItem onClick={onMoveDown}>
+              <ArrowDown className="mr-2 h-4 w-4" />
+              下移
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             className="text-destructive"
             onClick={() => {
               suppressMenuFocusRef.current = true
               // 等菜单关闭并释放滚动锁后再开确认框,避免 Radix 弹层锁叠加
-              setTimeout(onDelete, 0)
+              setTimeout(() => onDelete(menuTriggerRef.current), 0)
             }}
           >
             <Trash2 className="mr-2 h-4 w-4" />
@@ -449,14 +533,22 @@ function DeleteConfirm({
   open,
   onCancel,
   onConfirm,
+  returnFocusRef,
 }: {
   open: boolean
   onCancel: () => void
   onConfirm: () => void
+  returnFocusRef?: React.RefObject<HTMLButtonElement | null>
 }) {
   return (
     <AlertDialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        onCloseAutoFocus={(e) => {
+          e.preventDefault()
+          const el = returnFocusRef?.current
+          if (el?.isConnected) el.focus()
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>删除分类</AlertDialogTitle>
           <AlertDialogDescription>

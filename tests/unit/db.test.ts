@@ -19,7 +19,11 @@ import {
   bulkAddBookmarks,
   bulkAddCategories,
   bulkImport,
-  putBookmarkWithValidCategory,
+  addBookmarkWithValidCategory,
+  updateBookmarkFields,
+  createCategoryWithUniqueName,
+  renameCategoryWithUniqueName,
+  reorderCategoriesInDb,
 } from '@/services/db'
 import type { Bookmark, Category } from '@/types'
 
@@ -53,21 +57,90 @@ describe('IndexedDB 服务', () => {
     await db.clear('bookmarks')
     await db.clear('categories')
   })
-  describe('putBookmarkWithValidCategory', () => {
-    it('分类不存在时把 categoryId 置空', async () => {
+  describe('分类事务', () => {
+    it('创建时校验唯一名并分配 order', async () => {
+      const first = await createCategoryWithUniqueName({
+        id: 'cat-a',
+        name: 'A',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+      const second = await createCategoryWithUniqueName({
+        id: 'cat-b',
+        name: 'B',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+      expect(first.order).toBe(0)
+      expect(second.order).toBe(1)
+      await expect(
+        createCategoryWithUniqueName({
+          id: 'cat-c',
+          name: 'A',
+          createdAt: '2026-01-01T00:00:00Z',
+        }),
+      ).rejects.toThrow('已存在')
+    })
+
+    it('重命名校验唯一名', async () => {
+      await createCategoryWithUniqueName({
+        id: 'cat-a',
+        name: 'A',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+      await createCategoryWithUniqueName({
+        id: 'cat-b',
+        name: 'B',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+      await expect(renameCategoryWithUniqueName('cat-b', 'A')).rejects.toThrow('已存在')
+      const renamed = await renameCategoryWithUniqueName('cat-b', 'C')
+      expect(renamed.name).toBe('C')
+    })
+
+    it('重排分配连续 order 并补全未列出的分类', async () => {
+      for (const [id, name] of [
+        ['cat-a', 'A'],
+        ['cat-b', 'B'],
+        ['cat-c', 'C'],
+      ] as const) {
+        await createCategoryWithUniqueName({
+          id,
+          name,
+          createdAt: '2026-01-01T00:00:00Z',
+        })
+      }
+      const ordered = await reorderCategoriesInDb(['cat-c', 'cat-a'])
+      expect(ordered.map((c) => c.id)).toEqual(['cat-c', 'cat-a', 'cat-b'])
+      expect(ordered.map((c) => c.order)).toEqual([0, 1, 2])
+    })
+  })
+
+  describe('书签写入完整性', () => {
+    it('新增时分类不存在则置空', async () => {
       const bookmark = makeBookmark({ categoryId: 'missing-category' })
-      const saved = await putBookmarkWithValidCategory(bookmark)
+      const saved = await addBookmarkWithValidCategory(bookmark)
       expect(saved.categoryId).toBeNull()
       expect((await getAllBookmarks())[0].categoryId).toBeNull()
     })
 
-    it('分类存在时保留 categoryId', async () => {
+    it('编辑保留 lastVisitedAt 并拒绝已删除书签', async () => {
       const category = makeCategory({ name: '有效分类' })
       await addCategory(category)
-      const bookmark = makeBookmark({ categoryId: category.id })
-      const saved = await putBookmarkWithValidCategory(bookmark)
-      expect(saved.categoryId).toBe(category.id)
-      expect((await getAllBookmarks())[0].categoryId).toBe(category.id)
+      const bookmark = makeBookmark({
+        categoryId: category.id,
+        lastVisitedAt: '2026-01-02T00:00:00Z',
+      })
+      await addBookmark(bookmark)
+
+      const updated = await updateBookmarkFields(bookmark.id, {
+        name: '新名称',
+        categoryId: null,
+      })
+      expect(updated.name).toBe('新名称')
+      expect(updated.categoryId).toBeNull()
+      expect(updated.lastVisitedAt).toBe('2026-01-02T00:00:00Z')
+
+      await deleteBookmark(bookmark.id)
+      await expect(updateBookmarkFields(bookmark.id, { name: '复活' })).rejects.toThrow('已被删除')
     })
   })
 
@@ -125,15 +198,9 @@ describe('IndexedDB 服务', () => {
     })
 
     it('获取最近访问书签（按时间倒序）', async () => {
-      await addBookmark(
-        makeBookmark({ lastVisitedAt: '2026-01-01T00:00:00Z' }),
-      )
-      await addBookmark(
-        makeBookmark({ lastVisitedAt: '2026-03-01T00:00:00Z' }),
-      )
-      await addBookmark(
-        makeBookmark({ lastVisitedAt: '2026-02-01T00:00:00Z' }),
-      )
+      await addBookmark(makeBookmark({ lastVisitedAt: '2026-01-01T00:00:00Z' }))
+      await addBookmark(makeBookmark({ lastVisitedAt: '2026-03-01T00:00:00Z' }))
+      await addBookmark(makeBookmark({ lastVisitedAt: '2026-02-01T00:00:00Z' }))
       await addBookmark(makeBookmark({ lastVisitedAt: null }))
       const recent = await getRecentBookmarks(2)
       expect(recent).toHaveLength(2)

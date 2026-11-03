@@ -1,13 +1,13 @@
 /**
  * CategoryForm 组件 - 添加/重命名分类表单
  * FR-007 创建、重命名
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §CategoryForm
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import type { Category } from '@/types'
+import { describeStorageError } from '@/utils/storage'
 
 export interface CategoryFormProps {
   open: boolean
@@ -24,16 +25,12 @@ export interface CategoryFormProps {
   onCancel: () => void
 }
 
-export function CategoryForm({
-  open,
-  category,
-  onSubmit,
-  onCancel,
-}: CategoryFormProps) {
+export function CategoryForm({ open, category, onSubmit, onCancel }: CategoryFormProps) {
   const isEdit = !!category
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) {
@@ -58,7 +55,7 @@ export function CategoryForm({
       await onSubmit(trimmed)
       onCancel()
     } catch (err) {
-      setError(err instanceof Error ? err.message : '操作失败')
+      setError(describeStorageError(err))
     } finally {
       setSubmitting(false)
     }
@@ -66,11 +63,25 @@ export function CategoryForm({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent
+        className="sm:max-w-sm"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          nameInputRef.current?.focus()
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-h1">{isEdit ? '重命名分类' : '新建分类'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            输入分类名称，名称在分类列表中必须唯一。
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="category-name">分类名称</Label>
             <Input
@@ -83,23 +94,19 @@ export function CategoryForm({
                 if (error) setError(null)
               }}
               maxLength={50}
-              autoFocus
+              ref={nameInputRef}
               aria-invalid={!!error}
+              aria-required="true"
               aria-describedby={error ? 'category-error' : undefined}
             />
             {error && (
-              <p id="category-error" className="text-caption text-destructive">
+              <p id="category-error" role="alert" className="text-caption text-destructive">
                 {error}
               </p>
             )}
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={submitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
               取消
             </Button>
             <Button type="submit" disabled={submitting}>

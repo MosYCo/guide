@@ -4,7 +4,6 @@ import { test, expect, type Page } from '@playwright/test'
  * T032: 极端字段 E2E
  * SC-006: 超长标题/favicon 失效/无效 URL 不破布局
  * FR-016/018
- * @see specs/001-ui-ux-overhaul/quickstart.md §场景6
  */
 
 async function injectExtremeBookmarks(page: Page) {
@@ -20,6 +19,11 @@ async function injectExtremeBookmarks(page: Page) {
           store.createIndex('createdAt', 'createdAt')
           store.createIndex('lastVisitedAt', 'lastVisitedAt')
           store.createIndex('url', 'url')
+        }
+        if (!db.objectStoreNames.contains('categories')) {
+          const store = db.createObjectStore('categories', { keyPath: 'id' })
+          store.createIndex('order', 'order')
+          store.createIndex('name', 'name')
         }
       }
       req.onsuccess = () => {
@@ -116,10 +120,7 @@ test.describe('极端字段 SC-006', () => {
 
     // favicon <img> onError 后应降级(首字母图标是 SVG data URI)。
     // onError 是异步 setState,用会轮询的断言避免读到降级前的 src。
-    await expect(card.locator('img')).toHaveAttribute(
-      'src',
-      /^data:image\/svg\+xml/,
-    )
+    await expect(card.locator('img')).toHaveAttribute('src', /^data:image\/svg\+xml/)
   })
 
   test('无效 URL 不破布局', async ({ page }) => {

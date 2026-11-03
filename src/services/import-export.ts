@@ -1,26 +1,26 @@
 /**
  * 导入导出服务
  * FR-015 JSON 导出、FR-016 HTML 导入、FR-018 JSON 导入
- * @see specs/001-bookmark-navigation/data-model.md §数据导入导出格式
- * @see specs/001-bookmark-navigation/research.md §3, §4
  */
 
 import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, Category, ExportData, ImportPreview, ImportResult } from '@/types'
-import {
-  bulkImport,
-  getAllBookmarks,
-  getAllCategories,
-} from '@/services/db'
+import { bulkImport, getAllDataForExport } from '@/services/db'
 import { validateAndNormalizeUrl } from '@/utils/url'
 
 const EXPORT_VERSION = '1.0.0'
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+const MAX_ITEMS = 50_000
+const MAX_HTML_DEPTH = 100
 
 /**
  * 兼容 Node/jsdom 环境读取文件文本。
  * jsdom 的 File 没有 .text()，用 FileReader 兜底。
  */
 function fileText(file: File): Promise<string> {
+  if (file.size > MAX_FILE_BYTES) {
+    return Promise.reject(new Error('文件过大，最大支持 10 MB'))
+  }
   if (typeof file.text === 'function') return file.text()
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -35,10 +35,7 @@ function fileText(file: File): Promise<string> {
  * @returns ExportData 对象
  */
 export async function exportToJson(): Promise<ExportData> {
-  const [bookmarks, categories] = await Promise.all([
-    getAllBookmarks(),
-    getAllCategories(),
-  ])
+  const { bookmarks, categories } = await getAllDataForExport()
   return {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
@@ -55,8 +52,7 @@ export async function exportToJson(): Promise<ExportData> {
  * @param filename 文件名（可选，默认 bookmarks-YYYY-MM-DD.json）
  */
 export function downloadJson(data: ExportData, filename?: string): void {
-  const name =
-    filename ?? `bookmarks-${new Date().toISOString().slice(0, 10)}.json`
+  const name = filename ?? `bookmarks-${new Date().toISOString().slice(0, 10)}.json`
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',
   })
@@ -71,7 +67,8 @@ function triggerDownload(blob: Blob, filename: string): void {
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  // 立即 revoke 可能取消部分浏览器/大文件的下载,延后释放
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 /**
@@ -85,8 +82,15 @@ function assertValidExportData(data: ExportData): void {
   if (typeof data.version !== 'string') {
     throw new Error('缺少 version 字段或格式不正确')
   }
+  const majorVersion = Number(data.version.split('.')[0])
+  if (!Number.isInteger(majorVersion) || majorVersion !== 1) {
+    throw new Error(`不支持的导入版本：${data.version}`)
+  }
   if (!Array.isArray(data.categories) || !Array.isArray(data.bookmarks)) {
     throw new Error('categories 或 bookmarks 不是有效数组')
+  }
+  if (data.categories.length > MAX_ITEMS || data.bookmarks.length > MAX_ITEMS) {
+    throw new Error(`导入条目过多，单次最多 ${MAX_ITEMS} 条`)
   }
   for (const c of data.categories) {
     if (
@@ -95,7 +99,7 @@ function assertValidExportData(data: ExportData): void {
       typeof c?.name !== 'string' ||
       !c.name ||
       typeof c?.order !== 'number' ||
-      !Number.isFinite(c.order) ||
+      !Number.isInteger(c.order) ||
       c.order < 0
     ) {
       throw new Error('分类数据字段缺失或类型错误')
@@ -113,21 +117,20 @@ function assertValidExportData(data: ExportData): void {
     ) {
       throw new Error('书签数据字段缺失或类型错误')
     }
-    if (b.createdAt !== undefined && typeof b.createdAt !== 'string') {
+    if (
+      b.createdAt !== undefined &&
+      (typeof b.createdAt !== 'string' || Number.isNaN(Date.parse(b.createdAt)))
+    ) {
       throw new Error('书签数据字段缺失或类型错误')
     }
     if (
       b.lastVisitedAt !== undefined &&
       b.lastVisitedAt !== null &&
-      typeof b.lastVisitedAt !== 'string'
+      (typeof b.lastVisitedAt !== 'string' || Number.isNaN(Date.parse(b.lastVisitedAt)))
     ) {
       throw new Error('书签数据字段缺失或类型错误')
     }
-    if (
-      b.categoryId !== undefined &&
-      b.categoryId !== null &&
-      typeof b.categoryId !== 'string'
-    ) {
+    if (b.categoryId !== undefined && b.categoryId !== null && typeof b.categoryId !== 'string') {
       throw new Error('书签数据字段缺失或类型错误')
     }
   }
@@ -178,12 +181,18 @@ export async function parseJsonFile(file: File): Promise<{
 export async function importFromJson(data: ExportData): Promise<ImportResult> {
   try {
     assertValidExportData(data)
+    const now = new Date().toISOString()
     // 生成新 ID，构建 categoryId 映射
     const categoryIdMap = new Map<string, string>()
     const newCategories: Category[] = data.categories.map((c) => {
       const newId = uuidv4()
       categoryIdMap.set(c.id, newId)
-      return { ...c, id: newId }
+      return {
+        ...c,
+        id: newId,
+        name: c.name.trim().slice(0, 50) || '未命名',
+        createdAt: c.createdAt ?? now,
+      }
     })
 
     const newBookmarks: Bookmark[] = []
@@ -195,11 +204,16 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
         skipped++
         continue
       }
+      const icon = /^(?:https?:\/\/|data:image\/)/.test(b.icon) ? b.icon : ''
       newBookmarks.push({
         ...b,
         id: uuidv4(),
         url: validation.normalized!,
-        categoryId: b.categoryId ? categoryIdMap.get(b.categoryId) ?? null : null,
+        name: b.name.trim().slice(0, 100) || '未命名',
+        icon,
+        categoryId: b.categoryId ? (categoryIdMap.get(b.categoryId) ?? null) : null,
+        createdAt: b.createdAt ?? now,
+        lastVisitedAt: b.lastVisitedAt ?? null,
       })
     }
 
@@ -239,48 +253,71 @@ export async function parseHtmlFile(file: File): Promise<{
 
   const categories: Category[] = []
   const bookmarks: Bookmark[] = []
+  const categoryByName = new Map<string, Category>()
   let skipped = 0
+  let categoryOrder = 0
   const now = new Date().toISOString()
 
+  // 同名文件夹合并为一个分类;order 用全局计数器,避免每层从 0 重置
+  const getCategory = (rawName: string | null): Category => {
+    const name = (rawName ?? '').trim().slice(0, 50) || '未命名'
+    const existing = categoryByName.get(name)
+    if (existing) return existing
+    if (categories.length >= MAX_ITEMS) {
+      throw new Error(`分类过多，单次最多 ${MAX_ITEMS} 条`)
+    }
+    const category: Category = {
+      id: uuidv4(),
+      name,
+      order: categoryOrder++,
+      createdAt: now,
+    }
+    categories.push(category)
+    categoryByName.set(name, category)
+    return category
+  }
+
+  const parseAddDate = (value: string | null): string => {
+    if (!value) return now
+    const seconds = Number(value)
+    if (!Number.isFinite(seconds)) return now
+    const date = new Date(seconds * 1000)
+    if (Number.isNaN(date.getTime())) return now
+    const year = date.getUTCFullYear()
+    return year >= 1990 && year <= 2100 ? date.toISOString() : now
+  }
+
   // 递归遍历 <DL> 节点
-  function walk(dl: Element, parentCategoryId: string | null, order: number) {
-    const items = Array.from(dl.children).filter(
-      (el) => el.tagName === 'DT' || el.tagName === 'dt',
-    )
-    let catOrder = order
+  function walk(dl: Element, parentCategoryId: string | null, depth: number) {
+    if (depth > MAX_HTML_DEPTH) {
+      throw new Error('书签文件嵌套层级过深')
+    }
+    const items = Array.from(dl.children).filter((el) => el.tagName === 'DT' || el.tagName === 'dt')
     for (const dt of items) {
       const h3 = dt.querySelector(':scope > h3, :scope > H3')
       const a = dt.querySelector(':scope > a, :scope > A')
       const childDl = dt.querySelector(':scope > dl, :scope > DL')
 
       if (h3) {
-        // 文件夹 → 分类
-        const catId = uuidv4()
-        categories.push({
-          id: catId,
-          name: h3.textContent || '未命名',
-          order: catOrder++,
-          createdAt: now,
-        })
-        if (childDl) walk(childDl, catId, 0)
+        const category = getCategory(h3.textContent)
+        if (childDl) walk(childDl, category.id, depth + 1)
       } else if (a) {
-        // 书签
+        if (bookmarks.length >= MAX_ITEMS) {
+          throw new Error(`书签过多，单次最多 ${MAX_ITEMS} 条`)
+        }
         const href = a.getAttribute('HREF') || a.getAttribute('href') || ''
         const validation = validateAndNormalizeUrl(href)
         if (!validation.valid) {
           skipped++
           continue
         }
-        const addDate = a.getAttribute('ADD_DATE')
         bookmarks.push({
           id: uuidv4(),
           url: validation.normalized!,
-          name: a.textContent || validation.domain || '未命名',
+          name: (a.textContent ?? '').trim().slice(0, 100) || validation.domain || '未命名',
           icon: '',
           categoryId: parentCategoryId,
-          createdAt: addDate
-            ? new Date(Number(addDate) * 1000).toISOString()
-            : now,
+          createdAt: parseAddDate(a.getAttribute('ADD_DATE')),
           lastVisitedAt: null,
         })
       }
@@ -311,6 +348,7 @@ export async function parseHtmlFile(file: File): Promise<{
 export async function importFromHtml(
   categories: Category[],
   bookmarks: Bookmark[],
+  skipped = 0,
 ): Promise<ImportResult> {
   try {
     await bulkImport(categories, bookmarks)
@@ -318,7 +356,7 @@ export async function importFromHtml(
       success: true,
       bookmarkCount: bookmarks.length,
       categoryCount: categories.length,
-      skipped: 0,
+      skipped,
     }
   } catch (e) {
     return {

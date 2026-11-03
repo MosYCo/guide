@@ -3,19 +3,25 @@
  * T014: 搜索改为命令面板(FR-008),内联过滤移除
  */
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { Header } from '@/components/layout/Header'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { BookmarkForm } from '@/components/bookmark/BookmarkForm'
 import { BookmarkGrid, WelcomeState } from '@/components/bookmark/BookmarkGrid'
+import { StateError } from '@/components/ui/state-feedback'
 import { CategoryNav } from '@/components/category/CategoryNav'
 import { CategoryForm } from '@/components/category/CategoryForm'
 import { ToastProvider, useToast } from '@/components/ui/toast'
 import { useTheme } from '@/hooks/useTheme'
 import { useBookmarks } from '@/hooks/useBookmarks'
 import { useCategories } from '@/hooks/useCategories'
-import { requestPersistentStorage, detectIncognito } from '@/utils/storage'
+import {
+  requestPersistentStorage,
+  detectIncognito,
+  safeGetItem,
+  safeSetItem,
+} from '@/utils/storage'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
 
 // T017: 命令面板懒加载,减小首屏 JS(FR-019)
@@ -39,6 +45,7 @@ function AppInner() {
   const {
     bookmarks,
     loading,
+    error: bookmarksError,
     addBookmark,
     updateBookmark,
     deleteBookmark,
@@ -49,6 +56,8 @@ function AppInner() {
   } = useBookmarks()
   const {
     categories,
+    loading: categoriesLoading,
+    error: categoriesError,
     addCategory,
     renameCategory,
     deleteCategory,
@@ -57,7 +66,7 @@ function AppInner() {
   } = useCategories()
 
   // 导入等跨数据源操作后,书签与分类必须同时失效。
-  // silent:不切换 loading,避免把正在关闭的弹层提前卸载(Radix 滚动锁会残留)。
+  // silent:不切换主内容区骨架,避免后台刷新卸载正在交互的卡片/弹层并造成闪烁。
   const refreshAll = useCallback(async () => {
     const [bookmarksOk, categoriesOk] = await Promise.all([
       refreshBookmarks({ silent: true }),
@@ -66,6 +75,7 @@ function AppInner() {
     if (!bookmarksOk || !categoriesOk) {
       toast('数据已保存,但界面刷新失败,请重新加载', 'warning')
     }
+    return bookmarksOk && categoriesOk
   }, [refreshBookmarks, refreshCategories, toast])
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
@@ -75,21 +85,61 @@ function AppInner() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [draggingBookmark, setDraggingBookmark] = useState<Bookmark | null>(null)
   const [incognitoWarn, setIncognitoWarn] = useState(false)
+  const syncChannelRef = useRef<BroadcastChannel | null>(null)
   // T014: 命令面板开关(搜索由面板承载,查询状态面板内部管理)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   // 折叠态上提至 App:AppLayout 据此切 aside 宽度,CategoryNav 受控
   const [navCollapsed, setNavCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
-    return localStorage.getItem('category-nav-collapsed') === 'true'
+    return safeGetItem('category-nav-collapsed') === 'true'
   })
   useEffect(() => {
-    localStorage.setItem('category-nav-collapsed', String(navCollapsed))
+    safeSetItem('category-nav-collapsed', String(navCollapsed))
   }, [navCollapsed])
+
+  // 多标签同步:其他标签写入后静默刷新;从后台回到前台时也对账一次
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    const channel = new BroadcastChannel('moss-guide-data')
+    syncChannelRef.current = channel
+    const refresh = () => {
+      void refreshBookmarks({ silent: true })
+      void refreshCategories({ silent: true })
+    }
+    channel.onmessage = refresh
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      channel.close()
+      syncChannelRef.current = null
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [refreshBookmarks, refreshCategories])
+
+  const notifyChange = useCallback(() => {
+    syncChannelRef.current?.postMessage({ type: 'refresh' })
+  }, [])
+
+  const refreshAfterImport = useCallback(async () => {
+    const ok = await refreshAll()
+    notifyChange()
+    return ok
+  }, [refreshAll, notifyChange])
 
   useEffect(() => {
     requestPersistentStorage()
+      .then((ok) => {
+        if (!ok) {
+          toast('浏览器未授予持久化存储，建议定期导出备份', 'warning')
+        }
+      })
+      .catch(() => {
+        /* 存储 API 不可用时静默降级 */
+      })
     if (detectIncognito()) setIncognitoWarn(true)
-  }, [])
+  }, [toast])
 
   // Ctrl+K 全局快捷键打开命令面板(FR-008);Ctrl+N 新建书签
   useHotkeys(
@@ -153,59 +203,60 @@ function AppInner() {
         // 否则编辑旧书签会把已删除的分类 ID 写回。
         const refreshed = await refreshBookmarks({ silent: true })
         setSelectedCategoryId((prev) => (prev === id ? null : prev))
+        notifyChange()
         if (refreshed) toast('分类已删除')
         else toast('分类已删除,但书签列表刷新失败,请重新加载', 'warning')
       } catch (e) {
         toast(e instanceof Error ? e.message : '删除失败', 'error')
       }
     },
-    [deleteCategory, refreshBookmarks, toast],
+    [deleteCategory, refreshBookmarks, notifyChange, toast],
   )
 
   const handleBookmarkSubmit = useCallback(
     async (data: BookmarkFormData) => {
-      try {
-        if (editingBookmark) {
-          await updateBookmark(editingBookmark.id, data)
-          toast('书签已更新')
+      // 失败时向上抛给表单,由表单保留输入并就地展示错误
+      if (editingBookmark) {
+        const saved = await updateBookmark(editingBookmark.id, data)
+        if (data.categoryId && saved.categoryId === null) {
+          toast('原分类已不存在，书签已移至未分类', 'warning')
         } else {
-          await addBookmark(data)
-          toast('书签已添加')
+          toast('书签已更新')
         }
-      } catch (e) {
-        toast(e instanceof Error ? e.message : '保存失败', 'error')
+      } else {
+        await addBookmark(data)
+        toast('书签已添加')
       }
+      notifyChange()
     },
-    [editingBookmark, addBookmark, updateBookmark, toast],
+    [editingBookmark, addBookmark, updateBookmark, notifyChange, toast],
   )
 
   const handleCategorySubmit = useCallback(
     async (name: string) => {
-      try {
-        if (editingCategory) {
-          await renameCategory(editingCategory.id, name)
-          toast('分类已重命名')
-        } else {
-          await addCategory(name)
-          toast('分类已创建')
-        }
-      } catch (e) {
-        toast(e instanceof Error ? e.message : '操作失败', 'error')
+      if (editingCategory) {
+        await renameCategory(editingCategory.id, name)
+        toast('分类已重命名')
+      } else {
+        await addCategory(name)
+        toast('分类已创建')
       }
+      notifyChange()
     },
-    [editingCategory, addCategory, renameCategory, toast],
+    [editingCategory, addCategory, renameCategory, notifyChange, toast],
   )
 
   const handleDeleteBookmark = useCallback(
     async (id: string) => {
       try {
         await deleteBookmark(id)
+        notifyChange()
         toast('书签已删除')
       } catch (e) {
         toast(e instanceof Error ? e.message : '删除失败', 'error')
       }
     },
-    [deleteBookmark, toast],
+    [deleteBookmark, notifyChange, toast],
   )
 
   const handleBookmarkClick = useCallback(
@@ -216,6 +267,19 @@ function AppInner() {
       window.open(bm.url, '_blank', 'noopener,noreferrer')
     },
     [recordVisit, toast],
+  )
+
+  const handleBookmarkMove = useCallback(
+    async (bookmark: Bookmark, categoryId: string | null) => {
+      try {
+        await moveBookmarkToCategory(bookmark.id, categoryId)
+        notifyChange()
+        toast(categoryId ? '已移动到分类' : '已移至未分类')
+      } catch (e) {
+        toast(e instanceof Error ? e.message : '移动失败', 'error')
+      }
+    },
+    [moveBookmarkToCategory, notifyChange, toast],
   )
 
   // 拖拽书签到分类
@@ -235,6 +299,8 @@ function AppInner() {
 
   // T014: 搜索改由命令面板承载,内联无搜索态;无结果态移除(网格永远显示分类过滤结果)
 
+  const isLoading = loading || categoriesLoading
+
   return (
     <AppLayout
       collapsed={navCollapsed}
@@ -244,7 +310,7 @@ function AppInner() {
           resolvedTheme={resolvedTheme}
           onThemeChange={setTheme}
           onAddBookmark={handleAddBookmark}
-          onDataChanged={refreshAll}
+          onDataChanged={refreshAfterImport}
           onOpenSearch={() => setCommandPaletteOpen(true)}
         />
       }
@@ -257,77 +323,128 @@ function AppInner() {
           onSelect={setSelectedCategoryId}
           onAdd={handleAddCategory}
           onEdit={handleEditCategory}
-          onDelete={handleDeleteCategory}
-          onReorder={reorderCategories}
-          onBookmarkDrop={handleCategoryDrop}
+          onDelete={(id) => {
+            void handleDeleteCategory(id)
+          }}
+          onReorder={(ids) => {
+            void reorderCategories(ids).catch((e) => {
+              toast(e instanceof Error ? e.message : '分类排序失败', 'error')
+            })
+          }}
+          onBookmarkDrop={(id) => {
+            void handleCategoryDrop(id)
+          }}
           collapsed={navCollapsed}
+          loading={categoriesLoading}
           onToggleCollapse={() => setNavCollapsed((v) => !v)}
         />
       }
     >
-      {incognitoWarn && (
-        <div className="mb-3 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
-          当前为隐私/无痕模式，关闭窗口后数据可能丢失。
-        </div>
-      )}
-      {loading ? (
-        <BookmarkGrid
-          bookmarks={[]}
-          onEdit={() => {}}
-          onDelete={() => {}}
-          onClick={() => {}}
-          loading
-        />
-      ) : bookmarks.length === 0 ? (
-        <WelcomeState onAdd={handleAddBookmark} />
-      ) : (
-        <div className="space-y-4">
+      <p className="sr-only" role="status" aria-live="polite">
+        {isLoading
+          ? '正在加载数据'
+          : `已加载 ${bookmarks.length} 个书签，${categories.length} 个分类`}
+      </p>
+      <div aria-busy={isLoading}>
+        {incognitoWarn && (
           <div
-            onDragOver={(e) => {
-              if (draggingBookmark) e.preventDefault()
-            }}
-            onDrop={() => handleCategoryDrop(null)}
+            role="status"
+            className="mb-3 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning"
           >
-            <BookmarkGrid
-              bookmarks={filteredBookmarks}
-              recentBookmarks={recentBookmarks}
-              onEdit={(bm) => {
-                setEditingBookmark(bm)
-                setBookmarkFormOpen(true)
-              }}
-              onDelete={handleDeleteBookmark}
-              onClick={handleBookmarkClick}
-              onAdd={handleAddBookmark}
-              onBookmarkDragStart={setDraggingBookmark}
-              onBookmarkDragEnd={() => setDraggingBookmark(null)}
-              resetKey={selectedCategoryId ?? 'all'}
-            />
+            当前可能为隐私/无痕模式，关闭窗口后数据可能丢失。建议定期导出备份。
           </div>
-        </div>
-      )}
-      <BookmarkForm
-        open={bookmarkFormOpen}
-        bookmark={editingBookmark}
-        categories={categories}
-        onSubmit={handleBookmarkSubmit}
-        onCancel={() => setBookmarkFormOpen(false)}
-      />
-      <CategoryForm
-        open={categoryFormOpen}
-        category={editingCategory}
-        onSubmit={handleCategorySubmit}
-        onCancel={() => setCategoryFormOpen(false)}
-      />
-      {/* T017: 命令面板懒加载,减小首屏 JS */}
-      <Suspense fallback={null}>
-        <CommandPalette
-          open={commandPaletteOpen}
-          bookmarks={bookmarks}
-          onSelect={handleBookmarkClick}
-          onClose={() => setCommandPaletteOpen(false)}
-          onCreate={handleAddBookmark}
+        )}
+        {categoriesError && (
+          <div
+            role="alert"
+            className="mb-3 flex items-center justify-between gap-3 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            <span>分类加载失败：{categoriesError.message}</span>
+            <button
+              type="button"
+              onClick={() => void refreshCategories()}
+              className="focus-ring shrink-0 rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground hover:bg-accent"
+            >
+              重试
+            </button>
+          </div>
+        )}
+        {bookmarksError ? (
+          <StateError
+            message={`加载书签失败：${bookmarksError.message}`}
+            onRetry={() => void refreshBookmarks()}
+          />
+        ) : loading ? (
+          <BookmarkGrid
+            bookmarks={[]}
+            onEdit={() => {}}
+            onDelete={() => {}}
+            onClick={() => {}}
+            loading
+          />
+        ) : bookmarks.length === 0 ? (
+          <WelcomeState onAdd={handleAddBookmark} />
+        ) : (
+          <div className="space-y-4">
+            <div
+              onDragOver={(e) => {
+                if (draggingBookmark) e.preventDefault()
+              }}
+              onDrop={() => {
+                void handleCategoryDrop(null)
+              }}
+            >
+              <BookmarkGrid
+                bookmarks={filteredBookmarks}
+                recentBookmarks={recentBookmarks}
+                onEdit={(bm) => {
+                  setEditingBookmark(bm)
+                  setBookmarkFormOpen(true)
+                }}
+                onDelete={(id) => {
+                  void handleDeleteBookmark(id)
+                }}
+                onClick={handleBookmarkClick}
+                onAdd={handleAddBookmark}
+                onBookmarkDragStart={setDraggingBookmark}
+                onBookmarkDragEnd={() => setDraggingBookmark(null)}
+                categories={categories}
+                onMoveToCategory={(bookmark, categoryId) => {
+                  void handleBookmarkMove(bookmark, categoryId)
+                }}
+                resetKey={selectedCategoryId ?? 'all'}
+                emptyMessage={selectedCategoryId ? '该分类下暂无书签' : '暂无书签'}
+              />
+            </div>
+          </div>
+        )}
+        <BookmarkForm
+          open={bookmarkFormOpen}
+          bookmark={editingBookmark}
+          categories={categories}
+          defaultCategoryId={selectedCategoryId}
+          onSubmit={handleBookmarkSubmit}
+          onCancel={() => setBookmarkFormOpen(false)}
         />
-      </Suspense>
+        <CategoryForm
+          open={categoryFormOpen}
+          category={editingCategory}
+          onSubmit={handleCategorySubmit}
+          onCancel={() => setCategoryFormOpen(false)}
+        />
+        {/* 仅首次打开时挂载 lazy chunk,真正延迟到 Ctrl+K */}
+        {commandPaletteOpen && (
+          <Suspense fallback={null}>
+            <CommandPalette
+              open={commandPaletteOpen}
+              bookmarks={bookmarks}
+              onSelect={handleBookmarkClick}
+              onClose={() => setCommandPaletteOpen(false)}
+              onCreate={handleAddBookmark}
+            />
+          </Suspense>
+        )}
+      </div>
     </AppLayout>
   )
 }

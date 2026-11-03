@@ -1,9 +1,9 @@
 /**
  * URL 工具函数
  * FR-002: 仅允许 http/https 协议，保存和打开前规范化，拒绝 javascript:/data: 等危险协议
- * @see specs/001-bookmark-navigation/research.md §1
  */
 
+import { toUnicode } from 'punycode'
 import type { UrlValidationResult } from '@/types'
 
 /** 允许的协议白名单 */
@@ -24,10 +24,17 @@ export function validateAndNormalizeUrl(input: string): UrlValidationResult {
     return { valid: false, error: 'URL 不能为空' }
   }
 
-  // 补全协议头：缺少协议时默认 https://
+  // 补全协议头:
+  // - 只有显式 scheme:// 或危险协议才按原样解析
+  // - localhost / 回环地址默认 http,其余默认 https
+  // 这样裸 localhost:3000、example.com:8080 不会被误判为协议
+  const hasExplicitScheme =
+    /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed) ||
+    /^(?:javascript|data|file|mailto|tel|ftp|blob):/i.test(trimmed)
   let candidate = trimmed
-  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(candidate)) {
-    candidate = `https://${candidate}`
+  if (!hasExplicitScheme) {
+    const isLocal = /^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:[/?#]|$)/i.test(trimmed)
+    candidate = `${isLocal ? 'http' : 'https'}://${trimmed}`
   }
 
   let parsed: URL
@@ -45,13 +52,10 @@ export function validateAndNormalizeUrl(input: string): UrlValidationResult {
     }
   }
 
-  // 域名有效性检查
+  // 允许单标签主机(内网 NAS)、IPv4/IPv6 与 localhost;URL 解析器已拒绝非法 host
   const hostname = parsed.hostname.toLowerCase()
-  if (!hostname || !hostname.includes('.')) {
-    // 允许 localhost（开发场景），但必须含点或为 localhost
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return { valid: false, error: '域名无效' }
-    }
+  if (!hostname) {
+    return { valid: false, error: '域名无效' }
   }
 
   // 小写化域名后重建 URL
@@ -71,6 +75,20 @@ export function validateAndNormalizeUrl(input: string): UrlValidationResult {
 export function extractDomain(input: string): string {
   const result = validateAndNormalizeUrl(input)
   return result.domain ?? ''
+}
+
+/**
+ * 展示/搜索用域名:把 punycode 转回 Unicode,中文域名不显示 xn-- 串。
+ * 网络请求仍使用 extractDomain 的 ASCII 形式。
+ */
+export function displayDomain(input: string): string {
+  const domain = extractDomain(input)
+  if (!domain) return ''
+  try {
+    return toUnicode(domain)
+  } catch {
+    return domain
+  }
 }
 
 /**

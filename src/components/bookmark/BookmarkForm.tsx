@@ -1,13 +1,13 @@
 /**
  * BookmarkForm 组件 - 添加/编辑书签表单
  * FR-001 添加、FR-002 URL 验证、FR-005 编辑、FR-008 图标自动获取
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §BookmarkForm
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -18,11 +18,14 @@ import { Button } from '@/components/ui/button'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
 import { validateAndNormalizeUrl } from '@/utils/url'
 import { resolveIcon } from '@/services/favicon'
+import { describeStorageError } from '@/utils/storage'
 
 export interface BookmarkFormProps {
   open: boolean
   bookmark?: Bookmark | null
   categories: Category[]
+  /** 新增时预选的分类(当前筛选的分类) */
+  defaultCategoryId?: string | null
   onSubmit: (data: BookmarkFormData) => Promise<void> | void
   onCancel: () => void
 }
@@ -31,6 +34,7 @@ export function BookmarkForm({
   open,
   bookmark,
   categories,
+  defaultCategoryId,
   onSubmit,
   onCancel,
 }: BookmarkFormProps) {
@@ -40,18 +44,23 @@ export function BookmarkForm({
   const [icon, setIcon] = useState('')
   const [categoryId, setCategoryId] = useState<string>('')
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [nameError, setNameError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const urlInputRef = useRef<HTMLInputElement>(null)
 
-  // 预填充（编辑模式）
+  // 预填充（编辑模式）;新增时默认选中当前筛选分类
   useEffect(() => {
     if (open) {
       setUrl(bookmark?.url ?? '')
       setName(bookmark?.name ?? '')
       setIcon(bookmark?.icon ?? '')
-      setCategoryId(bookmark?.categoryId ?? '')
+      setCategoryId(bookmark?.categoryId ?? defaultCategoryId ?? '')
       setUrlError(null)
+      setNameError(null)
+      setFormError(null)
     }
-  }, [open, bookmark])
+  }, [open, bookmark, defaultCategoryId])
 
   const validateUrl = (value: string): boolean => {
     const result = validateAndNormalizeUrl(value)
@@ -65,8 +74,10 @@ export function BookmarkForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setNameError(null)
+    setFormError(null)
     if (!name.trim()) {
-      setUrlError('名称不能为空')
+      setNameError('名称不能为空')
       return
     }
     if (!validateUrl(url)) return
@@ -82,7 +93,8 @@ export function BookmarkForm({
       await onSubmit(data)
       onCancel()
     } catch (err) {
-      setUrlError(err instanceof Error ? err.message : '保存失败')
+      // 保存失败时保留表单与输入,错误展示在表单内
+      setFormError(describeStorageError(err))
     } finally {
       setSubmitting(false)
     }
@@ -93,11 +105,33 @@ export function BookmarkForm({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          urlInputRef.current?.focus()
+        }}
+      >
         <DialogHeader>
           <DialogTitle className="text-h1">{isEdit ? '编辑书签' : '添加书签'}</DialogTitle>
+          <DialogDescription className="sr-only">
+            填写 URL、名称与可选分类，保存后书签会出现在列表中。
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+          className="space-y-4"
+        >
+          {formError && (
+            <p
+              role="alert"
+              className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-caption text-destructive"
+            >
+              {formError}
+            </p>
+          )}
           <div className="space-y-2">
             <Label htmlFor="bookmark-url">URL</Label>
             <Input
@@ -111,11 +145,12 @@ export function BookmarkForm({
               }}
               onBlur={(e) => validateUrl(e.target.value)}
               aria-invalid={!!urlError}
+              aria-required="true"
               aria-describedby={urlError ? 'url-error' : undefined}
-              autoFocus
+              ref={urlInputRef}
             />
             {urlError && (
-              <p id="url-error" className="text-caption text-destructive">
+              <p id="url-error" role="alert" className="text-caption text-destructive">
                 {urlError}
               </p>
             )}
@@ -127,14 +162,24 @@ export function BookmarkForm({
               type="text"
               placeholder="书签名称"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value)
+                if (nameError) setNameError(null)
+                if (formError) setFormError(null)
+              }}
               maxLength={100}
+              aria-invalid={!!nameError}
+              aria-required="true"
+              aria-describedby={nameError ? 'bookmark-name-error' : undefined}
             />
+            {nameError && (
+              <p id="bookmark-name-error" role="alert" className="text-caption text-destructive">
+                {nameError}
+              </p>
+            )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bookmark-icon">
-              图标 URL（可选，留空自动获取）
-            </Label>
+            <Label htmlFor="bookmark-icon">图标 URL（可选，留空自动获取）</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="bookmark-icon"
@@ -147,6 +192,7 @@ export function BookmarkForm({
               <img
                 src={previewIcon}
                 alt="图标预览"
+                referrerPolicy="no-referrer"
                 className="h-8 w-8 shrink-0 rounded"
                 onError={(e) => {
                   e.currentTarget.style.visibility = 'hidden'
@@ -171,12 +217,7 @@ export function BookmarkForm({
             </select>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={submitting}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
               取消
             </Button>
             <Button type="submit" disabled={submitting}>

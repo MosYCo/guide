@@ -14,7 +14,8 @@
     --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
-    --primary: 24.6 95% 53.1%;
+    /* 亮色:压暗 primary/destructive 使白字与正文均达 WCAG AA */
+    --primary: 24 90% 38%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 10%;
@@ -22,12 +23,13 @@
     --muted-foreground: 0 0% 45.1%;
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 24.6 95% 53.1%;
+    --ring: 24 90% 38%;
     --radius: 0.5rem;
+    color-scheme: light;
   }
 
   .dark {
@@ -37,19 +39,21 @@
     --card-foreground: 0 0% 90%;
     --popover: 0 0% 10%;
     --popover-foreground: 0 0% 90%;
-    --primary: 24.6 95% 53.1%;
-    --primary-foreground: 0 0% 100%;
+    /* 暗色:提亮 primary/destructive 作为正文色,按钮改用深色前景 */
+    --primary: 24 95% 60%;
+    --primary-foreground: 24 60% 12%;
     --secondary: 0 0% 16%;
     --secondary-foreground: 0 0% 90%;
     --muted: 0 0% 16%;
     --muted-foreground: 0 0% 60%;
     --accent: 0 0% 16%;
     --accent-foreground: 0 0% 90%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 80% 65%;
+    --destructive-foreground: 0 60% 10%;
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 24.6 95% 53.1%;
+    --ring: 24 95% 60%;
+    color-scheme: dark;
   }
 }
 
@@ -59,10 +63,35 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      sans-serif;
     /* FR-001 字体:中文优化字距 */
     font-feature-settings: 'palt' 1;
+  }
+}
+
+/* 书签卡操作:仅精确指针 + hover 设备用 hover 揭示;
+ * 触屏/粗指针设备常显,否则移动端看不到编辑/删除入口。 */
+@media (hover: hover) and (pointer: fine) {
+  .bookmark-actions {
+    opacity: 0;
+  }
+  .group:hover .bookmark-actions,
+  .group:focus-within .bookmark-actions {
+    opacity: 1;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .bookmark-actions {
+    opacity: 1;
   }
 }
 

@@ -18,8 +18,8 @@
      */
     --success: 142 71% 30%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 35%;
-    --warning-foreground: 20 50% 18%;
+    --warning: 38 92% 30%;
+    --warning-foreground: 0 0% 100%;
     --info: 217 91% 45%;
     --info-foreground: 0 0% 100%;
 
@@ -43,11 +43,12 @@
      * sm 卡片静止 / md 卡片悬停 / lg 弹层抽屉 / popover 浮层
      */
     --shadow-elevation-sm: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
-    --shadow-elevation-md: 0 4px 6px -1px hsl(var(--foreground) / 0.1),
-      0 2px 4px -2px hsl(var(--foreground) / 0.1);
-    --shadow-elevation-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.1),
-      0 4px 6px -4px hsl(var(--foreground) / 0.1);
-    --shadow-elevation-popover: 0 10px 38px -10px hsl(var(--foreground) / 0.35),
+    --shadow-elevation-md:
+      0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -2px hsl(var(--foreground) / 0.1);
+    --shadow-elevation-lg:
+      0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -4px hsl(var(--foreground) / 0.1);
+    --shadow-elevation-popover:
+      0 10px 38px -10px hsl(var(--foreground) / 0.35),
       0 10px 20px -10px hsl(var(--foreground) / 0.2);
 
     /* ===== focus ring 规范源(FR-005) =====
@@ -63,20 +64,18 @@
      * warning-foreground 改深色(配亮 warning)
      */
     --success: 142 71% 50%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 142 80% 10%;
     --warning: 38 92% 60%;
     --warning-foreground: 40 80% 12%;
     --info: 217 91% 65%;
-    --info-foreground: 0 0% 100%;
+    --info-foreground: 217 80% 10%;
 
     /* 暗色阴影更深,用 foreground 高透明 */
     --shadow-elevation-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-elevation-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4),
-      0 2px 4px -2px hsl(0 0% 0% / 0.4);
-    --shadow-elevation-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5),
-      0 4px 6px -4px hsl(0 0% 0% / 0.5);
-    --shadow-elevation-popover: 0 10px 38px -10px hsl(0 0% 0% / 0.7),
-      0 10px 20px -10px hsl(0 0% 0% / 0.5);
+    --shadow-elevation-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4);
+    --shadow-elevation-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.5);
+    --shadow-elevation-popover:
+      0 10px 38px -10px hsl(0 0% 0% / 0.7), 0 10px 20px -10px hsl(0 0% 0% / 0.5);
   }
 }
 

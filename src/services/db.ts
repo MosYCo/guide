@@ -1,14 +1,26 @@
 /**
  * IndexedDB 数据服务
  * FR-004: 持久化所有数据到 IndexedDB
- * @see specs/001-bookmark-navigation/data-model.md §IndexedDB Schema
  */
 
 import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction } from 'idb'
 import type { Bookmark, Category } from '@/types'
 
-const DB_NAME = 'bookmark-navigation'
-const DB_VERSION = 1
+export const DB_NAME = 'bookmark-navigation'
+export const DB_VERSION = 1
+
+export function upgradeBookmarkDB(db: IDBPDatabase<BookmarkNavDB>, oldVersion: number): void {
+  if (oldVersion >= 1) return
+  const bookmarkStore = db.createObjectStore('bookmarks', { keyPath: 'id' })
+  bookmarkStore.createIndex('categoryId', 'categoryId')
+  bookmarkStore.createIndex('createdAt', 'createdAt')
+  bookmarkStore.createIndex('lastVisitedAt', 'lastVisitedAt')
+  bookmarkStore.createIndex('url', 'url')
+
+  const categoryStore = db.createObjectStore('categories', { keyPath: 'id' })
+  categoryStore.createIndex('order', 'order')
+  categoryStore.createIndex('name', 'name')
+}
 
 interface BookmarkNavDB extends DBSchema {
   bookmarks: {
@@ -39,21 +51,23 @@ let dbPromise: Promise<IDBPDatabase<BookmarkNavDB>> | null = null
 export function getDB(): Promise<IDBPDatabase<BookmarkNavDB>> {
   if (!dbPromise) {
     dbPromise = openDB<BookmarkNavDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        const bookmarkStore = db.createObjectStore('bookmarks', {
-          keyPath: 'id',
-        })
-        bookmarkStore.createIndex('categoryId', 'categoryId')
-        bookmarkStore.createIndex('createdAt', 'createdAt')
-        bookmarkStore.createIndex('lastVisitedAt', 'lastVisitedAt')
-        bookmarkStore.createIndex('url', 'url')
-
-        const categoryStore = db.createObjectStore('categories', {
-          keyPath: 'id',
-        })
-        categoryStore.createIndex('order', 'order')
-        categoryStore.createIndex('name', 'name')
+      upgrade(db, oldVersion) {
+        upgradeBookmarkDB(db, oldVersion)
       },
+      blocked() {
+        console.warn('IndexedDB 升级被其他标签页阻塞，请关闭其他标签页')
+      },
+      blocking() {
+        console.warn('另一个标签页正在升级数据库，请稍后重试')
+      },
+      terminated() {
+        // 浏览器回收连接后重建,避免后续操作一直指向已关闭的 DB
+        dbPromise = null
+      },
+    }).catch((error) => {
+      // 不缓存 rejected promise,允许用户重试
+      dbPromise = null
+      throw error
     })
   }
   return dbPromise
@@ -68,10 +82,15 @@ export function _resetDBForTesting() {
 
 // ===== Bookmark CRUD =====
 
+function byCreatedAtDesc(a: Bookmark, b: Bookmark): number {
+  const byDate = (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
+  return byDate !== 0 ? byDate : a.id.localeCompare(b.id)
+}
+
 export async function getAllBookmarks(): Promise<Bookmark[]> {
   const db = await getDB()
   const all = await db.getAll('bookmarks')
-  return all.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+  return all.sort(byCreatedAtDesc)
 }
 
 export async function getBookmark(id: string): Promise<Bookmark | undefined> {
@@ -99,24 +118,16 @@ export async function deleteBookmark(id: string): Promise<void> {
 export async function countByUrl(url: string): Promise<number> {
   const db = await getDB()
   const tx = db.transaction('bookmarks', 'readonly')
-  const index = tx.store.index('url')
-  let count = 0
-  let cursor = await index.openCursor(IDBKeyRange.only(url))
-  while (cursor) {
-    count++
-    cursor = await cursor.continue()
-  }
+  const count = await tx.store.index('url').count(url)
   await tx.done
   return count
 }
 
 export async function getRecentBookmarks(limit = 10): Promise<Bookmark[]> {
   const db = await getDB()
-  const all = await db.getAll('bookmarks')
-  return all
-    .filter((b) => b.lastVisitedAt !== null)
-    .sort((a, b) => ((a.lastVisitedAt ?? '') < (b.lastVisitedAt ?? '') ? 1 : -1))
-    .slice(0, limit)
+  // 索引按 lastVisitedAt 升序;反向取最近 limit 条(null 不进索引)
+  const visited = await db.getAllFromIndex('bookmarks', 'lastVisitedAt')
+  return visited.reverse().slice(0, limit)
 }
 
 export async function updateLastVisited(id: string, visitedAt: string): Promise<void> {
@@ -132,10 +143,25 @@ export async function updateLastVisited(id: string, visitedAt: string): Promise<
 
 // ===== Category CRUD =====
 
+/** 在同一个只读事务中读取书签与分类,保证导出快照一致。 */
+export async function getAllDataForExport(): Promise<{
+  bookmarks: Bookmark[]
+  categories: Category[]
+}> {
+  const db = await getDB()
+  const tx = db.transaction(['bookmarks', 'categories'], 'readonly')
+  const [bookmarks, categories] = await Promise.all([
+    tx.objectStore('bookmarks').getAll(),
+    tx.objectStore('categories').getAll(),
+  ])
+  await tx.done
+  return { bookmarks, categories }
+}
+
 export async function getAllCategories(): Promise<Category[]> {
   const db = await getDB()
   const all = await db.getAll('categories')
-  return all.sort((a, b) => a.order - b.order)
+  return all.sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
 }
 
 export async function addCategory(category: Category): Promise<string> {
@@ -178,23 +204,111 @@ export async function getMaxCategoryOrder(): Promise<number> {
   return Math.max(...all.map((c) => c.order))
 }
 
-/**
- * 写入书签时在同一事务内校验目标分类:
- * 分类已被并发删除则把 categoryId 置空,避免写回悬空引用。
- */
-export async function putBookmarkWithValidCategory(
-  bookmark: Bookmark,
+/** 创建分类:唯一名校验、max(order)+1 与写入在同一事务内完成。 */
+export async function createCategoryWithUniqueName(
+  input: Omit<Category, 'order'>,
+): Promise<Category> {
+  const db = await getDB()
+  const tx = db.transaction('categories', 'readwrite')
+  const store = tx.objectStore('categories')
+  const duplicate = await store.index('name').count(input.name)
+  if (duplicate > 0) {
+    throw new Error(`分类「${input.name}」已存在`)
+  }
+  const all = await store.getAll()
+  const order = all.reduce((max, category) => Math.max(max, category.order), -1) + 1
+  const created: Category = { ...input, order }
+  await store.add(created)
+  await tx.done
+  return created
+}
+
+/** 重命名分类:唯一名校验与写入在同一事务内完成。 */
+export async function renameCategoryWithUniqueName(id: string, name: string): Promise<Category> {
+  const db = await getDB()
+  const tx = db.transaction('categories', 'readwrite')
+  const store = tx.objectStore('categories')
+  const existing = await store.get(id)
+  if (!existing) throw new Error('分类不存在')
+  if (existing.name !== name) {
+    const duplicate = await store.index('name').count(name)
+    if (duplicate > 0) {
+      throw new Error(`分类「${name}」已存在`)
+    }
+  }
+  const updated: Category = { ...existing, name }
+  await store.put(updated)
+  await tx.done
+  return updated
+}
+
+/** 按给定 id 顺序重排全部分类,单事务写回并补全缺失项。 */
+export async function reorderCategoriesInDb(ids: string[]): Promise<Category[]> {
+  const db = await getDB()
+  const tx = db.transaction('categories', 'readwrite')
+  const store = tx.objectStore('categories')
+  const all = await store.getAll()
+  const byId = new Map(all.map((category) => [category.id, category]))
+  const ordered: Category[] = []
+
+  for (const id of ids) {
+    const category = byId.get(id)
+    if (!category) continue
+    ordered.push({ ...category, order: ordered.length })
+    byId.delete(id)
+  }
+  for (const category of byId.values()) {
+    ordered.push({ ...category, order: ordered.length })
+  }
+  for (const category of ordered) {
+    await store.put(category)
+  }
+  await tx.done
+  return ordered
+}
+
+async function resolveCategoryId(
+  tx: IDBPTransaction<BookmarkNavDB, ['categories', 'bookmarks'], 'readwrite'>,
+  categoryId: string | null,
+): Promise<string | null> {
+  if (!categoryId) return null
+  const category = await tx.objectStore('categories').get(categoryId)
+  return category ? categoryId : null
+}
+
+/** 新增书签:同一事务内校验分类,不存在则落为未分类。 */
+export async function addBookmarkWithValidCategory(bookmark: Bookmark): Promise<Bookmark> {
+  const db = await getDB()
+  const tx = db.transaction(['categories', 'bookmarks'], 'readwrite')
+  const updated: Bookmark = {
+    ...bookmark,
+    categoryId: await resolveCategoryId(tx, bookmark.categoryId),
+  }
+  await tx.objectStore('bookmarks').add(updated)
+  await tx.done
+  return updated
+}
+
+/** 编辑书签:在事务内读取当前记录,只覆盖可编辑字段,保留 lastVisitedAt。 */
+export async function updateBookmarkFields(
+  id: string,
+  fields: Partial<Pick<Bookmark, 'url' | 'name' | 'icon' | 'categoryId'>>,
 ): Promise<Bookmark> {
   const db = await getDB()
   const tx = db.transaction(['categories', 'bookmarks'], 'readwrite')
-  const category = bookmark.categoryId
-    ? await tx.objectStore('categories').get(bookmark.categoryId)
-    : undefined
-  const updated: Bookmark = {
-    ...bookmark,
-    categoryId: category ? bookmark.categoryId : null,
+  const bookmarkStore = tx.objectStore('bookmarks')
+  const existing = await bookmarkStore.get(id)
+  if (!existing) {
+    throw new Error('书签不存在或已被删除')
   }
-  await tx.objectStore('bookmarks').put(updated)
+  const requestedCategory =
+    fields.categoryId !== undefined ? fields.categoryId : existing.categoryId
+  const updated: Bookmark = {
+    ...existing,
+    ...fields,
+    categoryId: await resolveCategoryId(tx, requestedCategory),
+  }
+  await bookmarkStore.put(updated)
   await tx.done
   return updated
 }
@@ -231,10 +345,7 @@ export async function bulkAddCategories(
  * 导入专用:分类与书签在同一个事务中写入。
  * 任一条失败时整个事务回滚,避免留下孤儿分类或部分导入。
  */
-export async function bulkImport(
-  categories: Category[],
-  bookmarks: Bookmark[],
-): Promise<void> {
+export async function bulkImport(categories: Category[], bookmarks: Bookmark[]): Promise<void> {
   const db = await getDB()
   const tx = db.transaction(['categories', 'bookmarks'], 'readwrite')
   const categoryStore = tx.objectStore('categories')

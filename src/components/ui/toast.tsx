@@ -8,6 +8,8 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -20,6 +22,8 @@ interface ToastItem {
   id: number
   type: ToastType
   message: string
+  /** 0 表示不自动消失(错误/警告) */
+  duration: number
 }
 
 interface ToastContextValue {
@@ -29,10 +33,7 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 // 语义色映射:每类 toast 的边框/背景/文本 + 图标
-const TOAST_STYLES: Record<
-  ToastType,
-  { wrapper: string; icon: ReactNode }
-> = {
+const TOAST_STYLES: Record<ToastType, { wrapper: string; icon: ReactNode }> = {
   success: {
     wrapper: 'border-success/50 bg-success/10 text-success',
     icon: <CheckCircle className="h-4 w-4 shrink-0" />,
@@ -56,45 +57,68 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const toast = useCallback((message: string, type: ToastType = 'success') => {
     const id = Date.now() + Math.random()
-    setToasts((prev) => [...prev, { id, type, message }])
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 3000)
+    // 错误/警告不自动消失,由用户确认;其余 4s 后消失(hover/focus 暂停)
+    const duration = type === 'error' || type === 'warning' ? 0 : 4000
+    setToasts((prev) => [...prev, { id, type, message, duration }])
   }, [])
 
-  const remove = (id: number) =>
+  const remove = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
+  }, [])
 
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* FR-010 统一位置:右下角;时序:3s 自动消失 */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
-        {toasts.map((t) => {
-          const style = TOAST_STYLES[t.type]
-          return (
-            <div
-              key={t.id}
-              role="alert"
-              className={cn(
-                'flex items-center gap-2 rounded-md border p-3 text-sm shadow-elevation-md',
-                style.wrapper,
-              )}
-            >
-              {style.icon}
-              <span className="flex-1">{t.message}</span>
-              <button
-                onClick={() => remove(t.id)}
-                aria-label="关闭通知"
-                className="focus-ring shrink-0 rounded opacity-70 hover:opacity-100"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          )
-        })}
+      {/* FR-010 统一位置:桌面右下角,移动端避开底部 Tab */}
+      <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col items-end gap-2 sm:bottom-4 sm:left-auto sm:right-4">
+        {toasts.map((t) => (
+          <ToastCard key={t.id} item={t} onClose={remove} />
+        ))}
       </div>
     </ToastContext.Provider>
+  )
+}
+
+function ToastCard({ item, onClose }: { item: ToastItem; onClose: (id: number) => void }) {
+  const remainingRef = useRef(item.duration)
+  const [paused, setPaused] = useState(false)
+  const style = TOAST_STYLES[item.type]
+  const isAlert = item.type === 'error' || item.type === 'warning'
+
+  useEffect(() => {
+    if (item.duration === 0 || paused) return
+    const started = Date.now()
+    const timer = window.setTimeout(() => onClose(item.id), remainingRef.current)
+    return () => {
+      window.clearTimeout(timer)
+      remainingRef.current = Math.max(0, remainingRef.current - (Date.now() - started))
+    }
+  }, [item.duration, item.id, onClose, paused])
+
+  return (
+    <div
+      role={isAlert ? 'alert' : 'status'}
+      aria-live={isAlert ? 'assertive' : 'polite'}
+      aria-atomic="true"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      className={cn(
+        'flex w-full items-center gap-2 rounded-md border p-3 text-sm shadow-elevation-md sm:w-auto sm:max-w-sm',
+        style.wrapper,
+      )}
+    >
+      {style.icon}
+      <span className="flex-1">{item.message}</span>
+      <button
+        onClick={() => onClose(item.id)}
+        aria-label="关闭通知"
+        className="focus-ring flex h-11 w-11 shrink-0 items-center justify-center rounded opacity-70 hover:opacity-100 sm:h-6 sm:w-6"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
   )
 }
 

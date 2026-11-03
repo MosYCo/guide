@@ -11,15 +11,15 @@
 
 ### Bookmark
 
-| 字段 | 类型 | 说明与约束 | 当前实现依据 |
-|---|---|---|---|
-| `id` | `string` | 系统生成的唯一 ID,UUID v4;作为 `bookmarks` store 的 `keyPath` | `src/types/index.ts`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts` |
-| `url` | `string` | 仅允许 `http:` / `https:`;保存与导入时规范化(缺少协议时补 `https://`,域名小写化);允许重复 URL | `src/utils/url.ts`、`src/services/import-export.ts`、`src/hooks/useBookmarks.ts` |
-| `name` | `string` | 书签名称;类型注释声明 1–100 字符;添加/编辑表单用 `maxLength={100}` 限制,提交前 `trim()` 且表单要求非空;数据层与导入路径不做长度校验 | `src/types/index.ts`、`src/components/bookmark/BookmarkForm.tsx`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts` |
-| `icon` | `string` | 图标 URL。表单保存时由 `resolveIcon` 保证非空(用户提供 → Google Favicon API → 首字母 SVG);JSON 导入保留原字符串(可为空);HTML 导入写入空字符串,由展示层兜底 | `src/services/favicon.ts`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`、`src/components/bookmark/BookmarkCard.tsx` |
-| `categoryId` | `string \| null` | 所属分类 ID;`null` 表示未分类。IndexedDB 无外键约束,删除分类时由应用层级联置空 | `src/services/db.ts`、`src/hooks/useBookmarks.ts` |
-| `createdAt` | `string` | 创建时间,ISO 8601 字符串;列表按该字段倒序展示 | `src/types/index.ts`、`src/services/db.ts` |
-| `lastVisitedAt` | `string \| null` | 最后访问时间,ISO 8601;从未访问为 `null`;打开书签时更新 | `src/types/index.ts`、`src/services/db.ts`、`src/hooks/useBookmarks.ts` |
+| 字段            | 类型             | 说明与约束                                                                                                                                                    | 当前实现依据                                                                                                                        |
+| --------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `id`            | `string`         | 系统生成的唯一 ID,UUID v4;作为 `bookmarks` store 的 `keyPath`                                                                                                 | `src/types/index.ts`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`                                                  |
+| `url`           | `string`         | 仅允许 `http:` / `https:`;保存与导入时规范化(缺少协议时补 `https://`,域名小写化);允许重复 URL                                                                 | `src/utils/url.ts`、`src/services/import-export.ts`、`src/hooks/useBookmarks.ts`                                                    |
+| `name`          | `string`         | 书签名称;类型注释声明 1–100 字符;添加/编辑表单用 `maxLength={100}` 限制,提交前 `trim()` 且表单要求非空;数据层与导入路径不做长度校验                           | `src/types/index.ts`、`src/components/bookmark/BookmarkForm.tsx`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`      |
+| `icon`          | `string`         | 图标 URL。仅持久化用户显式提供的图标;留空时由展示层通过 favicon provider 解析(可禁用远程请求),失败降级为首字母/纯色块。JSON/HTML 导入保留合法图标或写空字符串 | `src/services/favicon.ts`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`、`src/components/bookmark/BookmarkCard.tsx` |
+| `categoryId`    | `string \| null` | 所属分类 ID;`null` 表示未分类。IndexedDB 无外键约束,删除分类时由应用层级联置空                                                                                | `src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                                                   |
+| `createdAt`     | `string`         | 创建时间,ISO 8601 字符串;列表按该字段倒序展示                                                                                                                 | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
+| `lastVisitedAt` | `string \| null` | 最后访问时间,ISO 8601;从未访问为 `null`;打开书签时更新                                                                                                        | `src/types/index.ts`、`src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                             |
 
 补充事实:
 
@@ -30,12 +30,12 @@
 
 ### Category
 
-| 字段 | 类型 | 说明与约束 | 当前实现依据 |
-|---|---|---|---|
-| `id` | `string` | 系统生成的唯一 ID,UUID v4;作为 `categories` store 的 `keyPath` | `src/types/index.ts`、`src/hooks/useCategories.ts` |
-| `name` | `string` | 分类名称;`trim()` 后 1–50 字符;应用层要求全局唯一(精确匹配,区分大小写);表单 `maxLength={50}` | `src/hooks/useCategories.ts`、`src/components/category/CategoryForm.tsx`、`src/services/db.ts` |
-| `order` | `number` | 排序位置,非负整数;首个分类为 `0`,新增时取当前最大值 + 1;重排时按给定 ID 顺序写入索引 | `src/hooks/useCategories.ts`、`src/services/db.ts` |
-| `createdAt` | `string` | 创建时间,ISO 8601 字符串 | `src/types/index.ts` |
+| 字段        | 类型     | 说明与约束                                                                                   | 当前实现依据                                                                                   |
+| ----------- | -------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `id`        | `string` | 系统生成的唯一 ID,UUID v4;作为 `categories` store 的 `keyPath`                               | `src/types/index.ts`、`src/hooks/useCategories.ts`                                             |
+| `name`      | `string` | 分类名称;`trim()` 后 1–50 字符;应用层要求全局唯一(精确匹配,区分大小写);表单 `maxLength={50}` | `src/hooks/useCategories.ts`、`src/components/category/CategoryForm.tsx`、`src/services/db.ts` |
+| `order`     | `number` | 排序位置,非负整数;首个分类为 `0`,新增时取当前最大值 + 1;重排时按给定 ID 顺序写入索引         | `src/hooks/useCategories.ts`、`src/services/db.ts`                                             |
+| `createdAt` | `string` | 创建时间,ISO 8601 字符串                                                                     | `src/types/index.ts`                                                                           |
 
 补充事实:
 
@@ -47,12 +47,12 @@
 
 添加/编辑书签时使用的表单载荷:
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `url` | `string` | 必填;提交前必须通过 `validateAndNormalizeUrl` |
-| `name` | `string` | 必填;提交前 `trim()`,表单限制 100 字符 |
-| `icon?` | `string` | 可选;留空时由 `resolveIcon` 解析 |
-| `categoryId?` | `string \| null` | 可选;空字符串在选择框中转换为 `null` |
+| 字段          | 类型             | 说明                                          |
+| ------------- | ---------------- | --------------------------------------------- |
+| `url`         | `string`         | 必填;提交前必须通过 `validateAndNormalizeUrl` |
+| `name`        | `string`         | 必填;提交前 `trim()`,表单限制 100 字符        |
+| `icon?`       | `string`         | 可选;留空时由 `resolveIcon` 解析              |
+| `categoryId?` | `string \| null` | 可选;空字符串在选择框中转换为 `null`          |
 
 `Bookmark` 中的 `id`、`createdAt`、`lastVisitedAt` 由 `useBookmarks` 在新增/编辑时生成或保留,不由表单直接提交。
 
@@ -60,55 +60,55 @@
 
 JSON 导出格式的根对象:
 
-| 字段 | 类型 | 说明 |
-|---|---|---|
-| `version` | `string` | 格式版本,当前导出固定为 `"1.0.0"` |
-| `exportedAt` | `string` | 导出时间,ISO 8601 |
-| `bookmarkCount` | `number` | 导出书签数量 |
-| `categoryCount` | `number` | 导出分类数量 |
-| `categories` | `Category[]` | 全部分类,按 `order` 升序 |
-| `bookmarks` | `Bookmark[]` | 全部书签,按 `createdAt` 倒序 |
+| 字段            | 类型         | 说明                              |
+| --------------- | ------------ | --------------------------------- |
+| `version`       | `string`     | 格式版本,当前导出固定为 `"1.0.0"` |
+| `exportedAt`    | `string`     | 导出时间,ISO 8601                 |
+| `bookmarkCount` | `number`     | 导出书签数量                      |
+| `categoryCount` | `number`     | 导出分类数量                      |
+| `categories`    | `Category[]` | 全部分类,按 `order` 升序          |
+| `bookmarks`     | `Bookmark[]` | 全部书签,按 `createdAt` 倒序      |
 
 ### 辅助类型
 
-| 类型 | 字段 | 说明 |
-|---|---|---|
-| `UrlValidationResult` | `valid`、`normalized?`、`domain?`、`error?` | URL 校验结果;`valid === true` 时带规范化 URL 与域名 |
-| `ImportPreview` | `bookmarks`、`categories`、`skipped` | 导入前预览数量 |
-| `ImportResult` | `success`、`bookmarkCount`、`categoryCount`、`skipped`、`error?` | 导入结果;失败时 `success === false` 并带错误信息 |
-| `Theme` / `ResolvedTheme` | `light \| dark \| system` / `light \| dark` | 主题偏好与实际生效主题 |
+| 类型                      | 字段                                                             | 说明                                                |
+| ------------------------- | ---------------------------------------------------------------- | --------------------------------------------------- |
+| `UrlValidationResult`     | `valid`、`normalized?`、`domain?`、`error?`                      | URL 校验结果;`valid === true` 时带规范化 URL 与域名 |
+| `ImportPreview`           | `bookmarks`、`categories`、`skipped`                             | 导入前预览数量                                      |
+| `ImportResult`            | `success`、`bookmarkCount`、`categoryCount`、`skipped`、`error?` | 导入结果;失败时 `success === false` 并带错误信息    |
+| `Theme` / `ResolvedTheme` | `light \| dark \| system` / `light \| dark`                      | 主题偏好与实际生效主题                              |
 
 ## IndexedDB schema
 
 数据库由 `idb` 的 `openDB` 懒初始化,模块内缓存 `dbPromise`;测试通过 `_resetDBForTesting()` 清空缓存。
 
-| 项 | 当前值 |
-|---|---|
-| 数据库名 | `bookmark-navigation` |
-| 数据库版本 | `1` |
-| object store | `bookmarks`(keyPath `id`)、`categories`(keyPath `id`) |
-| `bookmarks` 索引 | `categoryId`、`createdAt`、`lastVisitedAt`、`url` |
-| `categories` 索引 | `order`、`name` |
-| 索引唯一性 | 全部为非唯一索引;没有数据库级唯一约束 |
-| 升级逻辑 | 仅首次 `upgrade` 创建 store 与索引;当前没有后续版本迁移分支 |
+| 项                | 当前值                                                      |
+| ----------------- | ----------------------------------------------------------- |
+| 数据库名          | `bookmark-navigation`                                       |
+| 数据库版本        | `1`                                                         |
+| object store      | `bookmarks`(keyPath `id`)、`categories`(keyPath `id`)       |
+| `bookmarks` 索引  | `categoryId`、`createdAt`、`lastVisitedAt`、`url`           |
+| `categories` 索引 | `order`、`name`                                             |
+| 索引唯一性        | 全部为非唯一索引;没有数据库级唯一约束                       |
+| 升级逻辑          | 仅首次 `upgrade` 创建 store 与索引;当前没有后续版本迁移分支 |
 
 主要数据操作:
 
-| 函数 | 行为 |
-|---|---|
-| `getAllBookmarks()` | 读取全部书签,按 `createdAt` 倒序 |
-| `getBookmark(id)` | 按主键读取单条 |
-| `addBookmark()` / `putBookmark()` | 新增/更新书签;ID 已存在时 `add` 会失败 |
-| `deleteBookmark(id)` | 硬删除单条书签 |
-| `countByUrl(url)` | 通过 `url` 索引统计同一 URL 的书签数量 |
-| `getRecentBookmarks(limit = 10)` | 过滤有访问时间的书签,按 `lastVisitedAt` 倒序截取 |
-| `updateLastVisited(id, visitedAt)` | 只更新 `lastVisitedAt`,不存在时静默跳过 |
-| `getAllCategories()` | 读取全部分类,按 `order` 升序 |
-| `addCategory()` / `putCategory()` | 新增/更新分类 |
-| `deleteCategory(id)` | 删除分类并级联置空关联书签的 `categoryId` |
-| `countCategoryByName(name)` | 统计同名分类数量(应用层唯一性检查) |
-| `getMaxCategoryOrder()` | 返回最大 `order`;空库返回 `-1` |
-| `bulkAddBookmarks()` / `bulkAddCategories()` | 批量写入,供导入使用;可传入外部事务 |
+| 函数                                         | 行为                                             |
+| -------------------------------------------- | ------------------------------------------------ |
+| `getAllBookmarks()`                          | 读取全部书签,按 `createdAt` 倒序                 |
+| `getBookmark(id)`                            | 按主键读取单条                                   |
+| `addBookmark()` / `putBookmark()`            | 新增/更新书签;ID 已存在时 `add` 会失败           |
+| `deleteBookmark(id)`                         | 硬删除单条书签                                   |
+| `countByUrl(url)`                            | 通过 `url` 索引统计同一 URL 的书签数量           |
+| `getRecentBookmarks(limit = 10)`             | 过滤有访问时间的书签,按 `lastVisitedAt` 倒序截取 |
+| `updateLastVisited(id, visitedAt)`           | 只更新 `lastVisitedAt`,不存在时静默跳过          |
+| `getAllCategories()`                         | 读取全部分类,按 `order` 升序                     |
+| `addCategory()` / `putCategory()`            | 新增/更新分类                                    |
+| `deleteCategory(id)`                         | 删除分类并级联置空关联书签的 `categoryId`        |
+| `countCategoryByName(name)`                  | 统计同名分类数量(应用层唯一性检查)               |
+| `getMaxCategoryOrder()`                      | 返回最大 `order`;空库返回 `-1`                   |
+| `bulkAddBookmarks()` / `bulkAddCategories()` | 批量写入,供导入使用;可传入外部事务               |
 
 ### 分类删除级联
 
@@ -183,13 +183,13 @@ JSON 导出格式的根对象:
 - 用 `validateAndNormalizeUrl` 重新校验书签 URL;非 `http/https` 或无法规范化的条目计入 `skipped`,不写入;
 - 根据映射改写 `categoryId`;原分类不存在或没有分类时写入 `null`;
 - 书签的其他字段(名称、图标、创建时间、最后访问时间)随展开保留;
-- 先批量写入分类,再批量写入书签;两批使用各自的事务,不是跨 store 的单一事务;
+- 分类与书签在同一个跨 store 的 `readwrite` 事务中写入(`bulkImport`);任一条失败时整体回滚;
 - 不检查分类名重复,不检查 URL 重复,不自动备份;
 - 成功返回 `ImportResult` 及计数;异常被捕获后返回 `success: false`,但已写入的前一批数据不会自动回滚。
 
-预览阶段的 `skipped` 由 `parseJsonFile` 按导入规则逐条校验 URL 后统计;`importFromJson` 返回的 `skipped` 是实际写入时再次校验的结果。`importFromHtml` 返回的 `ImportResult.skipped` 目前固定为 `0`,HTML 解析阶段的跳过数由 `parseHtmlFile` 的 preview 统计。
+预览阶段的 `skipped` 由 `parseJsonFile` 按导入规则逐条校验 URL 后统计;`importFromJson` 返回的 `skipped` 是实际写入时再次校验的结果。HTML 路径的 `parseHtmlFile` 与 `importFromHtml` 都会透传解析阶段统计的 `skipped`。
 
-注意:导入预览对话框在失败时显示"原数据保持不变",但当前实现先提交分类批次、再提交书签批次,不是跨 store 的单一事务;若第二步失败,已写入的分类可能保留。该文案与实际回滚能力不完全一致,验收/修改前需留意。
+注意:导入预览对话框在失败时显示"原数据保持不变",与当前跨 store 单事务实现一致;任一写入失败都会整体回滚。
 
 ### HTML 导入
 
@@ -204,7 +204,7 @@ JSON 导出格式的根对象:
 - `lastVisitedAt` 写入 `null`;
 - 找不到根 `<DL>` 时抛出错误。
 
-`importFromHtml` 将解析出的分类与书签分别批量写入 IndexedDB;同样是两次批量事务,不检查重复名称或 URL。解析阶段得到的 `skipped` 在预览中展示;`importFromHtml` 返回的 `ImportResult.skipped` 当前固定为 `0`。
+`importFromHtml` 将解析出的分类与书签在同一个跨 store 事务中写入;同名文件夹在解析阶段合并,解析阶段得到的 `skipped` 会透传到 `ImportResult`。
 
 UI 依据文件名后缀/类型区分 JSON 与 HTML:`.json` 走 JSON 路径,`.html` 或 `text/html` 走 HTML 路径,其他格式提示不支持。
 
@@ -212,17 +212,17 @@ UI 依据文件名后缀/类型区分 JSON 与 HTML:`.json` 走 JSON 路径,`.ht
 
 以下为当前实现预期维持的行为。注意"应用层意图"与"存储层强制"的区别。
 
-| 不变量 | 当前强制点 | 例外与注意 |
-|---|---|---|
+| 不变量                       | 当前强制点                                                                                                                  | 例外与注意                                                                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 书签 URL 仅允许 `http/https` | `validateAndNormalizeUrl` 在添加、编辑、JSON 导入、HTML 导入时调用;危险协议(`javascript:`、`data:`、`file:` 等)被拒绝或跳过 | IndexedDB 本身不校验;外部写入或损坏数据仍可能带无效 URL,展示层需要容忍(E2E 极端字段用例会直接注入无效 URL)。`localhost` 与 `127.0.0.1` 允许不带点 |
-| 分类名唯一 | `useCategories` 创建/重命名时 `countCategoryByName` 精确匹配检查 | 只在应用层;数据库 `name` 索引非唯一;导入路径不检查,可能产生同名分类 |
-| 删除分类级联置空书签分类 | `deleteCategory` 在单事务内删除分类并把匹配书签的 `categoryId` 设为 `null` | 书签不会被删除;UI 随后显示在"未分类" |
-| 书签可以没有分类 | `categoryId` 允许 `null`;未分类书签在"全部"中展示 | 无外键约束;删除分类是产生未分类书签的主要路径 |
-| 书签 URL 可以重复 | 没有唯一索引;`countByUrl` 可统计重复数 | 同一 URL 可保存多条,名称可以不同 |
-| 分类是扁平结构 | `Category` 没有父级字段 | 浏览器书签的嵌套文件夹在导入时被扁平化 |
-| 书签删除是硬删除 | `deleteBookmark` 直接删除记录 | 没有软删除、回收站或撤销 |
-| ID 在导入时重新生成 | JSON 导入为分类和书签生成新 UUID,并重映射 `categoryId` | 导入不会保留原 ID,跨文件引用依赖映射 |
-| 分类 `order` 只保证可排序 | 新增取最大值 + 1;重排按 ID 顺序写入 | 导入数据可能重复或非连续;不保证唯一 |
+| 分类名唯一                   | `useCategories` 创建/重命名时 `countCategoryByName` 精确匹配检查                                                            | 只在应用层;数据库 `name` 索引非唯一;导入路径不检查,可能产生同名分类                                                                               |
+| 删除分类级联置空书签分类     | `deleteCategory` 在单事务内删除分类并把匹配书签的 `categoryId` 设为 `null`                                                  | 书签不会被删除;UI 随后显示在"未分类"                                                                                                              |
+| 书签可以没有分类             | `categoryId` 允许 `null`;未分类书签在"全部"中展示                                                                           | 无外键约束;删除分类是产生未分类书签的主要路径                                                                                                     |
+| 书签 URL 可以重复            | 没有唯一索引;`countByUrl` 可统计重复数                                                                                      | 同一 URL 可保存多条,名称可以不同                                                                                                                  |
+| 分类是扁平结构               | `Category` 没有父级字段                                                                                                     | 浏览器书签的嵌套文件夹在导入时被扁平化                                                                                                            |
+| 书签删除是硬删除             | `deleteBookmark` 直接删除记录                                                                                               | 没有软删除、回收站或撤销                                                                                                                          |
+| ID 在导入时重新生成          | JSON 导入为分类和书签生成新 UUID,并重映射 `categoryId`                                                                      | 导入不会保留原 ID,跨文件引用依赖映射                                                                                                              |
+| 分类 `order` 只保证可排序    | 新增取最大值 + 1;重排按 ID 顺序写入                                                                                         | 导入数据可能重复或非连续;不保证唯一                                                                                                               |
 
 ## 展示层 token
 
@@ -232,27 +232,27 @@ UI 依据文件名后缀/类型区分 JSON 与 HTML:`.json` 走 JSON 路径,`.ht
 
 token 以 HSL 分量定义,通过 `hsl(var(--token))` 使用;亮/暗主题各一套。基础色仍沿用 `src/index.css` 的 shadcn 变量体系,主色保持橙色。
 
-| Token | 亮色 | 暗色 | 用途与约束 |
-|---|---|---|---|
-| `--success` | `142 71% 30%` | `142 71% 50%` | 成功/加载完成;亮色对白底约 4.83:1,暗色对 10% 背景约 9.37:1 |
-| `--success-foreground` | `0 0% 100%` | `0 0% 100%` | success 背景上的文本 |
-| `--warning` | `38 92% 35%` | `38 92% 60%` | 非破坏性提示/隐私模式;亮色对白底约 4.19:1,注释限定为大文本/图标色,正文使用 `--warning-foreground` 深棕 |
-| `--warning-foreground` | `20 50% 18%` | `40 80% 12%` | warning 背景上的文本 |
-| `--info` | `217 91% 45%` | `217 91% 65%` | 中性提示;亮色约 6.0:1,暗色约 5.72:1 |
-| `--info-foreground` | `0 0% 100%` | `0 0% 100%` | info 背景上的文本 |
-| `--primary` | `24.6 95% 53.1%` | `24.6 95% 53.1%` | 主色保持橙色,与既有设计一致 |
-| `--ring` | `24.6 95% 53.1%` | `24.6 95% 53.1%` | 焦点环颜色 |
+| Token                  | 亮色             | 暗色             | 用途与约束                                                 |
+| ---------------------- | ---------------- | ---------------- | ---------------------------------------------------------- |
+| `--success`            | `142 71% 30%`    | `142 71% 50%`    | 成功/加载完成;亮色对白底约 4.83:1,暗色对 10% 背景约 9.37:1 |
+| `--success-foreground` | `0 0% 100%`      | `0 0% 100%`      | success 背景上的文本                                       |
+| `--warning`            | `38 92% 30%`     | `38 92% 60%`     | 非破坏性提示/隐私模式;亮色对白底约 5.41:1,可达 AA          |
+| `--warning-foreground` | `20 50% 18%`     | `40 80% 12%`     | warning 背景上的文本                                       |
+| `--info`               | `217 91% 45%`    | `217 91% 65%`    | 中性提示;亮色约 6.0:1,暗色约 5.72:1                        |
+| `--info-foreground`    | `0 0% 100%`      | `0 0% 100%`      | info 背景上的文本                                          |
+| `--primary`            | `24.6 95% 53.1%` | `24.6 95% 53.1%` | 主色保持橙色,与既有设计一致                                |
+| `--ring`               | `24.6 95% 53.1%` | `24.6 95% 53.1%` | 焦点环颜色                                                 |
 
 `tailwind.config.js` 已把 `success` / `warning` / `info` 映射为 `DEFAULT` + `foreground` 两档颜色。
 
 ### Type scale
 
-| Token | 字号 | 行高 | 字重 | 用途 |
-|---|---|---|---|---|
+| Token              | 字号             | 行高  | 字重  | 用途                   |
+| ------------------ | ---------------- | ----- | ----- | ---------------------- |
 | `--text-display-*` | `1.875rem`(30px) | `1.3` | `700` | 首屏欢迎标题等显示文本 |
-| `--text-h1-*` | `1.25rem`(20px) | `1.4` | `600` | 区块标题、对话框标题 |
-| `--text-body-*` | `0.875rem`(14px) | `1.6` | `400` | 默认正文 |
-| `--text-caption-*` | `0.75rem`(12px) | `1.5` | `400` | 域名、计数、辅助信息 |
+| `--text-h1-*`      | `1.25rem`(20px)  | `1.4` | `600` | 区块标题、对话框标题   |
+| `--text-body-*`    | `0.875rem`(14px) | `1.6` | `400` | 默认正文               |
+| `--text-caption-*` | `0.75rem`(12px)  | `1.5` | `400` | 域名、计数、辅助信息   |
 
 - Tailwind `fontSize` 同时提供 `text-display` / `text-h1` / `text-body` / `text-caption` 类名。
 - 当前实现把每档拆为 `--text-*-size`、`--text-*-line`、`--text-*-weight` 三个变量,上表用 `--text-display-*` 等缩写表示这一组变量。
@@ -261,22 +261,22 @@ token 以 HSL 分量定义,通过 `hsl(var(--token))` 使用;亮/暗主题各一
 
 ### 圆角阶梯
 
-| Token / 类 | 值 | 用途 |
-|---|---|---|
-| `--radius` | `0.5rem` | 圆角基准 |
-| `rounded-lg` | `var(--radius)` | 大容器 |
-| `rounded-md` | `calc(var(--radius) - 2px)` | 卡片 |
-| `rounded-sm` | `calc(var(--radius) - 4px)` | 小元素 |
+| Token / 类   | 值                          | 用途     |
+| ------------ | --------------------------- | -------- |
+| `--radius`   | `0.5rem`                    | 圆角基准 |
+| `rounded-lg` | `var(--radius)`             | 大容器   |
+| `rounded-md` | `calc(var(--radius) - 2px)` | 卡片     |
+| `rounded-sm` | `calc(var(--radius) - 4px)` | 小元素   |
 
 ### 阴影 elevation
 
 四档阴影均以 CSS 变量定义,`tailwind.config.js` 提供 `shadow-elevation-*` 类名。
 
-| Token | 用途 | 亮色值 | 暗色值 |
-|---|---|---|---|
-| `--shadow-elevation-sm` | 卡片静止态 | `0 1px 2px 0 hsl(var(--foreground) / 0.05)` | `0 1px 2px 0 hsl(0 0% 0% / 0.3)` |
-| `--shadow-elevation-md` | 卡片悬停态 | `0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -2px hsl(var(--foreground) / 0.1)` | `0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4)` |
-| `--shadow-elevation-lg` | 弹层/抽屉 | `0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -4px hsl(var(--foreground) / 0.1)` | `0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.5)` |
+| Token                        | 用途              | 亮色值                                                                                            | 暗色值                                                                       |
+| ---------------------------- | ----------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `--shadow-elevation-sm`      | 卡片静止态        | `0 1px 2px 0 hsl(var(--foreground) / 0.05)`                                                       | `0 1px 2px 0 hsl(0 0% 0% / 0.3)`                                             |
+| `--shadow-elevation-md`      | 卡片悬停态        | `0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -2px hsl(var(--foreground) / 0.1)`        | `0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.4)`       |
+| `--shadow-elevation-lg`      | 弹层/抽屉         | `0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -4px hsl(var(--foreground) / 0.1)`      | `0 10px 15px -3px hsl(0 0% 0% / 0.5), 0 4px 6px -4px hsl(0 0% 0% / 0.5)`     |
 | `--shadow-elevation-popover` | popover / tooltip | `0 10px 38px -10px hsl(var(--foreground) / 0.35), 0 10px 20px -10px hsl(var(--foreground) / 0.2)` | `0 10px 38px -10px hsl(0 0% 0% / 0.7), 0 10px 20px -10px hsl(0 0% 0% / 0.5)` |
 
 ### 焦点环与动效
@@ -288,12 +288,12 @@ token 以 HSL 分量定义,通过 `hsl(var(--token))` 使用;亮/暗主题各一
 
 当前 `useVirtualList<T>(items, itemHeight, containerHeight)` 返回:
 
-| 返回值 | 说明 |
-|---|---|
-| `visibleItems` | 可视区及上下缓冲项 |
-| `totalHeight` | `items.length * itemHeight`,用于占位撑高、防 CLS |
-| `offsetY` | 起始项的纵向偏移,用于绝对定位 |
-| `containerRef` | 滚动容器 ref |
+| 返回值                 | 说明                                                   |
+| ---------------------- | ------------------------------------------------------ |
+| `visibleItems`         | 可视区及上下缓冲项                                     |
+| `totalHeight`          | `items.length * itemHeight`,用于占位撑高、防 CLS       |
+| `offsetY`              | 起始项的纵向偏移,用于绝对定位                          |
+| `containerRef`         | 滚动容器 ref                                           |
 | `scrollToIndex(index)` | 滚动到指定索引,内部对 `[0, items.length - 1]` 做 clamp |
 
 实现细节:
@@ -304,25 +304,25 @@ token 以 HSL 分量定义,通过 `hsl(var(--token))` 使用;亮/暗主题各一
 
 当前调用方的阈值与尺寸:
 
-| 调用方 | 启用条件 | 单项高度 | 可视高度 | 其他 |
-|---|---|---|---|---|
-| `BookmarkGrid` | 书签数 `> 60` | `130px` | `600px` | 小于等于 60 条全量渲染;占位总高防 CLS |
-| `CommandPalette` | `results.length * 56 > 400` | `56px` | `400px` | 无查询最多展示 50 条,有查询最多 200 条 |
+| 调用方           | 启用条件                    | 单项高度 | 可视高度 | 其他                                   |
+| ---------------- | --------------------------- | -------- | -------- | -------------------------------------- |
+| `BookmarkGrid`   | 书签数 `> 60`               | `130px`  | `600px`  | 小于等于 60 条全量渲染;占位总高防 CLS  |
+| `CommandPalette` | `results.length * 56 > 400` | `56px`   | `400px`  | 无查询最多展示 50 条,有查询最多 200 条 |
 
-原设计预期虚拟滚动只渲染约 20–40 张卡片;按当前参数,书签列表一次约渲染 11 张(5 张可视 + 6 张缓冲),命令面板约 14 项。该差异来自具体高度/阈值实现,目标仍是只渲染可视区。
+按行多列虚拟化后,1280px 下书签列表一次约渲染 60–66 张(11 行 × 6 列,含上下缓冲),命令面板约 14 项;窄屏列数减少时渲染量同步下降。目标仍是只渲染可视区及少量缓冲。
 
 ## 展示层组件约束(非数据实体)
 
-| 组件 | 当前约束 |
-|---|---|
-| `BookmarkCard` | 整卡 `role="button"` + `tabIndex={0}` + `Enter`/`Space` 打开;`window.open(url, '_blank', 'noopener,noreferrer')`;悬停 `-translate-y-0.5` + `shadow-elevation-md`;统一的 `focus-ring`;名称 `line-clamp-1` 并带 `title`;域名 `line-clamp-1` 并带 `title`;favicon `loading="lazy"` + `decoding="async"`,失败降级链为 favicon → 首字母 SVG → 纯色块 SVG |
-| `StateLoading` | 复用 `Skeleton`,容器 `role="status"` + `aria-label="加载中"` |
-| `StateEmpty` | 文案 + 可选引导动作;书签为空时引导"添加书签",搜索无结果时引导"清除搜索" |
-| `StateError` | 原因文本 + 可选重试按钮,容器 `role="alert"`,配色走 destructive |
-| `CommandPalette` | `Ctrl/Cmd+K` 打开,`Esc` 关闭,`↑`/`↓` 选择,`Enter` 跳转;打开时焦点落输入框;空结果显示"新建书签"引导;结果列表可虚拟滚动 |
-| `CategoryNav` | PC(`isPC`,≥1024px)侧栏可折叠,折叠态写入 `localStorage` 的 `category-nav-collapsed`;计数 badge;分类名 `truncate` + `title`;拖拽重排;非 PC 分支渲染底部固定 Tab(全部/分类/新建),点击"分类"打开左侧抽屉承载完整分类列表。当前 `isPC` 为假时都会走该分支,因此 768–1023px 也会渲染底部 Tab,平板形态需按质量基线复核 |
-| `CategoryDrawer` | 复用 Radix `Dialog`,自带遮罩与焦点陷阱;分类项最小高度 `min-h-11`;选择后关闭 |
-| `BookmarkForm` / `CategoryForm` | URL 校验与错误提示;名称 `maxLength`;分类名去空格、非空、≤50;错误后已填字段保留 |
+| 组件                            | 当前约束                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BookmarkCard`                  | 整卡 `role="button"` + `tabIndex={0}` + `Enter`/`Space` 打开(仅卡片自身聚焦,内嵌菜单不冒泡);`window.open(url, '_blank', 'noopener,noreferrer')`;悬停 `-translate-y-0.5` + `shadow-elevation-md`;统一的 `focus-ring`;名称 `line-clamp-1` 并带 `title`;域名展示 Unicode(`displayDomain`);favicon `loading="lazy"` + `decoding="async"` + `referrerPolicy="no-referrer"`,失败降级链为 favicon → 首字母 SVG → 纯色块 SVG |
+| `StateLoading`                  | 复用 `Skeleton`,容器 `role="status"` + `aria-label="加载中"`                                                                                                                                                                                                                                                                                                                                                         |
+| `StateEmpty`                    | 文案 + 可选引导动作;书签为空时引导"添加书签",搜索无结果时引导"清除搜索"                                                                                                                                                                                                                                                                                                                                              |
+| `StateError`                    | 原因文本 + 可选重试按钮,容器 `role="alert"`,配色走 destructive                                                                                                                                                                                                                                                                                                                                                       |
+| `CommandPalette`                | `Ctrl/Cmd+K` 打开,`Esc` 关闭,`↑`/`↓` 选择,`Enter` 跳转;打开时焦点落输入框;空结果显示"新建书签"引导;结果列表可虚拟滚动                                                                                                                                                                                                                                                                                                |
+| `CategoryNav`                   | PC(`isPC`,≥1024px)侧栏可折叠,折叠态写入 `localStorage` 的 `category-nav-collapsed`;计数 badge;分类名 `truncate` + `title`;拖拽重排;非 PC 分支渲染底部固定 Tab(全部/分类/新建),点击"分类"打开左侧抽屉承载完整分类列表。当前 `isPC` 为假时都会走该分支,因此 768–1023px 也会渲染底部 Tab,平板形态需按质量基线复核                                                                                                       |
+| `CategoryDrawer`                | 复用 Radix `Dialog`,自带遮罩与焦点陷阱;分类项最小高度 `min-h-11`;选择后关闭                                                                                                                                                                                                                                                                                                                                          |
+| `BookmarkForm` / `CategoryForm` | URL 校验与错误提示;名称 `maxLength`;分类名去空格、非空、≤50;错误后已填字段保留                                                                                                                                                                                                                                                                                                                                       |
 
 ## 与原文档的差异
 

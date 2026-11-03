@@ -5,7 +5,6 @@
  * 移动端(<md 768): 顶部 Header + 底部 Tab(由 CategoryNav 渲染) + 内容区
  * T019: 补 md 768 平板中间档;横竖屏靠宽度驱动,不监听 orientation(FR-011)
  * 折叠态:aside 宽度随 collapsed 收窄(状态由 App 上提,AppLayout 受控)
- * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §9
  */
 
 import type { ReactNode } from 'react'
@@ -20,6 +19,17 @@ export interface AppLayoutProps {
   collapsed?: boolean
 }
 
+function SkipLink() {
+  return (
+    <a
+      href="#main-content"
+      className="focus-ring sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-body focus:shadow-elevation-lg"
+    >
+      跳到主要内容
+    </a>
+  )
+}
+
 export function AppLayout({ header, categoryNav, children, collapsed }: AppLayoutProps) {
   const { isPC, isTablet } = useMediaQuery()
 
@@ -27,6 +37,7 @@ export function AppLayout({ header, categoryNav, children, collapsed }: AppLayou
   if (isPC || isTablet) {
     return (
       <div className="flex min-h-screen flex-col">
+        <SkipLink />
         {header}
         <div className="flex flex-1 overflow-hidden">
           <aside
@@ -38,7 +49,9 @@ export function AppLayout({ header, categoryNav, children, collapsed }: AppLayou
           >
             {categoryNav}
           </aside>
-          <main className="flex-1 overflow-auto p-4">{children}</main>
+          <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 outline-none">
+            {children}
+          </main>
         </div>
       </div>
     )
@@ -47,8 +60,15 @@ export function AppLayout({ header, categoryNav, children, collapsed }: AppLayou
   // 移动端:顶部 Header + 内容区 + 底部 Tab(由 CategoryNav 渲染)
   return (
     <div className="flex min-h-screen flex-col">
+      <SkipLink />
       {header}
-      <main className="flex-1 overflow-auto p-3 pb-20">{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="flex-1 overflow-auto p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] outline-none"
+      >
+        {children}
+      </main>
       {/* 底部固定 Tab 由 CategoryNav 渲染(FR-014) */}
       {categoryNav}
     </div>

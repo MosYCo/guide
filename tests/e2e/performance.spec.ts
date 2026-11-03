@@ -61,7 +61,10 @@ test('100 个书签页面加载 <2s', async ({ page }) => {
   await injectBookmarks(page, 100)
 
   // 虚拟列表只渲染可视区,不能假设 Site 0 在首屏
-  await page.getByRole('button', { name: /打开书签：Site \d+/ }).first().waitFor()
+  await page
+    .getByRole('button', { name: /打开书签：Site \d+/ })
+    .first()
+    .waitFor()
   // 页面内 performance.now() 从 navigation timeOrigin 起算
   const elapsed = await page.evaluate(() => performance.now())
   expect(elapsed).toBeLessThan(LOAD_BUDGET_MS)
@@ -69,7 +72,10 @@ test('100 个书签页面加载 <2s', async ({ page }) => {
 
 test('搜索响应 <500ms', async ({ page }) => {
   await injectBookmarks(page, 100)
-  await page.getByRole('button', { name: /打开书签：Site \d+/ }).first().waitFor()
+  await page
+    .getByRole('button', { name: /打开书签：Site \d+/ })
+    .first()
+    .waitFor()
 
   await page.keyboard.press('Control+k')
   const start = await page.evaluate(() => performance.now())
@@ -98,9 +104,7 @@ test('>60 条书签使用多列虚拟网格', async ({ page }) => {
     (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length,
   )
   expect(columns).toBe(6)
-  const cardHeight = await cards.first().evaluate(
-    (el) => el.getBoundingClientRect().height,
-  )
+  const cardHeight = await cards.first().evaluate((el) => el.getBoundingClientRect().height)
   expect(Math.round(cardHeight)).toBe(130)
 
   // 滚动后应渲染新的行
@@ -108,28 +112,27 @@ test('>60 条书签使用多列虚拟网格', async ({ page }) => {
   await list.evaluate((el) => {
     el.scrollTop = el.scrollHeight
   })
-  await expect
-    .poll(async () => (await cards.first().textContent()) ?? '')
-    .not.toBe(firstText)
+  await expect.poll(async () => (await cards.first().textContent()) ?? '').not.toBe(firstText)
 })
 
 test('命令面板方向键滚动跟随高亮项', async ({ page }) => {
   await injectBookmarks(page, 100)
-  await page.getByRole('button', { name: /打开书签：Site \d+/ }).first().waitFor()
+  await page
+    .getByRole('button', { name: /打开书签：Site \d+/ })
+    .first()
+    .waitFor()
 
   await page.keyboard.press('Control+k')
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('textbox', { name: '搜索书签' })).toBeFocused()
+  await expect(dialog.getByRole('combobox', { name: '搜索书签' })).toBeFocused()
   for (let i = 0; i < 15; i++) {
     await page.keyboard.press('ArrowDown')
   }
   const active = dialog.locator('[data-active="true"]')
   await expect(active).toBeVisible()
   await expect(active).toContainText('Site')
-  const scrollTop = await dialog
-    .getByTestId('command-results')
-    .evaluate((el) => el.scrollTop)
+  const scrollTop = await dialog.getByTestId('command-results').evaluate((el) => el.scrollTop)
   expect(scrollTop).toBeGreaterThan(0)
 })
 
@@ -143,9 +146,40 @@ test('虚拟滚动不会把键盘焦点丢到 body', async ({ page }) => {
     el.scrollTop = el.scrollHeight
   })
 
+  await expect.poll(() => list.evaluate((el) => document.activeElement === el)).toBe(true)
+})
+
+test('根字号 20px 时虚拟度量同步缩放', async ({ page }) => {
+  await injectBookmarks(page, 100)
+  await page.addStyleTag({ content: 'html { font-size: 20px !important; }' })
+  await page.waitForFunction(() => getComputedStyle(document.documentElement).fontSize === '20px')
+  await page.evaluate(() => window.dispatchEvent(new Event('resize')))
+
+  const card = page.getByRole('button', { name: /打开书签：Site \d+/ }).first()
+  await expect(card).toBeVisible()
+  // 8.125rem * 20px ≈ 162.5,允许子像素取整
   await expect
-    .poll(() => list.evaluate((el) => document.activeElement === el))
-    .toBe(true)
+    .poll(async () => card.evaluate((el) => el.getBoundingClientRect().height))
+    .toBeGreaterThan(150)
+
+  await page.keyboard.press('Control+k')
+  const option = page.getByRole('option').first()
+  await expect(option).toBeVisible()
+  const optionHeight = await option.evaluate((el) => el.getBoundingClientRect().height)
+  // h-14 = 3.5rem * 20px = 70
+  expect(optionHeight).toBeGreaterThan(60)
+  expect(optionHeight).toBeLessThan(80)
+})
+
+test('虚拟列表方向键使用 roving tabindex 移动焦点', async ({ page }) => {
+  await injectBookmarks(page, 100)
+  const first = page.getByRole('button', { name: /打开书签：Site \d+/ }).first()
+  await first.focus()
+  await page.keyboard.press('ArrowRight')
+
+  await expect
+    .poll(() => page.evaluate(() => document.activeElement?.getAttribute('data-card-index')))
+    .toBe('1')
 })
 
 test('命令面板滚轮滚动后高亮项仍在可视区', async ({ page }) => {

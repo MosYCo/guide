@@ -149,6 +149,35 @@ describe('导入导出服务', () => {
       await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
     })
 
+    it('拒绝不支持的版本', async () => {
+      const file = makeFile(
+        JSON.stringify({
+          version: '2.0.0',
+          categories: [],
+          bookmarks: [],
+        }),
+      )
+      await expect(parseJsonFile(file)).rejects.toThrow('不支持的导入版本')
+    })
+
+    it('拒绝非整数分类 order', async () => {
+      const file = makeFile(
+        JSON.stringify({
+          version: '1.0.0',
+          categories: [
+            {
+              id: 'c1',
+              name: 'Work',
+              order: 1.5,
+              createdAt: '2026-01-01T00:00:00Z',
+            },
+          ],
+          bookmarks: [],
+        }),
+      )
+      await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
+    })
+
     it('拒绝非字符串的 name/url', async () => {
       const file = makeFile(
         JSON.stringify({
@@ -250,9 +279,7 @@ describe('导入导出服务', () => {
     }
 
     it('解析 HTML 提取分类和书签', async () => {
-      const { preview, categories, bookmarks } = await parseHtmlFile(
-        makeHtmlFile(htmlContent),
-      )
+      const { preview, categories, bookmarks } = await parseHtmlFile(makeHtmlFile(htmlContent))
       // 分类：工作、嵌套
       expect(categories).toHaveLength(2)
       expect(categories.map((c) => c.name)).toContain('工作')
@@ -263,9 +290,7 @@ describe('导入导出服务', () => {
     })
 
     it('嵌套文件夹扁平化为一级分类', async () => {
-      const { categories, bookmarks } = await parseHtmlFile(
-        makeHtmlFile(htmlContent),
-      )
+      const { categories, bookmarks } = await parseHtmlFile(makeHtmlFile(htmlContent))
       const nestedCat = categories.find((c) => c.name === '嵌套')
       const docsBm = bookmarks.find((b) => b.name === 'Docs')
       expect(docsBm?.categoryId).toBe(nestedCat?.id)
@@ -278,19 +303,40 @@ describe('导入导出服务', () => {
     })
 
     it('空 HTML 抛出错误', async () => {
-      await expect(parseHtmlFile(makeHtmlFile('<html></html>'))).rejects.toThrow(
-        '未找到书签结构',
-      )
+      await expect(parseHtmlFile(makeHtmlFile('<html></html>'))).rejects.toThrow('未找到书签结构')
+    })
+
+    it('非法 ADD_DATE 回退到导入时刻', async () => {
+      const badDateHtml = `<DL><p>
+        <DT><A HREF="https://a.com" ADD_DATE="abc">BadDate</A>
+        <DT><A HREF="https://b.com" ADD_DATE="999999999999999999999">FarFuture</A>
+      </DL><p>`
+      const { bookmarks } = await parseHtmlFile(makeHtmlFile(badDateHtml))
+      expect(bookmarks).toHaveLength(2)
+      for (const bookmark of bookmarks) {
+        expect(Number.isNaN(Date.parse(bookmark.createdAt))).toBe(false)
+      }
+    })
+
+    it('同名文件夹合并为一个分类', async () => {
+      const duplicateHtml = `<DL><p>
+        <DT><H3>工作</H3>
+        <DL><p><DT><A HREF="https://a.com">A</A></DL><p>
+        <DT><H3>工作</H3>
+        <DL><p><DT><A HREF="https://b.com">B</A></DL><p>
+      </DL><p>`
+      const { categories, bookmarks } = await parseHtmlFile(makeHtmlFile(duplicateHtml))
+      expect(categories).toHaveLength(1)
+      expect(new Set(bookmarks.map((b) => b.categoryId)).size).toBe(1)
     })
 
     it('导入 HTML 数据到 IndexedDB', async () => {
-      const { categories, bookmarks } = await parseHtmlFile(
-        makeHtmlFile(htmlContent),
-      )
-      const result = await importFromHtml(categories, bookmarks)
+      const { categories, bookmarks } = await parseHtmlFile(makeHtmlFile(htmlContent))
+      const result = await importFromHtml(categories, bookmarks, 1)
       expect(result.success).toBe(true)
       expect(result.bookmarkCount).toBe(3)
       expect(result.categoryCount).toBe(2)
+      expect(result.skipped).toBe(1)
 
       const dbCats = await getAllCategories()
       const dbBms = await getAllBookmarks()

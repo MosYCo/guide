@@ -2,7 +2,6 @@
  * useTheme Hook - 暗黑模式管理
  * FR-017: 挂载时不重复 apply(由 index.html 内联脚本前置设 .dark,防 FOUC);
  *         用户切换主题时仍由 hook 调 applyTheme 设 class(运行时切换生效)。
- * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §6
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -18,6 +17,10 @@ function applyTheme(resolved: ResolvedTheme): void {
   const root = document.documentElement
   if (resolved === 'dark') root.classList.add('dark')
   else root.classList.remove('dark')
+  const meta = document.querySelector('meta[name="theme-color"]')
+  if (meta) {
+    meta.setAttribute('content', resolved === 'dark' ? '#1a1a1a' : '#ffffff')
+  }
 }
 
 export interface UseThemeReturn {
@@ -27,9 +30,7 @@ export interface UseThemeReturn {
 }
 
 export function useTheme(): UseThemeReturn {
-  const [theme, setThemeState] = useState<Theme>(
-    () => getStoredTheme() ?? 'system',
-  )
+  const [theme, setThemeState] = useState<Theme>(() => getStoredTheme() ?? 'system')
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
     theme === 'system' ? getSystemTheme() : theme,
   )
@@ -42,6 +43,12 @@ export function useTheme(): UseThemeReturn {
     setResolvedTheme(resolved)
     if (mountedRef.current) {
       applyTheme(resolved)
+    } else {
+      // 内联脚本已设 class;首挂载仍需同步浏览器 theme-color
+      const meta = document.querySelector('meta[name="theme-color"]')
+      if (meta) {
+        meta.setAttribute('content', resolved === 'dark' ? '#1a1a1a' : '#ffffff')
+      }
     }
     mountedRef.current = true
   }, [theme])

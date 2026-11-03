@@ -29,7 +29,7 @@ pnpm typecheck   # tsc --noEmit
 pnpm test        # Vitest 单元 + 集成(e2e 不含,由下条单独跑)
 pnpm test:e2e    # Playwright E2E,涉及用户路径时
 pnpm build       # tsc -b && vite build,提交前或部署前
-pnpm build:prod  # NODE_ENV=production 的生产构建,部署用
+pnpm build:prod  # 生产构建(等价于 pnpm build),部署用
 ```
 
 - 任一环节失败,如实报告输出,不掩盖。

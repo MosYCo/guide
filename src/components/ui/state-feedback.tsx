@@ -9,19 +9,18 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 /** 加载占位:复用 Skeleton,语义中性 */
-export function StateLoading({
-  rows = 6,
-  className,
-}: {
-  rows?: number
-  className?: string
-}) {
+export function StateLoading({ rows = 6, className }: { rows?: number; className?: string }) {
   return (
     <div
-      className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6', className)}
+      className={cn(
+        'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6',
+        className,
+      )}
       role="status"
       aria-label="加载中"
+      aria-busy="true"
     >
+      <span className="sr-only">正在加载书签</span>
       {Array.from({ length: rows }).map((_, i) => (
         <Skeleton key={i} className="h-28 w-full" />
       ))}
@@ -41,10 +40,7 @@ export function StateEmpty({
 }) {
   return (
     <div
-      className={cn(
-        'flex flex-col items-center justify-center gap-3 py-16 text-center',
-        className,
-      )}
+      className={cn('flex flex-col items-center justify-center gap-3 py-16 text-center', className)}
     >
       <Inbox className="h-10 w-10 text-muted-foreground/50" aria-hidden />
       <p className="text-sm text-muted-foreground">{message}</p>
@@ -65,10 +61,7 @@ export function StateError({
 }) {
   return (
     <div
-      className={cn(
-        'flex flex-col items-center justify-center gap-3 py-16 text-center',
-        className,
-      )}
+      className={cn('flex flex-col items-center justify-center gap-3 py-16 text-center', className)}
       role="alert"
     >
       <AlertTriangle className="h-10 w-10 text-destructive/70" aria-hidden />

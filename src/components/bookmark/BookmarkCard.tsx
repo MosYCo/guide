@@ -1,10 +1,9 @@
 /**
  * BookmarkCard 组件 - 单个书签卡片
  * FR-008 图标降级、点击新标签页打开
- * @see specs/001-bookmark-navigation/contracts/ui-contract.md §BookmarkCard
  */
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { MoreVertical, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import {
   AlertDialog,
@@ -22,11 +21,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { Bookmark } from '@/types'
-import { extractDomain } from '@/utils/url'
-import { fallbackIcon, getPlaceholderIcon } from '@/services/favicon'
+import type { Bookmark, Category } from '@/types'
+import { displayDomain } from '@/utils/url'
+import { fallbackIcon, getPlaceholderIcon, resolveIcon } from '@/services/favicon'
 import { cn } from '@/lib/utils'
 
 export interface BookmarkCardProps {
@@ -38,6 +40,12 @@ export interface BookmarkCardProps {
   onDragStart?: (bookmark: Bookmark) => void
   /** 可选：拖拽结束/取消时清理状态 */
   onDragEnd?: () => void
+  /** 可选：键盘/触屏“移动到分类”入口 */
+  categories?: Category[]
+  onMoveToCategory?: (bookmark: Bookmark, categoryId: string | null) => void
+  /** 可选：虚拟列表 roving tabindex / 定位 */
+  tabIndex?: number
+  dataIndex?: number
   /** 可选：额外样式(虚拟网格用于撑满固定行高) */
   className?: string
 }
@@ -49,14 +57,26 @@ export function BookmarkCard({
   onClick,
   onDragStart,
   onDragEnd,
+  categories,
+  onMoveToCategory,
+  tabIndex = 0,
+  dataIndex,
   className,
 }: BookmarkCardProps) {
-  const [iconSrc, setIconSrc] = useState(bookmark.icon)
+  const [iconSrc, setIconSrc] = useState(
+    () => bookmark.icon || resolveIcon(bookmark.url, bookmark.name),
+  )
   const [iconFailedOnce, setIconFailedOnce] = useState(false)
+
+  // 编辑保存后同一个卡片实例会复用,图标 state 必须跟随 bookmark 更新
+  useEffect(() => {
+    setIconSrc(bookmark.icon || resolveIcon(bookmark.url, bookmark.name))
+    setIconFailedOnce(false)
+  }, [bookmark.icon, bookmark.url, bookmark.name])
   const [deleteOpen, setDeleteOpen] = useState(false)
   const suppressMenuFocusRef = useRef(false)
   const menuTriggerRef = useRef<HTMLButtonElement>(null)
-  const domain = extractDomain(bookmark.url)
+  const domain = displayDomain(bookmark.url)
 
   const handleClick = () => onClick(bookmark)
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -72,9 +92,14 @@ export function BookmarkCard({
   return (
     <Card
       role="button"
-      tabIndex={0}
+      tabIndex={tabIndex}
+      data-card-index={dataIndex}
       draggable={!!onDragStart}
-      onDragStart={() => onDragStart?.(bookmark)}
+      onDragStart={(e) => {
+        // Firefox 需要 setData 才会启动拖拽
+        e.dataTransfer?.setData('text/plain', bookmark.id)
+        onDragStart?.(bookmark)
+      }}
       onDragEnd={onDragEnd}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
@@ -95,6 +120,7 @@ export function BookmarkCard({
             alt=""
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             className="h-8 w-8"
             onError={() => {
               if (!iconFailedOnce) {
@@ -108,10 +134,7 @@ export function BookmarkCard({
             }}
           />
         </div>
-        <p
-          className="text-body line-clamp-1 w-full text-center font-medium"
-          title={bookmark.name}
-        >
+        <p className="text-body line-clamp-1 w-full text-center font-medium" title={bookmark.name}>
           {bookmark.name}
         </p>
         <p
@@ -121,15 +144,15 @@ export function BookmarkCard({
           {domain}
         </p>
       </div>
-      <div className="absolute right-1 top-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+      <div className="bookmark-actions absolute right-1 top-1 transition-opacity">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               ref={menuTriggerRef}
               variant="ghost"
               size="icon"
-              className="focus-ring min-h-11 min-w-11 h-7 w-7 sm:min-h-7 sm:min-w-7"
-              aria-label="更多操作"
+              className="focus-ring h-7 w-7 min-h-11 min-w-11 md:min-h-7 md:min-w-7"
+              aria-label={`更多操作：${bookmark.name}`}
               onClick={(e) => e.stopPropagation()}
             >
               <MoreVertical className="h-4 w-4" />
@@ -164,6 +187,32 @@ export function BookmarkCard({
               <Pencil className="mr-2 h-4 w-4" />
               编辑
             </DropdownMenuItem>
+            {categories && onMoveToCategory && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>移动到分类</DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onMoveToCategory(bookmark, null)
+                    }}
+                  >
+                    未分类
+                  </DropdownMenuItem>
+                  {categories.map((category) => (
+                    <DropdownMenuItem
+                      key={category.id}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onMoveToCategory(bookmark, category.id)
+                      }}
+                    >
+                      {category.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            )}
             <DropdownMenuItem
               className="text-destructive"
               onClick={(e) => {

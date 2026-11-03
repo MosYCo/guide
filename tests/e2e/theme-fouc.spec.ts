@@ -4,7 +4,6 @@ import { test, expect, type Page } from '@playwright/test'
  * T031: 主题 FOUC E2E
  * SC-005: 首屏渲染前 .dark class 已就位,无亮→暗闪烁
  * FR-017
- * @see specs/001-ui-ux-overhaul/quickstart.md §场景5
  */
 
 async function resetDB(page: Page) {
@@ -58,9 +57,7 @@ test.describe('主题 FOUC SC-005', () => {
     await page.waitForSelector('text=书签导航')
 
     expect(firstFrameHasDark).toBe(false)
-    const stable = await page.evaluate(() =>
-      document.documentElement.classList.contains('dark'),
-    )
+    const stable = await page.evaluate(() => document.documentElement.classList.contains('dark'))
     expect(stable).toBe(false)
   })
 
@@ -79,9 +76,7 @@ test.describe('主题 FOUC SC-005', () => {
     await page.waitForSelector('text=书签导航')
 
     // 系统 dark 偏好 → 首帧应有 dark class
-    const hasDark = await page.evaluate(() =>
-      document.documentElement.classList.contains('dark'),
-    )
+    const hasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
     expect(hasDark).toBe(true)
 
     await context.close()
@@ -98,9 +93,7 @@ test.describe('主题 FOUC SC-005', () => {
     // 点主题切换按钮(light → dark)
     await page.getByRole('button', { name: /切换主题/ }).click()
 
-    const hasDark = await page.evaluate(() =>
-      document.documentElement.classList.contains('dark'),
-    )
+    const hasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
     expect(hasDark).toBe(true)
   })
 })

@@ -4,7 +4,6 @@ import { test, expect, type Page } from '@playwright/test'
  * T027: 视觉走查 E2E
  * SC-001: 亮/暗主题逐屏走查,对比度断言(WCAG AA)
  * FR-001/002
- * @see specs/001-ui-ux-overhaul/quickstart.md §场景1
  */
 
 async function addBookmark(page: Page, url: string, name: string) {
@@ -35,9 +34,7 @@ test.describe('视觉走查 SC-001', () => {
     await expect(card).toBeVisible()
     // 悬停态有阴影 elevation(token 落地验证)
     await card.hover()
-    const boxShadow = await card.evaluate((el) =>
-      getComputedStyle(el).boxShadow,
-    )
+    const boxShadow = await card.evaluate((el) => getComputedStyle(el).boxShadow)
     // 非空阴影(悬停态有反馈)
     expect(boxShadow.length).toBeGreaterThan(0)
   })
@@ -49,17 +46,15 @@ test.describe('视觉走查 SC-001', () => {
     })
     await page.goto('/')
     // 首帧 html 应已有 dark class(FOUC 防护)
-    const hasDark = await page.evaluate(() =>
-      document.documentElement.classList.contains('dark'),
-    )
+    const hasDark = await page.evaluate(() => document.documentElement.classList.contains('dark'))
     expect(hasDark).toBe(true)
   })
 
   test('加载态展示 skeleton 占位', async ({ page }) => {
     await resetDB(page)
     await page.goto('/')
-    // 空库首次加载,应有 skeleton(role=status 加载占位)
-    await expect(page.locator('[role="status"]')).toBeVisible()
+    // 空库首次加载,应有 skeleton(按 aria-label 精确定位加载态)
+    await expect(page.getByRole('status', { name: '加载中' })).toBeVisible()
   })
 
   test('空状态含引导动作', async ({ page }) => {
@@ -67,9 +62,7 @@ test.describe('视觉走查 SC-001', () => {
     await page.goto('/')
     await page.waitForSelector('text=书签导航')
     // 空状态(无书签)应展示引导按钮
-    await expect(
-      page.getByRole('button', { name: '添加书签' }).first(),
-    ).toBeVisible()
+    await expect(page.getByRole('button', { name: '添加书签' }).first()).toBeVisible()
   })
 
   test('对比度:正文文本对背景达 WCAG AA', async ({ page }) => {
@@ -86,8 +79,7 @@ test.describe('视觉走查 SC-001', () => {
       if (!el) return ''
       const styles = getComputedStyle(el)
       const fg = styles.color
-      const bg = getComputedStyle(el.closest('.bg-card') ?? document.body)
-        .backgroundColor
+      const bg = getComputedStyle(el.closest('.bg-card') ?? document.body).backgroundColor
       // 简化:返回 fg/bg 字符串供断言非空(完整对比度计算需 canvas)
       return fg + '|' + bg
     })
