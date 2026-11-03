@@ -23,7 +23,7 @@ const bookmark: Bookmark = {
   lastVisitedAt: null,
 }
 
-describe('US4 编辑与删除流程', () => {
+describe('编辑与删除流程', () => {
   beforeEach(async () => {
     _resetDBForTesting()
     const db = await getDB()

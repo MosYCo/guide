@@ -2,8 +2,8 @@ import { chromium, test, expect, type Page } from '@playwright/test'
 import { rm } from 'node:fs/promises'
 
 /**
- * US5 E2E: 数据持久化
- * SC-003: 关闭浏览器后重新打开，书签数据保留（持久化边界内）
+ * E2E: 数据持久化
+ * 关闭浏览器后重新打开，书签数据保留（持久化边界内）
  */
 
 async function addBookmark(page: Page, url: string, name: string) {

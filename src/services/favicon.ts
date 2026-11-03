@@ -1,6 +1,6 @@
 /**
  * Favicon 服务
- * FR-008: 用户未提供图标时，优先通过 Google Favicon API 获取；
+ * 用户未提供图标时，优先通过 Google Favicon API 获取；
  * 获取失败或不存在时使用网站名称首字母作为降级图标
  */
 
@@ -46,11 +46,11 @@ export function getLetterIcon(name: string): string {
 }
 
 /**
- * T024: 终极降级——首字母图标也失败时的纯色块(SVG data URI)。
+ * 终极降级——首字母图标也失败时的纯色块(SVG data URI)。
  * 用于 onError 链二次降级:favicon 失败 → 首字母 → 纯色块。
  */
 export function getPlaceholderIcon(): string {
-  // 单色块 + 书签符号。data URI 是独立文档,不能用宿主 CSS 变量,否则 var() 无效回退黑色。
+  // 单色块 + 书签符号。data URI 是独立文档,不能用宿主 CSS 变量,否则 var 无效回退黑色。
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <rect width="32" height="32" rx="6" fill="#d1d5db"/>
     <path d="M9 6h14v20l-7-4-7 4z" fill="#6b7280" opacity="0.6"/>

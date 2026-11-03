@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T028: 键盘流 E2E
- * SC-002: 仅键盘完成核心流程,焦点可见且顺序合理
- * FR-004/005/006
+ * 键盘流 E2E
+ * 仅键盘完成核心流程,焦点可见且顺序合理
  */
 
 async function resetDB(page: Page) {
@@ -21,7 +20,7 @@ async function addBookmark(page: Page, url: string, name: string) {
   await page.waitForSelector('[role="dialog"]', { state: 'detached' })
 }
 
-test.describe('键盘流 SC-002', () => {
+test.describe('键盘流', () => {
   test('Tab 遍历焦点可见且不跳隐藏元素', async ({ page }) => {
     await resetDB(page)
     await page.goto('/')

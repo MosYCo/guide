@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T032: 极端字段 E2E
- * SC-006: 超长标题/favicon 失效/无效 URL 不破布局
- * FR-016/018
+ * 极端字段 E2E
+ * 超长标题/favicon 失效/无效 URL 不破布局
  */
 
 async function injectExtremeBookmarks(page: Page) {
@@ -72,7 +71,7 @@ async function checkNoOverflow(page: Page): Promise<boolean> {
   })
 }
 
-test.describe('极端字段 SC-006', () => {
+test.describe('极端字段', () => {
   test('emoji 名称不会导致白屏', async ({ page }) => {
     await page.goto('/')
     await page.waitForSelector('text=书签导航')

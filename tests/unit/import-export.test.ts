@@ -52,7 +52,7 @@ describe('导入导出服务', () => {
     await db.clear('categories')
   })
 
-  describe('FR-015: JSON 导出', () => {
+  describe(': JSON 导出', () => {
     it('导出包含所有书签和分类', async () => {
       const cat = makeCategory({ name: '工作' })
       await addCategory(cat)
@@ -93,7 +93,7 @@ describe('导入导出服务', () => {
     })
   })
 
-  describe('FR-018: JSON 导入', () => {
+  describe(': JSON 导入', () => {
     it('解析有效 JSON 文件', async () => {
       const exportData: ExportData = {
         version: '1.0.0',
@@ -304,7 +304,7 @@ describe('导入导出服务', () => {
     })
   })
 
-  describe('FR-016: HTML 导入', () => {
+  describe(': HTML 导入', () => {
     const htmlContent = `<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
 <TITLE>Bookmarks</TITLE>

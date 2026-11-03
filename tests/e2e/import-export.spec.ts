@@ -1,8 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * US6 E2E: JSON 导入导出闭环
- * FR-015 导出、FR-018 JSON 导入
+ * E2E: JSON 导入导出闭环
+ * 导出、JSON 导入
  */
 
 async function addBookmark(page: Page, url: string, name: string) {

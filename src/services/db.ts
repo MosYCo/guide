@@ -1,6 +1,6 @@
 /**
  * IndexedDB 数据服务
- * FR-004: 持久化所有数据到 IndexedDB
+ * 持久化所有数据到 IndexedDB
  */
 
 import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction } from 'idb'

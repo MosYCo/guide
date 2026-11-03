@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T066: 响应式布局验证（移动端 <1024px）
+ * 响应式布局验证（移动端 <1024px）
  */
 
 async function addBookmark(page: Page, url: string, name: string) {

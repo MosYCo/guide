@@ -1,6 +1,6 @@
 /**
- * App 根组件 - 阶段 4: US2 分类组织 + US4 编辑删除
- * T014: 搜索改为命令面板(FR-008),内联过滤移除
+ * App 根组件 - 阶段 4:  分类组织 +  编辑删除
+ * 搜索改为命令面板,内联过滤移除
  */
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -24,7 +24,7 @@ import {
 } from '@/utils/storage'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
 
-// T017: 命令面板懒加载,减小首屏 JS(FR-019)
+// 命令面板懒加载,减小首屏 JS
 const CommandPalette = lazy(() =>
   import('@/components/bookmark/CommandPalette').then((m) => ({
     default: m.CommandPalette,
@@ -86,7 +86,7 @@ function AppInner() {
   const [draggingBookmark, setDraggingBookmark] = useState<Bookmark | null>(null)
   const [incognitoWarn, setIncognitoWarn] = useState(false)
   const syncChannelRef = useRef<BroadcastChannel | null>(null)
-  // T014: 命令面板开关(搜索由面板承载,查询状态面板内部管理)
+  // 命令面板开关(搜索由面板承载,查询状态面板内部管理)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   // 折叠态上提至 App:AppLayout 据此切 aside 宽度,CategoryNav 受控
   const [navCollapsed, setNavCollapsed] = useState<boolean>(() => {
@@ -141,7 +141,7 @@ function AppInner() {
     if (detectIncognito()) setIncognitoWarn(true)
   }, [toast])
 
-  // Ctrl+K 全局快捷键打开命令面板(FR-008);Ctrl+N 新建书签
+  // Ctrl+K 全局快捷键打开命令面板;Ctrl+N 新建书签
   useHotkeys(
     'ctrl+n, meta+n',
     (e) => {
@@ -297,7 +297,7 @@ function AppInner() {
     [draggingBookmark, moveBookmarkToCategory, toast],
   )
 
-  // T014: 搜索改由命令面板承载,内联无搜索态;无结果态移除(网格永远显示分类过滤结果)
+  // 搜索改由命令面板承载,内联无搜索态;无结果态移除(网格永远显示分类过滤结果)
 
   const isLoading = loading || categoriesLoading
 

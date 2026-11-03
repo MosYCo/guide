@@ -2,7 +2,7 @@
  * CategoryNav 组件 - 统一分类导航
  * PC(≥md 768): 侧栏列表 + 可折叠(收起/展开,持久化)+ 计数 badge 选中态高亮
  * 移动端(<md 768): 底部固定 Tab(全部/分类)+ 侧滑抽屉承载完整列表
- * T021: 废弃移动端顶部横标签栏,改底部 Tab+抽屉(FR-009/014)
+ * 废弃移动端顶部横标签栏,改底部 Tab+抽屉
  */
 
 import { useRef, useState } from 'react'
@@ -37,7 +37,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-// T039: CategoryDrawer 静态导入(非 React.lazy)。有意偏离 T021 的"懒加载"注记:
+// CategoryDrawer 静态导入(非 React.lazy)。有意偏离  的"懒加载"注记:
 // 抽屉体量小,随 CategoryNav 同 chunk 不影响首屏(首屏不渲染移动端分支),
 // 静态导入更简洁,避免 lazy+Suspense 的额外复杂度。
 import { CategoryDrawer } from '@/components/category/CategoryDrawer'
@@ -115,7 +115,7 @@ export function CategoryNav({
     onReorder(ids)
   }
 
-  // T021: PC 侧栏(含平板);折叠态受控于 App
+  // PC 侧栏(含平板);折叠态受控于 App
   if (isPC || isTablet) {
     // 折叠态:仅图标按钮
     if (collapsed) {
@@ -271,7 +271,7 @@ export function CategoryNav({
     )
   }
 
-  // T021: 移动端底部固定 Tab(全部 / 分类)+ 侧滑抽屉
+  // 移动端底部固定 Tab(全部 / 分类)+ 侧滑抽屉
   return (
     <>
       <nav
@@ -384,7 +384,7 @@ function NavItem({
       aria-current={active ? 'page' : undefined}
       className={cn(
         'focus-ring flex min-h-9 w-full items-center gap-2 rounded-md px-2 py-1.5 text-body',
-        // T021: 选中态高亮(FR-009)
+        // 选中态高亮
         active
           ? 'border-l-2 border-primary bg-accent font-semibold text-accent-foreground'
           : 'hover:bg-accent/50',
@@ -392,7 +392,7 @@ function NavItem({
     >
       {icon}
       <span className="flex-1 text-left">{label}</span>
-      {/* T021: 计数 badge */}
+      {/*: 计数 badge */}
       <span
         className={cn(
           'text-caption rounded-full px-1.5 py-0.5',

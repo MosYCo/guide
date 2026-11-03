@@ -1,7 +1,7 @@
 /**
  * CommandPalette 组件 - 全屏命令面板
- * FR-008: Ctrl+K 弹出全屏命令面板,含结果列表 + 键盘上下选择 + Enter 跳转 + Esc 关闭
- * T013: Spotlight/Raycast 风格,复用 shadcn Dialog;结果列表接 useVirtualList
+ * Ctrl+K 弹出全屏命令面板,含结果列表 + 键盘上下选择 + Enter 跳转 + Esc 关闭
+ * Spotlight/Raycast 风格,复用 shadcn Dialog;结果列表接 useVirtualList
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'

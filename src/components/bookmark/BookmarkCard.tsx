@@ -1,6 +1,6 @@
 /**
  * BookmarkCard 组件 - 单个书签卡片
- * FR-008 图标降级、点击新标签页打开
+ * 图标降级、点击新标签页打开
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -36,7 +36,7 @@ export interface BookmarkCardProps {
   onEdit: (bookmark: Bookmark) => void
   onDelete: (bookmarkId: string) => void
   onClick: (bookmark: Bookmark) => void
-  /** 可选：拖拽到分类（FR-003 drag to assign） */
+  /** 可选：拖拽到分类（drag to assign） */
   onDragStart?: (bookmark: Bookmark) => void
   /** 可选：拖拽结束/取消时清理状态 */
   onDragEnd?: () => void
@@ -113,7 +113,7 @@ export function BookmarkCard({
     >
       <div className="flex flex-col items-center gap-2 p-3">
         <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded">
-          {/* T015/T024: favicon 原生懒加载 + 解码异步 + onError 二次降级(FR-018/016)
+          {/* favicon 原生懒加载 + 解码异步 + onError 二次降级
            * 降级链:favicon 失败 → 首字母图标(getLetterIcon via fallbackIcon)→ 首字母也失败 → 纯色块(getPlaceholderIcon) */}
           <img
             src={iconSrc}

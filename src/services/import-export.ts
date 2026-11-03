@@ -1,6 +1,6 @@
 /**
  * 导入导出服务
- * FR-015 JSON 导出、FR-016 HTML 导入、FR-018 JSON 导入
+ * JSON 导出、HTML 导入、JSON 导入
  */
 
 import { v4 as uuidv4 } from 'uuid'
@@ -67,7 +67,7 @@ async function mergeCategoriesWithExisting(
 
 /**
  * 兼容 Node/jsdom 环境读取文件文本。
- * jsdom 的 File 没有 .text()，用 FileReader 兜底。
+ * jsdom 的 File 没有 .text，用 FileReader 兜底。
  */
 function fileText(file: File): Promise<string> {
   if (file.size > MAX_FILE_BYTES) {
@@ -83,7 +83,7 @@ function fileText(file: File): Promise<string> {
 }
 
 /**
- * FR-015: 导出所有书签和分类为 JSON（ExportData 格式）。
+ * 导出所有书签和分类为 JSON（ExportData 格式）。
  * @returns ExportData 对象
  */
 export async function exportToJson(): Promise<ExportData> {
@@ -189,7 +189,7 @@ function assertValidExportData(data: ExportData): void {
 }
 
 /**
- * FR-018: 解析 JSON 文件为预览数据（不写入）。
+ * 解析 JSON 文件为预览数据（不写入）。
  * 校验版本和字段结构。
  * @throws 格式错误时抛出
  */
@@ -226,7 +226,7 @@ export async function parseJsonFile(file: File): Promise<{
 }
 
 /**
- * FR-018: 导入 JSON 数据（写入 IndexedDB）。
+ * 导入 JSON 数据（写入 IndexedDB）。
  * - 为新数据生成新 ID，避免冲突
  * - 导入前不自动备份（由调用方决定），失败时抛出错误
  * @param data 已解析的 ExportData
@@ -291,7 +291,7 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
 }
 
 /**
- * FR-016: 解析浏览器书签 HTML 文件（Netscape Bookmark Format）。
+ * 解析浏览器书签 HTML 文件（Netscape Bookmark Format）。
  * - 嵌套文件夹扁平化为一级分类
  * - 跳过非 http/https URL
  * @returns 预览数据 + 解析后的分类和书签
@@ -397,7 +397,7 @@ export async function parseHtmlFile(file: File): Promise<{
 }
 
 /**
- * FR-016: 导入解析后的 HTML 书签数据。
+ * 导入解析后的 HTML 书签数据。
  * 图标在导入时留空，由展示时 Favicon 服务兜底。
  */
 export async function importFromHtml(

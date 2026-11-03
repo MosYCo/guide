@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T031: 主题 FOUC E2E
- * SC-005: 首屏渲染前 .dark class 已就位,无亮→暗闪烁
- * FR-017
+ * 主题 FOUC E2E
+ * 首屏渲染前 .dark class 已就位,无亮→暗闪烁
  */
 
 async function resetDB(page: Page) {
@@ -12,7 +11,7 @@ async function resetDB(page: Page) {
   })
 }
 
-test.describe('主题 FOUC SC-005', () => {
+test.describe('主题 FOUC', () => {
   test('暗色主题:首帧 html 即有 dark class(无 FOUC)', async ({ page }) => {
     await resetDB(page)
     await page.addInitScript(() => {

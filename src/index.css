@@ -1,4 +1,4 @@
-/* FR-001: 设计 token 集中处(语义色阶/type scale/elevation/focus ring)
+/*: 设计 token 集中处(语义色阶/type scale/elevation/focus ring)
  * @import 必须先于 @tailwind,否则 PostCSS 会丢 token */
 @import './styles/tokens.css';
 
@@ -73,7 +73,7 @@
       'Helvetica Neue',
       Arial,
       sans-serif;
-    /* FR-001 字体:中文优化字距 */
+    /* 字体:中文优化字距 */
     font-feature-settings: 'palt' 1;
   }
 }
@@ -110,13 +110,13 @@
   }
 }
 
-/* FR-012: 尊重"减少动效"系统偏好
+/*: 尊重"减少动效"系统偏好
  * 降级方式:省略位移与阴影/淡入动画,保留即时态切换(不延迟交互)
  * 焦点指示(focus-ring)与状态过渡的即时反馈保留(必要动画) */
 @media (prefers-reduced-motion: reduce) {
   *,
-  *::before,
-  *::after {
+  * :before,
+  * :after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

@@ -43,7 +43,7 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // FR-001 语义色阶(success/warning/info)
+        // 语义色阶(success/warning/info)
         success: {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))',
@@ -62,14 +62,14 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
-      // FR-001 阴影 elevation 四档(sm/md/lg/popover)
+      // 阴影 elevation 四档(sm/md/lg/popover)
       boxShadow: {
         'elevation-sm': 'var(--shadow-elevation-sm)',
         'elevation-md': 'var(--shadow-elevation-md)',
         'elevation-lg': 'var(--shadow-elevation-lg)',
         'elevation-popover': 'var(--shadow-elevation-popover)',
       },
-      // FR-001 type scale 四档
+      // type scale 四档
       fontSize: {
         display: [
           'var(--text-display-size)',

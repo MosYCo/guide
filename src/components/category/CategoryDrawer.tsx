@@ -1,6 +1,6 @@
 /**
  * CategoryDrawer 组件 - 移动端侧滑抽屉
- * T020: 承载完整分类列表,复用 Radix Dialog,含遮罩与焦点陷阱
+ * 承载完整分类列表,复用 Radix Dialog,含遮罩与焦点陷阱
  */
 
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
@@ -53,7 +53,7 @@ export function CategoryDrawer({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      {/* Radix Dialog 默认含焦点陷阱(FocusScope)与遮罩(FR-014) */}
+      {/* Radix Dialog 默认含焦点陷阱(FocusScope)与遮罩 */}
       <DialogContent
         className="inset-y-0 left-0 top-auto max-h-screen w-80 max-w-[85vw] translate-x-0 translate-y-0 rounded-l-none rounded-r-lg border-l-0 p-0"
         // 覆盖默认居中定位,改为左侧贴边

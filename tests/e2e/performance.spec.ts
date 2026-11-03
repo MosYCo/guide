@@ -2,10 +2,9 @@ import { test, expect } from '@playwright/test'
 import { seedBookmarks } from './seed'
 
 /**
- * T057/T070: 性能验证
- * SC-004: 100 个书签 <2s 加载
- * SC-006: 搜索响应 <500ms（含输入与渲染）
- *
+ * 性能验证
+ * 100 个书签 <2s 加载
+ * 搜索响应 <500ms（含输入与渲染）
  * 这些是 dev server 上的烟测;严格预算见 docs/quality-baseline.md。
  * CI 共享 runner 上适当放宽,避免把机器抖动当成性能回归。
  */
@@ -21,7 +20,7 @@ test('100 个书签页面加载 <2s', async ({ page }) => {
     .getByRole('button', { name: /打开书签：Site \d+/ })
     .first()
     .waitFor()
-  // 页面内 performance.now() 从 navigation timeOrigin 起算
+  // 页面内 performance.now 从 navigation timeOrigin 起算
   const elapsed = await page.evaluate(() => performance.now())
   expect(elapsed).toBeLessThan(LOAD_BUDGET_MS)
 })

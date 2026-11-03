@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <title>书签导航</title>
-    <!-- FR-017 FOUC 防护:在 React 挂载前读 localStorage 主题键 bookmark-theme
+    <!--  FOUC 防护:在 React 挂载前读 localStorage 主题键 bookmark-theme
          (单一事实源,见 @/utils/storage 的 THEME_KEY),提前设 .dark class,
          避免首屏亮→暗闪烁。内联脚本无法 import 模块,故硬编码键名。 -->
     <script>

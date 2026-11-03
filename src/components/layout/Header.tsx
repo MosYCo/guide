@@ -1,7 +1,7 @@
 /**
  * Header 组件 - 顶部导航栏
  * 包含主题切换、操作按钮（添加书签、导入导出等）
- * T011: 落地 type scale / elevation / focus ring token
+ * 落地 type scale / elevation / focus ring token
  */
 
 import { Moon, Sun, Plus, Monitor, Search } from 'lucide-react'
@@ -66,7 +66,7 @@ export function Header({
         <h1 className="text-h1 font-bold text-primary">🔖 书签导航</h1>
       </div>
       <div className="ml-auto flex items-center gap-1">
-        {/* 搜索入口:Header 图标按钮打开命令面板(FR-008);Ctrl+K 全局快捷键 */}
+        {/* 搜索入口:Header 图标按钮打开命令面板;Ctrl+K 全局快捷键 */}
         <Button
           variant="ghost"
           size="icon"

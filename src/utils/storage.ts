@@ -1,7 +1,7 @@
 /**
  * 存储工具
  * - localStorage 读写（主题持久化）
- * - 无痕模式检测（SC-003 边界）
+ * - 无痕模式检测（边界）
  * - navigator.storage.persist 请求
  */
 

@@ -3,7 +3,7 @@
  * PC(≥lg 1024): 左侧 CategoryNav + 右侧内容区
  * 平板(md 768–1023): 同 PC 但侧栏收窄 + 内容区留白调整
  * 移动端(<md 768): 顶部 Header + 底部 Tab(由 CategoryNav 渲染) + 内容区
- * T019: 补 md 768 平板中间档;横竖屏靠宽度驱动,不监听 orientation(FR-011)
+ * 补 md 768 平板中间档;横竖屏靠宽度驱动,不监听 orientation
  * 折叠态:aside 宽度随 collapsed 收窄(状态由 App 上提,AppLayout 受控)
  */
 
@@ -69,7 +69,7 @@ export function AppLayout({ header, categoryNav, children, collapsed }: AppLayou
       >
         {children}
       </main>
-      {/* 底部固定 Tab 由 CategoryNav 渲染(FR-014) */}
+      {/* 底部固定 Tab 由 CategoryNav 渲染 */}
       {categoryNav}
     </div>
   )

@@ -1,6 +1,6 @@
 /**
  * useCategories Hook - 分类数据管理
- * FR-003 分类、FR-007 创建/重命名/删除
+ * 分类、创建/重命名/删除
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -54,7 +54,7 @@ export function useCategories(): UseCategoriesReturn {
     void refresh()
   }, [refresh])
 
-  // FR-007: 创建分类（名称唯一性校验）
+  // 创建分类（名称唯一性校验）
   const addCategoryFn = useCallback(async (name: string): Promise<Category> => {
     const trimmed = name.trim()
     if (!trimmed) throw new Error('分类名称不能为空')
@@ -68,7 +68,7 @@ export function useCategories(): UseCategoriesReturn {
     return category
   }, [])
 
-  // FR-007: 重命名分类（独立方法，名称唯一性校验）
+  // 重命名分类（独立方法，名称唯一性校验）
   const renameCategoryFn = useCallback(
     async (id: string, name: string): Promise<Category> => {
       const trimmed = name.trim()
@@ -86,7 +86,7 @@ export function useCategories(): UseCategoriesReturn {
     [categories],
   )
 
-  // FR-007: 删除分类（独立方法，级联置空书签 categoryId，需调用方确认）
+  // 删除分类（独立方法，级联置空书签 categoryId，需调用方确认）
   const deleteCategoryFn = useCallback(async (id: string): Promise<void> => {
     await dbDeleteCategory(id)
     setCategories((prev) => prev.filter((c) => c.id !== id))

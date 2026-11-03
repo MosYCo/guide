@@ -1,7 +1,7 @@
 /**
  * Toast 通知系统
- * FR-010: 操作反馈(成功/警告/信息/错误),统一位置/时序/语义色
- * T008: 补 success/warning/info/destructive 语义色变体,走 tokens.css 语义色阶
+ * 操作反馈(成功/警告/信息/错误),统一位置/时序/语义色
+ * 补 success/warning/info/destructive 语义色变体,走 tokens.css 语义色阶
  */
 
 import {
@@ -69,7 +69,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {/* FR-010 统一位置:桌面右下角,移动端避开底部 Tab */}
+      {/* 统一位置:桌面右下角,移动端避开底部 Tab */}
       <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] left-4 right-4 z-[100] flex flex-col items-end gap-2 sm:bottom-4 sm:left-auto sm:right-4">
         {toasts.map((t) => (
           <ToastCard key={t.id} item={t} onClose={remove} />

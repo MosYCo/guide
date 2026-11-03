@@ -2,11 +2,9 @@ import { test, expect, type Page } from '@playwright/test'
 import { seedBookmarks } from './seed'
 
 /**
- * T030: 性能基线 E2E
- * SC-004: 500+ 书签下 LCP<1.5s / TTI<2s / INP<200ms / CLS<0.1
+ * 性能基线 E2E
+ * 500+ 书签下 LCP<1.5s / TTI<2s / INP<200ms / CLS<0.1
  * 环境:Lighthouse 移动模拟 + 3G 节流;指标采集:原生 PerformanceObserver(无外部依赖)
- * FR-015
- *
  * 注:CI 环境性能波动大,此处用原生 PerformanceObserver 采集指标并断言宽容基线,
  * 实际 Lighthouse 移动+3G 节流在本地手动运行 quickstart 场景4 复核严格值。
  */
@@ -60,7 +58,7 @@ async function injectPerfObservers(page: Page) {
   })
 }
 
-test.describe('性能基线 SC-004', () => {
+test.describe('性能基线', () => {
   test('500+ 书签:采集 PerformanceObserver 指标', async ({ browser }) => {
     const context = await browser.newContext({
       viewport: { width: 375, height: 667 },

@@ -1,7 +1,7 @@
 /**
  * useVirtualList Hook - 虚拟滚动
- * FR-018: 大数据量书签列表仅渲染可视区,占位总高防 CLS
- * T012: 数据量小于一屏时退化不启用(全量渲染)
+ * 大数据量书签列表仅渲染可视区,占位总高防 CLS
+ * 数据量小于一屏时退化不启用(全量渲染)
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'

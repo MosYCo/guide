@@ -1,6 +1,6 @@
 /**
  * URL 工具函数
- * FR-002: 仅允许 http/https 协议，保存和打开前规范化，拒绝 javascript:/data: 等危险协议
+ * 仅允许 http/https 协议，保存和打开前规范化，拒绝 javascript:/data: 等危险协议
  */
 
 import { toUnicode } from 'punycode'

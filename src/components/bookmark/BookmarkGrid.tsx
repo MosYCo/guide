@@ -1,8 +1,8 @@
 /**
  * BookmarkGrid 组件 - 书签网格展示
- * FR-009 按分类分组、FR-011 空状态、FR-017 最近访问区域
- * T009: 加载/空/错误状态收敛为 StateLoading/StateEmpty 组件(FR-003)
- * T023: 大数据量启用虚拟滚动(FR-018),占位总高防 CLS
+ * 按分类分组、空状态、最近访问区域
+ * 加载/空/错误状态收敛为 StateLoading/StateEmpty 组件
+ * 大数据量启用虚拟滚动,占位总高防 CLS
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
@@ -14,7 +14,7 @@ import { useVirtualList } from '@/hooks/useVirtualList'
 import type { Bookmark, Category } from '@/types'
 import { cn } from '@/lib/utils'
 
-// T023: 虚拟滚动阈值——超过此数启用,否则全量渲染(小于一屏退化)
+// 虚拟滚动阈值——超过此数启用,否则全量渲染(小于一屏退化)
 const VIRTUAL_THRESHOLD = 60
 // 以下尺寸用 rem,与 Tailwind 的 h-14/gap-3 等同源,根字号变化时同步缩放
 const CARD_HEIGHT_REM = 8.125 // 130px @ 16px root
@@ -38,7 +38,7 @@ export interface BookmarkGridProps {
   onMoveToCategory?: (bookmark: Bookmark, categoryId: string | null) => void
   /** 是否显示加载骨架 */
   loading?: boolean
-  /** T009: 空状态引导动作(添加书签) */
+  /**: 空状态引导动作(添加书签) */
   onAdd?: () => void
   /** 数据作用域变化(如切换分类)时重置虚拟列表滚动位置 */
   resetKey?: string | number
@@ -62,7 +62,7 @@ export function BookmarkGrid({
   const hasRecent = recentBookmarks && recentBookmarks.length > 0
   const hasBookmarks = bookmarks.length > 0
 
-  // T009: 加载态统一为 StateLoading
+  // 加载态统一为 StateLoading
   if (loading) return <StateLoading rows={12} />
 
   // 空状态:文案 + 引导动作(添加书签)
@@ -137,7 +137,7 @@ export function BookmarkGrid({
 }
 
 /**
- * T023: 书签卡片列表,大数据量启用虚拟滚动,小数据量全量渲染(退化)
+ * 书签卡片列表,大数据量启用虚拟滚动,小数据量全量渲染(退化)
  * 虚拟滚动以"行"为单位,每行按当前断点的列数分组,避免卡片退化为单列全宽
  */
 function BookmarkCardList({

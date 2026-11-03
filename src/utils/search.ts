@@ -1,6 +1,6 @@
 /**
  * 书签搜索过滤纯函数
- * FR-012: 按名称、URL 与 Unicode 域名搜索
+ * 按名称、URL 与 Unicode 域名搜索
  * - NFKC:全角/半角统一
  * - NFKD + 去重音:cafe 可匹配 Café
  * - 空白拆 token 做 AND:git hub 匹配 GitHub

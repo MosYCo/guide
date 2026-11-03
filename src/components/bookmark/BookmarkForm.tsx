@@ -1,6 +1,6 @@
 /**
  * BookmarkForm 组件 - 添加/编辑书签表单
- * FR-001 添加、FR-002 URL 验证、FR-005 编辑、FR-008 图标自动获取
+ * 添加、URL 验证、编辑、图标自动获取
  */
 
 import { useEffect, useRef, useState } from 'react'

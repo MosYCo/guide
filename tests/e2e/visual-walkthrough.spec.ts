@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T027: 视觉走查 E2E
- * SC-001: 亮/暗主题逐屏走查,对比度断言(WCAG AA)
- * FR-001/002
+ * 视觉走查 E2E
+ * 亮/暗主题逐屏走查,对比度断言(WCAG AA)
  */
 
 async function addBookmark(page: Page, url: string, name: string) {
@@ -21,7 +20,7 @@ async function resetDB(page: Page) {
   })
 }
 
-test.describe('视觉走查 SC-001', () => {
+test.describe('视觉走查', () => {
   test('亮色主题:卡片悬停反馈一致', async ({ page }) => {
     await resetDB(page)
     await page.addInitScript(() => {

@@ -1,11 +1,11 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * US3 E2E: 搜索 → 访问 → 最近访问
- * T036: 选择器对齐重构后的 CommandPalette 搜索流(Ctrl+K 打开面板 →
- *   面板内输入 placeholder="搜索书签（上下选择,回车打开）" → 结果/空态由面板承载)
- * FR-008 命令面板搜索、FR-017 最近访问 10 个
- * 与 T028 keyboard-flow 互补:本 spec 聚焦搜索定位与最近访问数据流
+ * E2E: 搜索 → 访问 → 最近访问
+ * 选择器对齐重构后的 CommandPalette 搜索流(Ctrl+K 打开面板 →
+ * 面板内输入 placeholder="搜索书签（上下选择,回车打开）" → 结果/空态由面板承载)
+ * 命令面板搜索、最近访问 10 个
+ * 与  keyboard-flow 互补:本 spec 聚焦搜索定位与最近访问数据流
  */
 
 async function addBookmark(page: Page, url: string, name: string) {
@@ -35,7 +35,7 @@ test('添加书签后可通过命令面板搜索定位', async ({ page }) => {
   await addBookmark(page, 'https://github.com', 'GitHub')
   await expect(page.getByRole('button', { name: '打开书签：GitHub' })).toBeVisible()
 
-  // T036: Ctrl+K 打开命令面板,在面板内输入(非内联框)
+  // Ctrl+K 打开命令面板,在面板内输入(非内联框)
   await page.keyboard.press('Control+K')
   await page.waitForSelector('[role="dialog"]')
   // 命令面板内的输入框 placeholder 为新文案;结果与背后的卡片同名,需限定在 dialog 内

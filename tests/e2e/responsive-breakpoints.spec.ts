@@ -1,9 +1,8 @@
 import { test, expect, type Page } from '@playwright/test'
 
 /**
- * T029: 断点矩阵 E2E
- * SC-003: 标准断点逐档无横向溢出,减少动效降级
- * FR-011/012
+ * 断点矩阵 E2E
+ * 标准断点逐档无横向溢出,减少动效降级
  */
 
 const BREAKPOINTS = [
@@ -31,7 +30,7 @@ async function addBookmark(page: Page, url: string, name: string) {
   await page.waitForSelector('[role="dialog"]', { state: 'detached' })
 }
 
-test.describe('断点矩阵 SC-003', () => {
+test.describe('断点矩阵', () => {
   for (const bp of BREAKPOINTS) {
     test(`${bp.name} (${bp.width}px) 无横向溢出`, async ({ browser }) => {
       const context = await browser.newContext({

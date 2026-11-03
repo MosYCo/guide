@@ -1,6 +1,6 @@
 /**
  * useBookmarks Hook - 书签数据管理
- * FR-001 添加、FR-004 持久化、FR-010 启动加载、FR-012 搜索、FR-017 最近访问
+ * 添加、持久化、启动加载、搜索、最近访问
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -53,13 +53,13 @@ export function useBookmarks(): UseBookmarksReturn {
     }
   }, [])
 
-  // FR-010: 应用启动时从 IndexedDB 读取所有数据
+  // 应用启动时从 IndexedDB 读取所有数据
   useEffect(() => {
     void refresh()
   }, [refresh])
 
   const addBookmarkFn = useCallback(async (data: BookmarkFormData): Promise<Bookmark> => {
-    // FR-002: URL 验证（http/https 白名单）
+    // URL 验证（http/https 白名单）
     const validation = validateAndNormalizeUrl(data.url)
     if (!validation.valid) {
       throw new Error(validation.error ?? 'URL 无效')
@@ -105,7 +105,7 @@ export function useBookmarks(): UseBookmarksReturn {
     setBookmarks((prev) => prev.filter((b) => b.id !== id))
   }, [])
 
-  // FR-017: 最近访问的书签
+  // 最近访问的书签
   const getRecent = useCallback(
     (limit = 10): Bookmark[] => {
       return bookmarks

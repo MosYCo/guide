@@ -1,6 +1,6 @@
 /**
  * CategoryForm 组件 - 添加/重命名分类表单
- * FR-007 创建、重命名
+ * 创建、重命名
  */
 
 import { useEffect, useRef, useState } from 'react'
