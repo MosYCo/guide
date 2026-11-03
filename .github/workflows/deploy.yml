@@ -3,47 +3,34 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # 监视 main 分支的变化
+      - main
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # 使用最新的 Ubuntu 环境
+  quality:
+    uses: ./.github/workflows/quality.yml
 
+  deploy:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      # Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # 设置 Node.js 环境
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20' # 指定 Node.js 版本
+          name: dist
+          path: dist
 
-      # 安装 pnpm
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      # 安装依赖
-      - name: Install dependencies with pnpm
-        run: pnpm install --frozen-lockfile
-
-      # 打包项目
-      - name: Build project
-        run: pnpm run build:prod
-
-      # 将打包后的文件提交到 gh-pages 分支
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          # 打包后的文件夹路径（通常是 `build` 或 `dist`，根据项目设置）
           folder: dist
           branch: gh-pages
           clean: true
-          # GitHub自动生成的访问Token，用于提交更改
           token: ${{ secrets.GITHUB_TOKEN }}

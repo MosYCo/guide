@@ -114,7 +114,7 @@ function AppInner() {
 
   const recentBookmarks = useMemo(
     () => (selectedCategoryId !== null ? [] : getRecentBookmarks(10)),
-    [selectedCategoryId, getRecentBookmarks, bookmarks],
+    [selectedCategoryId, getRecentBookmarks],
   )
 
   const handleAddBookmark = useCallback(() => {

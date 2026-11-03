@@ -110,6 +110,24 @@ describe('导入导出服务', () => {
       expect(data.version).toBe('1.0.0')
     })
 
+    it('预览阶段统计将被跳过的非 http/https 书签', async () => {
+      const exportData: ExportData = {
+        version: '1.0.0',
+        exportedAt: '2026-07-28T00:00:00Z',
+        bookmarkCount: 2,
+        categoryCount: 0,
+        categories: [],
+        bookmarks: [
+          makeBookmark({ name: '合法', url: 'https://example.com' }),
+          makeBookmark({ name: '非法', url: 'javascript:alert(1)' }),
+        ],
+      }
+      const file = makeFile(JSON.stringify(exportData))
+      const { preview } = await parseJsonFile(file)
+      expect(preview.bookmarks).toBe(2)
+      expect(preview.skipped).toBe(1)
+    })
+
     it('拒绝无效 JSON', async () => {
       const file = makeFile('not json')
       await expect(parseJsonFile(file)).rejects.toThrow('JSON 格式错误')

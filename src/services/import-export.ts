@@ -113,6 +113,8 @@ export async function parseJsonFile(file: File): Promise<{
     if (!b.id || !b.url || !b.name || typeof b.icon !== 'string') {
       throw new Error('书签数据字段缺失或类型错误')
     }
+    // 预览阶段就按导入规则统计将被跳过的非 http/https 书签
+    if (!validateAndNormalizeUrl(b.url).valid) skipped++
   }
 
   return {

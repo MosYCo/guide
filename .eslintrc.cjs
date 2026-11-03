@@ -14,4 +14,13 @@ module.exports = {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^_' }],
   },
+  overrides: [
+    {
+      // shadcn/ui 组件同时导出组件与 variants/工具函数,fast-refresh 规则不适用
+      files: ['src/components/ui/**/*.{ts,tsx}'],
+      rules: {
+        'react-refresh/only-export-components': 'off',
+      },
+    },
+  ],
 }
