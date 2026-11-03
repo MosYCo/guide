@@ -69,6 +69,20 @@ async function checkNoOverflow(page: Page): Promise<boolean> {
 }
 
 test.describe('极端字段 SC-006', () => {
+  test('emoji 名称不会导致白屏', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForSelector('text=书签导航')
+    await page.getByRole('button', { name: '添加书签' }).first().click()
+
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    // URL 为空时预览图标走首字母降级;emoji 曾在这里触发 URIError
+    await dialog.locator('[placeholder="书签名称"]').fill('🔖 书签')
+
+    await expect(dialog).toBeVisible()
+    await expect(page.locator('#root')).not.toBeEmpty()
+  })
+
   test('超长标题 line-clamp 不破布局', async ({ page }) => {
     await injectExtremeBookmarks(page)
     await page.goto('/')
@@ -77,9 +91,9 @@ test.describe('极端字段 SC-006', () => {
     const card = page.getByRole('button', { name: /打开书签：超长标题/ })
     await expect(card).toBeVisible()
 
-    // 超长标题应被 line-clamp-1 截断(有 title 全文)
-    const titleAttr = await card.getAttribute('title')
-    expect(titleAttr).toContain('超长标题')
+    // 超长标题应被 line-clamp-1 截断(标题元素保留 title 全文)
+    const title = card.locator('p.line-clamp-1').first()
+    await expect(title).toHaveAttribute('title', /超长标题/)
 
     // 卡片内的 <p> 应有 line-clamp
     const clamped = await card.evaluate((el) => {
@@ -100,13 +114,12 @@ test.describe('极端字段 SC-006', () => {
     const card = page.getByRole('button', { name: '打开书签：失效图标站' })
     await expect(card).toBeVisible()
 
-    // favicon <img> onError 后应降级(首字母图标是 SVG data URI)
-    const imgSrc = await card.evaluate((el) => {
-      const img = el.querySelector('img')
-      return img?.getAttribute('src') ?? ''
-    })
-    // 降级后应是 data:image/svg+xml(首字母)或纯色块
-    expect(imgSrc.startsWith('data:image/svg+xml')).toBe(true)
+    // favicon <img> onError 后应降级(首字母图标是 SVG data URI)。
+    // onError 是异步 setState,用会轮询的断言避免读到降级前的 src。
+    await expect(card.locator('img')).toHaveAttribute(
+      'src',
+      /^data:image\/svg\+xml/,
+    )
   })
 
   test('无效 URL 不破布局', async ({ page }) => {

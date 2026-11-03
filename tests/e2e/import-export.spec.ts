@@ -32,6 +32,49 @@ test('导出 JSON 文件下载', async ({ page }) => {
   expect(download.suggestedFilename()).toMatch(/bookmarks-.*\.json/)
 })
 
+test('导入成功后分类与书签立即可见(无需刷新)', async ({ page }) => {
+  const exportData = {
+    version: '1.0.0',
+    exportedAt: '2026-07-28T00:00:00Z',
+    bookmarkCount: 1,
+    categoryCount: 1,
+    categories: [
+      {
+        id: 'cat-work',
+        name: 'Work',
+        order: 0,
+        createdAt: '2026-07-28T00:00:00Z',
+      },
+    ],
+    bookmarks: [
+      {
+        id: 'bm-imported',
+        url: 'https://imported.example',
+        name: 'Imported',
+        icon: '',
+        categoryId: 'cat-work',
+        createdAt: '2026-07-28T00:00:00Z',
+        lastVisitedAt: null,
+      },
+    ],
+  }
+
+  await page.setInputFiles('input[type="file"]', {
+    name: 'import.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(exportData)),
+  })
+
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByText('书签数量：1')).toBeVisible()
+  await dialog.getByRole('button', { name: '确认导入' }).click()
+  await expect(dialog).toBeHidden()
+
+  // 导入回调必须同时刷新 bookmarks 与 categories
+  await expect(page.locator('aside').getByText('Work', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '打开书签：Imported' })).toBeVisible()
+})
+
 test('导入无效 JSON 文件被拒绝，原数据保留', async ({ page }) => {
   await addBookmark(page, 'https://keep.com', 'KeepMe')
   await expect(page.getByRole('button', { name: '打开书签：KeepMe' })).toBeVisible()

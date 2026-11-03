@@ -18,6 +18,7 @@ import {
   getMaxCategoryOrder,
   bulkAddBookmarks,
   bulkAddCategories,
+  bulkImport,
 } from '@/services/db'
 import type { Bookmark, Category } from '@/types'
 
@@ -51,6 +52,27 @@ describe('IndexedDB 服务', () => {
     await db.clear('bookmarks')
     await db.clear('categories')
   })
+  describe('bulkImport', () => {
+    it('在单个事务中写入分类与书签', async () => {
+      const category = makeCategory({ name: '导入分类' })
+      const bookmark = makeBookmark({ name: '导入书签', categoryId: category.id })
+      await bulkImport([category], [bookmark])
+      expect(await getAllCategories()).toHaveLength(1)
+      expect(await getAllBookmarks()).toHaveLength(1)
+    })
+
+    it('任一写入失败时整体回滚', async () => {
+      const existing = makeBookmark({ id: 'dup', name: '已存在' })
+      await addBookmark(existing)
+      const category = makeCategory({ name: '应回滚分类' })
+      const duplicate = makeBookmark({ id: 'dup', name: '重复 ID' })
+
+      await expect(bulkImport([category], [duplicate])).rejects.toThrow()
+      expect(await getAllCategories()).toHaveLength(0)
+      expect(await getAllBookmarks()).toHaveLength(1)
+    })
+  })
+
   describe('Bookmark CRUD', () => {
     it('添加并获取书签', async () => {
       const bm = makeBookmark({ name: 'Google', url: 'https://google.com' })

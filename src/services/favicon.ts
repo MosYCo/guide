@@ -12,14 +12,22 @@ import { extractDomain, getFaviconUrl } from '@/utils/url'
  * @param name 书签名称
  */
 export function getLetterIcon(name: string): string {
-  const letter = (name.trim()[0] || '?').toUpperCase()
+  // 用 code point 取首字符:name[0] 会把 emoji / 增补平面汉字截成半个代理项,
+  // 后续 encodeURIComponent 会抛 URIError 并导致整页白屏。
+  const letter = (Array.from(name.trim())[0] || '?').toUpperCase()
   const colors = ['#f97316', '#ea580c', '#f59e0b', '#d97706']
   const color = colors[letter.charCodeAt(0) % colors.length]
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <rect width="32" height="32" rx="6" fill="${color}"/>
     <text x="16" y="22" font-size="18" font-family="sans-serif" font-weight="600" fill="white" text-anchor="middle">${escapeXml(letter)}</text>
   </svg>`
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+  try {
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`
+  } catch {
+    // 未配对的 UTF-16 代理项仍可能让 encodeURIComponent 抛错,
+    // 兜底到不含用户文本的纯色块,避免整页崩溃。
+    return getPlaceholderIcon()
+  }
 }
 
 /**

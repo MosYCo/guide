@@ -6,7 +6,7 @@
  * @see specs/001-ui-ux-overhaul/contracts/ui-contract.md §5
  */
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Plus,
   Pencil,
@@ -76,7 +76,7 @@ export function CategoryNav({
   collapsed = false,
   onToggleCollapse,
 }: CategoryNavProps) {
-  const { isPC } = useMediaQuery()
+  const { isPC, isTablet } = useMediaQuery()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -101,7 +101,7 @@ export function CategoryNav({
   }
 
   // T021: PC 侧栏(含平板);折叠态受控于 App
-  if (isPC) {
+  if (isPC || isTablet) {
     // 折叠态:仅图标按钮
     if (collapsed) {
       return (
@@ -211,6 +211,7 @@ export function CategoryNav({
                 onDragStart={handleDragStart}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
+                onDragEnd={() => setDraggingId(null)}
                 isPC
                 onBookmarkDrop={
                   onBookmarkDrop ? () => onBookmarkDrop(c.id) : undefined
@@ -354,6 +355,7 @@ function CategoryNavItem({
   onDragStart,
   onDragOver,
   onDrop,
+  onDragEnd,
   isPC,
   onBookmarkDrop,
 }: {
@@ -366,13 +368,17 @@ function CategoryNavItem({
   onDragStart: (id: string) => void
   onDragOver: (e: React.DragEvent, id: string) => void
   onDrop: (id: string) => void
+  onDragEnd?: () => void
   isPC: boolean
   onBookmarkDrop?: () => void
 }) {
+  const suppressMenuFocusRef = useRef(false)
+
   return (
     <div
       draggable={!!isPC}
       onDragStart={() => onDragStart(category.id)}
+      onDragEnd={onDragEnd}
       onDragOver={(e) => {
         onDragOver(e, category.id)
         if (onBookmarkDrop) e.preventDefault()
@@ -408,12 +414,28 @@ function CategoryNavItem({
             <MoreVertical className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          onCloseAutoFocus={(e) => {
+            // 打开删除确认框时避免菜单抢回焦点,确保 AlertDialogCancel 默认聚焦
+            if (suppressMenuFocusRef.current) {
+              e.preventDefault()
+              suppressMenuFocusRef.current = false
+            }
+          }}
+        >
           <DropdownMenuItem onClick={onEdit}>
             <Pencil className="mr-2 h-4 w-4" />
             重命名
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive" onClick={onDelete}>
+          <DropdownMenuItem
+            className="text-destructive"
+            onClick={() => {
+              suppressMenuFocusRef.current = true
+              // 等菜单关闭并释放滚动锁后再开确认框,避免 Radix 弹层锁叠加
+              setTimeout(onDelete, 0)
+            }}
+          >
             <Trash2 className="mr-2 h-4 w-4" />
             删除
           </DropdownMenuItem>

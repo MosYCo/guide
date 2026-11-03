@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, BookmarkFormData } from '@/types'
 import {
   addBookmark,
+  categoryExists,
   deleteBookmark,
   getAllBookmarks,
   getRecentBookmarks,
@@ -28,7 +29,7 @@ export interface UseBookmarksReturn {
   searchBookmarks: (query: string) => Bookmark[]
   getRecentBookmarks: (limit?: number) => Bookmark[]
   recordVisit: (id: string) => Promise<void>
-  refresh: () => Promise<void>
+  refresh: (options?: { silent?: boolean }) => Promise<boolean>
   moveBookmarkToCategory: (id: string, categoryId: string | null) => Promise<void>
 }
 
@@ -37,16 +38,19 @@ export function useBookmarks(): UseBookmarksReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       const all = await getAllBookmarks()
       setBookmarks(all)
       setError(null)
+      return true
     } catch (e) {
       setError(e as Error)
+      return false
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
 
@@ -89,13 +93,19 @@ export function useBookmarks(): UseBookmarksReturn {
       }
       const existing = bookmarks.find((b) => b.id === id)
       if (!existing) throw new Error('书签不存在')
+      const requestedCategoryId = data.categoryId ?? null
+      // 多标签/并发删除后,不要把已不存在的分类 ID 写回
+      const categoryId =
+        requestedCategoryId && (await categoryExists(requestedCategoryId))
+          ? requestedCategoryId
+          : null
       const icon = resolveIcon(validation.normalized!, data.name, data.icon)
       const updated: Bookmark = {
         ...existing,
         url: validation.normalized!,
         name: data.name.trim(),
         icon,
-        categoryId: data.categoryId ?? null,
+        categoryId,
       }
       await putBookmark(updated)
       setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
@@ -164,7 +174,9 @@ export function useBookmarks(): UseBookmarksReturn {
       async (id: string, categoryId: string | null): Promise<void> => {
         const existing = bookmarks.find((b) => b.id === id)
         if (!existing) throw new Error('书签不存在')
-        const updated = { ...existing, categoryId }
+        const resolvedCategoryId =
+          categoryId && (await categoryExists(categoryId)) ? categoryId : null
+        const updated = { ...existing, categoryId: resolvedCategoryId }
         await putBookmark(updated)
         setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
       },

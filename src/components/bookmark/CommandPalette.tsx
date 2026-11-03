@@ -57,7 +57,9 @@ export function CommandPalette({
 
   // 虚拟滚动(结果数大于一屏时启用,否则全量)
   const useVirtual = results.length * ITEM_HEIGHT > CONTAINER_HEIGHT
-  const virtual = useVirtualList(results, ITEM_HEIGHT, CONTAINER_HEIGHT)
+  const virtual = useVirtualList(results, ITEM_HEIGHT, CONTAINER_HEIGHT, {
+    resetKey: query,
+  })
 
   // 打开时重置 query + 焦点落输入框
   useEffect(() => {
@@ -74,6 +76,16 @@ export function CommandPalette({
     setActiveIndex(0)
   }, [results])
 
+  // 滚轮/触控滚动后,若高亮项移出渲染窗口,把高亮同步到首个可见项
+  useEffect(() => {
+    if (!useVirtual) return
+    const first = virtual.startIndex
+    const last = first + virtual.visibleItems.length - 1
+    setActiveIndex((current) =>
+      current >= first && current <= last ? current : first,
+    )
+  }, [useVirtual, virtual.startIndex, virtual.visibleItems.length])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
@@ -86,7 +98,11 @@ export function CommandPalette({
       if (useVirtual) virtual.scrollToIndex(Math.max(activeIndex - 1, 0))
     } else if (e.key === 'Enter') {
       e.preventDefault()
-      if (results[activeIndex]) {
+      const first = virtual.startIndex
+      const last = first + virtual.visibleItems.length - 1
+      const activeRendered =
+        !useVirtual || (activeIndex >= first && activeIndex <= last)
+      if (activeRendered && results[activeIndex]) {
         onSelect(results[activeIndex])
         onClose()
       }
@@ -118,6 +134,7 @@ export function CommandPalette({
         </div>
         <div
           ref={useVirtual ? virtual.containerRef : undefined}
+          data-testid="command-results"
           className="max-h-[400px] overflow-y-auto"
           style={useVirtual ? { height: CONTAINER_HEIGHT } : undefined}
         >
@@ -141,7 +158,7 @@ export function CommandPalette({
           ) : useVirtual ? (
             <div style={{ height: virtual.totalHeight, position: 'relative' }}>
               {virtual.visibleItems.map((b, vi) => {
-                const actualIndex = virtual.offsetY / ITEM_HEIGHT + vi
+                const actualIndex = virtual.startIndex + vi
                 return (
                   <CommandPaletteItem
                     key={b.id}
@@ -192,8 +209,10 @@ function CommandPaletteItem({
       type="button"
       onClick={onSelect}
       style={style}
+      aria-label={`打开书签：${bookmark.name}`}
+      data-active={active}
       className={cn(
-        'flex w-full items-center gap-3 px-4 text-left',
+        'flex h-14 w-full items-center gap-3 px-4 text-left',
         active ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
       )}
     >

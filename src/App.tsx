@@ -45,7 +45,7 @@ function AppInner() {
     getRecentBookmarks,
     recordVisit,
     moveBookmarkToCategory,
-    refresh,
+    refresh: refreshBookmarks,
   } = useBookmarks()
   const {
     categories,
@@ -53,7 +53,20 @@ function AppInner() {
     renameCategory,
     deleteCategory,
     reorderCategories,
+    refresh: refreshCategories,
   } = useCategories()
+
+  // 导入等跨数据源操作后,书签与分类必须同时失效。
+  // silent:不切换 loading,避免把正在关闭的弹层提前卸载(Radix 滚动锁会残留)。
+  const refreshAll = useCallback(async () => {
+    const [bookmarksOk, categoriesOk] = await Promise.all([
+      refreshBookmarks({ silent: true }),
+      refreshCategories({ silent: true }),
+    ])
+    if (!bookmarksOk || !categoriesOk) {
+      toast('数据已保存,但界面刷新失败,请重新加载', 'warning')
+    }
+  }, [refreshBookmarks, refreshCategories, toast])
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [bookmarkFormOpen, setBookmarkFormOpen] = useState(false)
@@ -136,13 +149,17 @@ function AppInner() {
     async (id: string) => {
       try {
         await deleteCategory(id)
-        if (selectedCategoryId === id) setSelectedCategoryId(null)
-        toast('分类已删除')
+        // DB 级联已把书签 categoryId 置空,内存副本也必须重载,
+        // 否则编辑旧书签会把已删除的分类 ID 写回。
+        const refreshed = await refreshBookmarks({ silent: true })
+        setSelectedCategoryId((prev) => (prev === id ? null : prev))
+        if (refreshed) toast('分类已删除')
+        else toast('分类已删除,但书签列表刷新失败,请重新加载', 'warning')
       } catch (e) {
         toast(e instanceof Error ? e.message : '删除失败', 'error')
       }
     },
-    [deleteCategory, selectedCategoryId, toast],
+    [deleteCategory, refreshBookmarks, toast],
   )
 
   const handleBookmarkSubmit = useCallback(
@@ -193,20 +210,27 @@ function AppInner() {
 
   const handleBookmarkClick = useCallback(
     (bm: Bookmark) => {
-      recordVisit(bm.id)
+      void recordVisit(bm.id).catch(() => {
+        toast('访问记录保存失败', 'warning')
+      })
       window.open(bm.url, '_blank', 'noopener,noreferrer')
     },
-    [recordVisit],
+    [recordVisit, toast],
   )
 
   // 拖拽书签到分类
   const handleCategoryDrop = useCallback(
     async (categoryId: string | null) => {
       if (!draggingBookmark) return
-      await moveBookmarkToCategory(draggingBookmark.id, categoryId)
-      setDraggingBookmark(null)
+      try {
+        await moveBookmarkToCategory(draggingBookmark.id, categoryId)
+      } catch (e) {
+        toast(e instanceof Error ? e.message : '移动失败', 'error')
+      } finally {
+        setDraggingBookmark(null)
+      }
     },
-    [draggingBookmark, moveBookmarkToCategory],
+    [draggingBookmark, moveBookmarkToCategory, toast],
   )
 
   // T014: 搜索改由命令面板承载,内联无搜索态;无结果态移除(网格永远显示分类过滤结果)
@@ -220,7 +244,7 @@ function AppInner() {
           resolvedTheme={resolvedTheme}
           onThemeChange={setTheme}
           onAddBookmark={handleAddBookmark}
-          onDataChanged={refresh}
+          onDataChanged={refreshAll}
           onOpenSearch={() => setCommandPaletteOpen(true)}
         />
       }
@@ -275,6 +299,8 @@ function AppInner() {
               onClick={handleBookmarkClick}
               onAdd={handleAddBookmark}
               onBookmarkDragStart={setDraggingBookmark}
+              onBookmarkDragEnd={() => setDraggingBookmark(null)}
+              resetKey={selectedCategoryId ?? 'all'}
             />
           </div>
         </div>

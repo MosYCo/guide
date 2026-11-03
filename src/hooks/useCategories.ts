@@ -24,6 +24,7 @@ export interface UseCategoriesReturn {
   renameCategory: (id: string, name: string) => Promise<Category>
   deleteCategory: (id: string) => Promise<void>
   reorderCategories: (ids: string[]) => Promise<void>
+  refresh: (options?: { silent?: boolean }) => Promise<boolean>
 }
 
 export function useCategories(): UseCategoriesReturn {
@@ -31,16 +32,19 @@ export function useCategories(): UseCategoriesReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false
     try {
-      setLoading(true)
+      if (!silent) setLoading(true)
       const all = await getAllCategories()
       setCategories(all)
       setError(null)
+      return true
     } catch (e) {
       setError(e as Error)
+      return false
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [])
 
@@ -131,5 +135,6 @@ export function useCategories(): UseCategoriesReturn {
     renameCategory: renameCategoryFn,
     deleteCategory: deleteCategoryFn,
     reorderCategories: reorderCategoriesFn,
+    refresh,
   }
 }

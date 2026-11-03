@@ -121,10 +121,13 @@ export async function getRecentBookmarks(limit = 10): Promise<Bookmark[]> {
 
 export async function updateLastVisited(id: string, visitedAt: string): Promise<void> {
   const db = await getDB()
-  const existing = await db.get('bookmarks', id)
+  // 读改写放在同一个事务里,避免与编辑/移动分类交错时用旧快照覆盖新字段
+  const tx = db.transaction('bookmarks', 'readwrite')
+  const existing = await tx.store.get(id)
   if (existing) {
-    await db.put('bookmarks', { ...existing, lastVisitedAt: visitedAt })
+    await tx.store.put({ ...existing, lastVisitedAt: visitedAt })
   }
+  await tx.done
 }
 
 // ===== Category CRUD =====
@@ -175,6 +178,11 @@ export async function getMaxCategoryOrder(): Promise<number> {
   return Math.max(...all.map((c) => c.order))
 }
 
+export async function categoryExists(id: string): Promise<boolean> {
+  const db = await getDB()
+  return (await db.get('categories', id)) !== undefined
+}
+
 // ===== Bulk operations（导入用）=====
 
 export async function bulkAddBookmarks(
@@ -201,4 +209,36 @@ export async function bulkAddCategories(
     await store.add(c)
   }
   if (!tx) await transaction.done
+}
+
+/**
+ * 导入专用:分类与书签在同一个事务中写入。
+ * 任一条失败时整个事务回滚,避免留下孤儿分类或部分导入。
+ */
+export async function bulkImport(
+  categories: Category[],
+  bookmarks: Bookmark[],
+): Promise<void> {
+  const db = await getDB()
+  const tx = db.transaction(['categories', 'bookmarks'], 'readwrite')
+  const categoryStore = tx.objectStore('categories')
+  const bookmarkStore = tx.objectStore('bookmarks')
+  // 同步排队所有请求;任一失败时事务整体 abort,分类与书签一起回滚
+  try {
+    const requests: Promise<unknown>[] = []
+    for (const c of categories) requests.push(categoryStore.add(c))
+    for (const b of bookmarks) requests.push(bookmarkStore.add(b))
+    await Promise.all(requests)
+    await tx.done
+  } catch (error) {
+    // 同步异常(如 DataCloneError)也要 abort,避免已排队请求被部分提交
+    try {
+      tx.abort()
+    } catch {
+      // 事务可能已结束
+    }
+    // 处理 abort 产生的 tx.done rejection,避免未处理的 Promise 拒绝
+    await tx.done.catch(() => undefined)
+    throw error
+  }
 }

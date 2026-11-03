@@ -149,6 +149,27 @@ describe('导入导出服务', () => {
       await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
     })
 
+    it('拒绝非字符串的 name/url', async () => {
+      const file = makeFile(
+        JSON.stringify({
+          version: '1.0.0',
+          categories: [],
+          bookmarks: [
+            {
+              id: 'x',
+              url: 'https://a.com',
+              name: 123,
+              icon: '',
+              createdAt: '2026-01-01T00:00:00Z',
+              lastVisitedAt: null,
+              categoryId: null,
+            },
+          ],
+        }),
+      )
+      await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
+    })
+
     it('导入后生成新 ID 并写入 IndexedDB', async () => {
       const original = makeBookmark({ name: 'Original' })
       const exportData: ExportData = {

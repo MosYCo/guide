@@ -11,6 +11,7 @@ const BREAKPOINTS = [
   { width: 360, name: '手机' },
   { width: 640, name: 'sm' },
   { width: 768, name: 'md 平板' },
+  { width: 900, name: 'md 平板中段' },
   { width: 1024, name: 'lg PC' },
   { width: 1280, name: 'xl' },
   { width: 1536, name: '2xl' },
@@ -52,6 +53,14 @@ test.describe('断点矩阵 SC-003', () => {
       })
       expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth)
 
+      // 平板及 PC 应使用侧栏列表,而不是空侧栏 + 全屏底部 Tab
+      if (bp.width >= 768) {
+        await expect(
+          page.locator('aside').getByText('分类', { exact: true }),
+        ).toBeVisible()
+        await expect(page.locator('nav.fixed.bottom-0')).toHaveCount(0)
+      }
+
       await context.close()
     })
   }
@@ -71,8 +80,15 @@ test.describe('断点矩阵 SC-003', () => {
       const el = document.querySelector('button') as HTMLElement
       return getComputedStyle(el).transitionDuration
     })
-    // 减少动效下应接近 0.01ms
-    expect(transitionDuration).toMatch(/0\.01ms|0s/)
+    // 减少动效下应接近 0;computed style 可能返回 1e-05s 这类科学计数法
+    const maxSeconds = Math.max(
+      ...transitionDuration.split(',').map((value) => {
+        const trimmed = value.trim()
+        const numeric = parseFloat(trimmed)
+        return trimmed.endsWith('ms') ? numeric / 1000 : numeric
+      }),
+    )
+    expect(maxSeconds).toBeLessThanOrEqual(0.001)
 
     await context.close()
   })

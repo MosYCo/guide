@@ -8,8 +8,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, Category, ExportData, ImportPreview, ImportResult } from '@/types'
 import {
-  bulkAddBookmarks,
-  bulkAddCategories,
+  bulkImport,
   getAllBookmarks,
   getAllCategories,
 } from '@/services/db'
@@ -76,6 +75,65 @@ function triggerDownload(blob: Blob, filename: string): void {
 }
 
 /**
+ * 严格校验导入结构。非字符串 name/url/id 会在渲染、搜索时抛 TypeError,
+ * 必须在写库前拒绝,否则坏数据会持久化并让应用反复进入错误页。
+ */
+function assertValidExportData(data: ExportData): void {
+  if (!data || typeof data !== 'object') {
+    throw new Error('文件内容不是有效的 JSON 对象')
+  }
+  if (typeof data.version !== 'string') {
+    throw new Error('缺少 version 字段或格式不正确')
+  }
+  if (!Array.isArray(data.categories) || !Array.isArray(data.bookmarks)) {
+    throw new Error('categories 或 bookmarks 不是有效数组')
+  }
+  for (const c of data.categories) {
+    if (
+      typeof c?.id !== 'string' ||
+      !c.id ||
+      typeof c?.name !== 'string' ||
+      !c.name ||
+      typeof c?.order !== 'number' ||
+      !Number.isFinite(c.order) ||
+      c.order < 0
+    ) {
+      throw new Error('分类数据字段缺失或类型错误')
+    }
+  }
+  for (const b of data.bookmarks) {
+    if (
+      typeof b?.id !== 'string' ||
+      !b.id ||
+      typeof b?.url !== 'string' ||
+      !b.url ||
+      typeof b?.name !== 'string' ||
+      !b.name ||
+      typeof b?.icon !== 'string'
+    ) {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
+    if (b.createdAt !== undefined && typeof b.createdAt !== 'string') {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
+    if (
+      b.lastVisitedAt !== undefined &&
+      b.lastVisitedAt !== null &&
+      typeof b.lastVisitedAt !== 'string'
+    ) {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
+    if (
+      b.categoryId !== undefined &&
+      b.categoryId !== null &&
+      typeof b.categoryId !== 'string'
+    ) {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
+  }
+}
+
+/**
  * FR-018: 解析 JSON 文件为预览数据（不写入）。
  * 校验版本和字段结构。
  * @throws 格式错误时抛出
@@ -93,26 +151,10 @@ export async function parseJsonFile(file: File): Promise<{
   }
 
   const data = parsed as ExportData
-  if (!data || typeof data !== 'object') {
-    throw new Error('文件内容不是有效的 JSON 对象')
-  }
-  if (typeof data.version !== 'string') {
-    throw new Error('缺少 version 字段或格式不正确')
-  }
-  if (!Array.isArray(data.categories) || !Array.isArray(data.bookmarks)) {
-    throw new Error('categories 或 bookmarks 不是有效数组')
-  }
-  // 字段校验
-  for (const c of data.categories) {
-    if (!c.id || !c.name || typeof c.order !== 'number') {
-      throw new Error('分类数据字段缺失或类型错误')
-    }
-  }
+  assertValidExportData(data)
+
   let skipped = 0
   for (const b of data.bookmarks) {
-    if (!b.id || !b.url || !b.name || typeof b.icon !== 'string') {
-      throw new Error('书签数据字段缺失或类型错误')
-    }
     // 预览阶段就按导入规则统计将被跳过的非 http/https 书签
     if (!validateAndNormalizeUrl(b.url).valid) skipped++
   }
@@ -135,6 +177,7 @@ export async function parseJsonFile(file: File): Promise<{
  */
 export async function importFromJson(data: ExportData): Promise<ImportResult> {
   try {
+    assertValidExportData(data)
     // 生成新 ID，构建 categoryId 映射
     const categoryIdMap = new Map<string, string>()
     const newCategories: Category[] = data.categories.map((c) => {
@@ -160,8 +203,7 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
       })
     }
 
-    await bulkAddCategories(newCategories)
-    await bulkAddBookmarks(newBookmarks)
+    await bulkImport(newCategories, newBookmarks)
 
     return {
       success: true,
@@ -271,8 +313,7 @@ export async function importFromHtml(
   bookmarks: Bookmark[],
 ): Promise<ImportResult> {
   try {
-    await bulkAddCategories(categories)
-    await bulkAddBookmarks(bookmarks)
+    await bulkImport(categories, bookmarks)
     return {
       success: true,
       bookmarkCount: bookmarks.length,

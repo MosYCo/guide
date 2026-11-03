@@ -32,6 +32,7 @@ export interface ImportExportButtonsProps {
 export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
   const [preview, setPreview] = useState<{
     open: boolean
     data?: ImportPreview
@@ -106,21 +107,28 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
   )
 
   const handleConfirmImport = useCallback(async () => {
-    if (!preview.importFn) {
-      setPreview({ open: false })
-      return
-    }
-    const result = await preview.importFn()
-    if (!result.success) {
+    if (!preview.importFn || importing) return
+    setImporting(true)
+    try {
+      const result = await preview.importFn()
+      if (!result.success) {
+        setPreview({
+          open: true,
+          error: result.error ?? '导入失败',
+        })
+      } else {
+        setPreview({ open: false })
+        toast(`已导入 ${result.bookmarkCount} 个书签`)
+      }
+    } catch (e) {
       setPreview({
         open: true,
-        error: result.error ?? '导入失败',
+        error: e instanceof Error ? e.message : '导入失败',
       })
-    } else {
-      setPreview({ open: false })
-      toast(`已导入 ${result.bookmarkCount} 个书签`)
+    } finally {
+      setImporting(false)
     }
-  }, [preview, toast])
+  }, [importing, preview, toast])
 
   return (
     <>
@@ -148,7 +156,10 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
 
       <Dialog
         open={preview.open}
-        onOpenChange={(o) => !o && setPreview({ open: false })}
+        onOpenChange={(o) => {
+          // 导入一旦开始就不可取消,避免用户以为关闭即放弃、实际仍写入
+          if (!o && !importing) setPreview({ open: false })
+        }}
       >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -177,13 +188,16 @@ export function ImportExportButtons({ onDataChanged }: ImportExportButtonsProps)
           )}
           <DialogFooter>
             {!preview.error && (
-              <Button onClick={handleConfirmImport}>确认导入</Button>
+              <Button onClick={handleConfirmImport} disabled={importing}>
+                {importing ? '导入中…' : '确认导入'}
+              </Button>
             )}
             <Button
               variant="outline"
+              disabled={importing}
               onClick={() => setPreview({ open: false })}
             >
-              {preview.error ? '关闭' : '取消'}
+              {preview.error ? '关闭' : importing ? '导入中…' : '取消'}
             </Button>
           </DialogFooter>
         </DialogContent>

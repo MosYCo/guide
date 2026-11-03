@@ -9,14 +9,20 @@ import { useEffect, useState } from 'react'
 
 const PC_QUERY = '(min-width: 1024px)'
 const TABLET_QUERY = '(min-width: 768px)'
+const SM_QUERY = '(min-width: 640px)'
 
 export interface UseMediaQueryReturn {
+  isSm: boolean
   isPC: boolean
   isTablet: boolean
   isMobile: boolean
 }
 
 export function useMediaQuery(): UseMediaQueryReturn {
+  const [isSm, setIsSm] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia(SM_QUERY).matches
+  })
   const [isPC, setIsPC] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true
     return window.matchMedia(PC_QUERY).matches
@@ -25,6 +31,14 @@ export function useMediaQuery(): UseMediaQueryReturn {
     if (typeof window === 'undefined') return true
     return window.matchMedia(TABLET_QUERY).matches
   })
+
+  useEffect(() => {
+    const mql = window.matchMedia(SM_QUERY)
+    const handler = (e: MediaQueryListEvent) => setIsSm(e.matches)
+    setIsSm(mql.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
 
   useEffect(() => {
     const mql = window.matchMedia(PC_QUERY)
@@ -42,5 +56,5 @@ export function useMediaQuery(): UseMediaQueryReturn {
     return () => mql.removeEventListener('change', handler)
   }, [])
 
-  return { isPC, isTablet, isMobile: !isTablet }
+  return { isSm, isPC, isTablet, isMobile: !isTablet }
 }

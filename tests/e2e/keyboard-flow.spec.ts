@@ -61,23 +61,54 @@ test.describe('键盘流 SC-002', () => {
     const card = page.getByRole('button', { name: '打开书签：删除测试' })
     await card.hover()
     // 打开更多操作菜单
-    await page.getByRole('button', { name: '更多操作' }).click()
+    const more = page.getByRole('button', { name: '更多操作' })
+    await more.click()
     await page.getByRole('menuitem', { name: '删除' }).click()
 
-    // 确认对话框出现
-    await page.waitForSelector('[role="alertdialog"]')
-    // 默认焦点应落取消按钮(AlertDialogCancel autoFocus)
+    // 确认对话框出现,默认焦点应落取消按钮
+    const dialog = page.getByRole('alertdialog')
+    await expect(dialog).toBeVisible()
+    await expect(
+      dialog.getByRole('button', { name: '取消' }),
+    ).toBeFocused()
     const focusedText = await page.evaluate(() => {
       const el = document.activeElement
       return el?.textContent?.trim() ?? ''
     })
     expect(focusedText).toBe('取消')
 
+    // Esc 不应关闭 alertdialog
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeVisible()
+    await expect(
+      dialog.getByRole('button', { name: '取消' }),
+    ).toBeFocused()
+
     // Enter 不触发删除(因焦点在取消)
     await page.keyboard.press('Enter')
-    // 对话框应关闭(取消),书签仍在
+    // 对话框应关闭(取消),书签仍在,焦点回到触发按钮
     await page.waitForSelector('[role="alertdialog"]', { state: 'detached' })
     await expect(card).toBeVisible()
+    await expect(more).toBeFocused()
+  })
+
+  test('书签卡菜单键盘操作不会同时打开书签', async ({ page, context }) => {
+    await resetDB(page)
+    await page.goto('/')
+    await page.waitForSelector('text=书签导航')
+    await addBookmark(page, 'https://example.com', '键盘菜单测试')
+
+    let popups = 0
+    context.on('page', () => {
+      popups++
+    })
+
+    const more = page.getByRole('button', { name: '更多操作' })
+    await more.focus()
+    await page.keyboard.press('Enter')
+
+    await expect(page.getByRole('menu')).toBeVisible()
+    expect(popups).toBe(0)
   })
 
   test('Ctrl+K 打开命令面板,键盘选择并跳转', async ({ page }) => {
