@@ -244,20 +244,35 @@ export async function createCategoryWithUniqueName(
   return created
 }
 
-/** 重命名分类:唯一名校验与写入在同一事务内完成。 */
-export async function renameCategoryWithUniqueName(id: string, name: string): Promise<Category> {
+/** 更新分类:唯一名校验与写入在同一事务内完成;icon 为 undefined 时保留原图标,空字符串清除。 */
+export async function updateCategoryWithUniqueName(
+  id: string,
+  name: string,
+  icon?: string,
+): Promise<Category> {
   const db = await getDB()
   const tx = db.transaction('categories', 'readwrite')
   const store = tx.objectStore('categories')
   const existing = await store.get(id)
-  if (!existing) throw new Error('分类不存在')
+  if (!existing) {
+    await tx.done
+    throw new Error('分类不存在')
+  }
   if (existing.name !== name) {
     const duplicate = await store.index('name').count(name)
     if (duplicate > 0) {
+      await tx.done
       throw new Error(`分类「${name}」已存在`)
     }
   }
+  const nextIcon = icon === undefined ? existing.icon : icon.trim() || undefined
+  if (existing.name === name && existing.icon === nextIcon) {
+    await tx.done
+    return existing
+  }
   const updated: Category = { ...existing, name }
+  if (nextIcon) updated.icon = nextIcon
+  else delete updated.icon
   await store.put(updated)
   await tx.done
   return updated

@@ -6,7 +6,8 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { Bookmark, Category, ExportData, ImportPreview, ImportResult } from '@/types'
 import { bulkImport, getAllBookmarks, getAllCategories, getAllDataForExport } from '@/services/db'
-import { validateAndNormalizeUrl } from '@/utils/url'
+import { normalizeCategoryIcon } from '@/utils/categoryIcon'
+import { ALLOWED_ICON_URL_PATTERN, validateAndNormalizeUrl } from '@/utils/url'
 
 const EXPORT_VERSION = '1.0.0'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
@@ -32,6 +33,7 @@ async function countDuplicateUrls(bookmarks: Bookmark[]): Promise<number> {
 /**
  * 按名称合并到现有分类:同名分类复用现有 ID,新分类 order 追加到现有 max 之后。
  * 书签的 categoryId 同步重映射,避免重复分类与 order 冲突。
+ * 同名分类保留现有图标,不被导入数据覆盖。
  */
 async function mergeCategoriesWithExisting(
   categories: Category[],
@@ -156,6 +158,9 @@ function assertValidExportData(data: ExportData): void {
     ) {
       throw new Error('分类数据字段缺失或类型错误')
     }
+    if (c.icon !== undefined && typeof c.icon !== 'string') {
+      throw new Error('分类数据字段缺失或类型错误')
+    }
   }
   for (const b of data.bookmarks) {
     if (
@@ -250,12 +255,16 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
     const newCategories: Category[] = data.categories.map((c) => {
       const newId = uuidv4()
       categoryIdMap.set(c.id, newId)
-      return {
+      const category: Category = {
         ...c,
         id: newId,
         name: c.name.trim().slice(0, 50) || '未命名',
         createdAt: c.createdAt ?? now,
       }
+      const icon = normalizeCategoryIcon(c.icon)
+      if (icon) category.icon = icon
+      else delete category.icon
+      return category
     })
 
     const newBookmarks: Bookmark[] = []
@@ -267,7 +276,7 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
         skipped++
         continue
       }
-      const icon = /^(?:https?:\/\/|data:image\/)/.test(b.icon) ? b.icon : ''
+      const icon = ALLOWED_ICON_URL_PATTERN.test(b.icon) ? b.icon : ''
       newBookmarks.push({
         ...b,
         id: uuidv4(),

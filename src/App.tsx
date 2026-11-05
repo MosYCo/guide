@@ -32,6 +32,9 @@ const CommandPalette = lazy(() =>
   })),
 )
 
+/** 当前选中的分类；为空表示“全部”。刷新后恢复，分类不存在时回退到“全部”。 */
+const SELECTED_CATEGORY_STORAGE_KEY = 'selected-category-id'
+
 export default function App() {
   return (
     <ToastProvider>
@@ -62,7 +65,7 @@ function AppInner() {
     loading: categoriesLoading,
     error: categoriesError,
     addCategory,
-    renameCategory,
+    updateCategory,
     deleteCategory,
     reorderCategories,
     refresh: refreshCategories,
@@ -81,7 +84,10 @@ function AppInner() {
     return bookmarksOk && categoriesOk
   }, [refreshBookmarks, refreshCategories, toast])
 
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null
+    return safeGetItem(SELECTED_CATEGORY_STORAGE_KEY) || null
+  })
   const [bookmarkFormOpen, setBookmarkFormOpen] = useState(false)
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null)
   const [categoryFormOpen, setCategoryFormOpen] = useState(false)
@@ -99,6 +105,20 @@ function AppInner() {
   useEffect(() => {
     safeSetItem('category-nav-collapsed', String(navCollapsed))
   }, [navCollapsed])
+
+  // 选中分类持久化；空字符串表示“全部”
+  useEffect(() => {
+    safeSetItem(SELECTED_CATEGORY_STORAGE_KEY, selectedCategoryId ?? '')
+  }, [selectedCategoryId])
+
+  // 分类被删除或来自其他标签页的数据变化后，已选分类可能失效。
+  // 分类加载失败时保留选择，等下次成功加载后再校验。
+  useEffect(() => {
+    if (categoriesLoading || categoriesError || selectedCategoryId === null) return
+    if (!categories.some((category) => category.id === selectedCategoryId)) {
+      setSelectedCategoryId(null)
+    }
+  }, [categories, categoriesError, categoriesLoading, selectedCategoryId])
 
   // 多标签同步:其他标签写入后静默刷新;从后台回到前台时也对账一次
   useEffect(() => {
@@ -254,17 +274,17 @@ function AppInner() {
   )
 
   const handleCategorySubmit = useCallback(
-    async (name: string) => {
+    async (name: string, icon: string) => {
       if (editingCategory) {
-        await renameCategory(editingCategory.id, name)
-        toast('分类已重命名')
+        await updateCategory(editingCategory.id, name, icon)
+        toast('分类已更新')
       } else {
-        await addCategory(name)
+        await addCategory(name, icon)
         toast('分类已创建')
       }
       notifyChange()
     },
-    [editingCategory, addCategory, renameCategory, notifyChange, toast],
+    [editingCategory, addCategory, updateCategory, notifyChange, toast],
   )
 
   const handleDeleteBookmark = useCallback(

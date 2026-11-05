@@ -9,6 +9,9 @@ import type { UrlValidationResult } from '@/types'
 /** 允许的协议白名单 */
 const ALLOWED_PROTOCOLS = ['http:', 'https:']
 
+/** 图标 URL 白名单:http(s) 或 data:image(分类/书签图标导入共用) */
+export const ALLOWED_ICON_URL_PATTERN = /^(?:https?:\/\/|data:image\/)/i
+
 /**
  * 验证并规范化 URL。
  * - 仅允许 http/https 协议

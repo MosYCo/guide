@@ -1,6 +1,6 @@
 /**
  * useCategories Hook - 分类数据管理
- * 分类、创建/重命名/删除
+ * 分类、创建/编辑/删除
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,16 +10,16 @@ import {
   createCategoryWithUniqueName,
   deleteCategory as dbDeleteCategory,
   getAllCategories,
-  renameCategoryWithUniqueName,
   reorderCategoriesInDb,
+  updateCategoryWithUniqueName,
 } from '@/services/db'
 
 export interface UseCategoriesReturn {
   categories: Category[]
   loading: boolean
   error: Error | null
-  addCategory: (name: string) => Promise<Category>
-  renameCategory: (id: string, name: string) => Promise<Category>
+  addCategory: (name: string, icon?: string) => Promise<Category>
+  updateCategory: (id: string, name: string, icon?: string) => Promise<Category>
   deleteCategory: (id: string) => Promise<void>
   reorderCategories: (ids: string[]) => Promise<void>
   refresh: (options?: { silent?: boolean }) => Promise<boolean>
@@ -55,29 +55,32 @@ export function useCategories(): UseCategoriesReturn {
   }, [refresh])
 
   // 创建分类（名称唯一性校验）
-  const addCategoryFn = useCallback(async (name: string): Promise<Category> => {
+  const addCategoryFn = useCallback(async (name: string, icon?: string): Promise<Category> => {
     const trimmed = name.trim()
     if (!trimmed) throw new Error('分类名称不能为空')
     if (trimmed.length > 50) throw new Error('分类名称不能超过 50 字符')
+    const iconUrl = icon?.trim()
     const category = await createCategoryWithUniqueName({
       id: uuidv4(),
       name: trimmed,
+      ...(iconUrl ? { icon: iconUrl } : {}),
       createdAt: new Date().toISOString(),
     })
     setCategories((prev) => [...prev, category].sort((a, b) => a.order - b.order))
     return category
   }, [])
 
-  // 重命名分类（独立方法，名称唯一性校验）
-  const renameCategoryFn = useCallback(
-    async (id: string, name: string): Promise<Category> => {
+  // 编辑分类（名称唯一性校验；icon 为 undefined 时保留原图标，空字符串清除）
+  const updateCategoryFn = useCallback(
+    async (id: string, name: string, icon?: string): Promise<Category> => {
       const trimmed = name.trim()
       if (!trimmed) throw new Error('分类名称不能为空')
       if (trimmed.length > 50) throw new Error('分类名称不能超过 50 字符')
       const existing = categories.find((c) => c.id === id)
       if (!existing) throw new Error('分类不存在')
-      if (existing.name === trimmed) return existing
-      const updated = await renameCategoryWithUniqueName(id, trimmed)
+      const nextIcon = icon === undefined ? existing.icon : icon.trim() || undefined
+      if (existing.name === trimmed && existing.icon === nextIcon) return existing
+      const updated = await updateCategoryWithUniqueName(id, trimmed, icon)
       setCategories((prev) =>
         prev.map((c) => (c.id === id ? updated : c)).sort((a, b) => a.order - b.order),
       )
@@ -103,7 +106,7 @@ export function useCategories(): UseCategoriesReturn {
     loading,
     error,
     addCategory: addCategoryFn,
-    renameCategory: renameCategoryFn,
+    updateCategory: updateCategoryFn,
     deleteCategory: deleteCategoryFn,
     reorderCategories: reorderCategoriesFn,
     refresh,

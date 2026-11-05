@@ -19,7 +19,7 @@ src/
   services/     # favicon、导入导出、数据库
   lib/          # 工具函数(cn / tailwind-merge)
   styles/       # 设计 token
-  utils/        # search / url / storage
+  utils/        # search / url / storage / categoryIcon
   types/        # 类型定义
 tests/
   unit/         # 单元测试

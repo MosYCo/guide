@@ -41,6 +41,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 // 抽屉体量小,随 CategoryNav 同 chunk 不影响首屏(首屏不渲染移动端分支),
 // 静态导入更简洁,避免 lazy+Suspense 的额外复杂度。
 import { CategoryDrawer } from '@/components/category/CategoryDrawer'
+import { CategoryIcon } from '@/components/category/CategoryIcon'
 import type { Category } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -161,7 +162,7 @@ export function CategoryNav({
                 aria-current={selectedCategoryId === c.id ? 'page' : undefined}
                 title={c.name}
               >
-                <span className="text-xs font-semibold">{Array.from(c.name)[0]}</span>
+                <CategoryIcon category={c} fallback="letter" className="h-5 w-5" />
               </Button>
             ))}
             <Button
@@ -467,7 +468,7 @@ function CategoryNavItem({
         aria-current={active ? 'page' : undefined}
         className="focus-ring flex min-h-9 flex-1 items-center gap-2 rounded-md text-left"
       >
-        <Folder className="h-4 w-4" />
+        <CategoryIcon category={category} fallback="folder" className="h-4 w-4" />
         <span className="flex-1 truncate" title={category.name}>
           {category.name}
         </span>
@@ -496,9 +497,15 @@ function CategoryNavItem({
             }
           }}
         >
-          <DropdownMenuItem onClick={onEdit}>
+          <DropdownMenuItem
+            onClick={() => {
+              suppressMenuFocusRef.current = true
+              // 等菜单关闭并释放滚动锁后再开编辑框，避免 Radix 弹层锁叠加
+              setTimeout(() => onEdit(), 0)
+            }}
+          >
             <Pencil className="mr-2 h-4 w-4" />
-            重命名
+            编辑
           </DropdownMenuItem>
           {onMoveUp && (
             <DropdownMenuItem onClick={onMoveUp}>

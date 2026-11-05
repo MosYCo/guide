@@ -37,7 +37,30 @@ describe('useCategories Hook + db', () => {
     ).rejects.toThrow('已存在')
   })
 
-  it('重命名分类（名称唯一性校验）', async () => {
+  it('创建和更新分类图标', async () => {
+    const { result } = renderHook(() => useCategories())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    await act(async () => {
+      await result.current.addCategory('工作', 'https://example.com/work.png')
+    })
+    const id = result.current.categories[0].id
+    expect(result.current.categories[0].icon).toBe('https://example.com/work.png')
+
+    // 仅改图标,名称不变
+    await act(async () => {
+      await result.current.updateCategory(id, '工作', 'https://example.com/office.png')
+    })
+    expect(result.current.categories[0].icon).toBe('https://example.com/office.png')
+
+    // 空字符串清除图标
+    await act(async () => {
+      await result.current.updateCategory(id, '工作', '')
+    })
+    expect(result.current.categories[0].icon).toBeUndefined()
+  })
+
+  it('编辑名称（名称唯一性校验）', async () => {
     const { result } = renderHook(() => useCategories())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
@@ -47,12 +70,12 @@ describe('useCategories Hook + db', () => {
     const id = result.current.categories[0].id
 
     await act(async () => {
-      await result.current.renameCategory(id, '办公')
+      await result.current.updateCategory(id, '办公')
     })
     expect(result.current.categories[0].name).toBe('办公')
   })
 
-  it('重命名拒绝重复名称', async () => {
+  it('编辑拒绝重复名称', async () => {
     const { result } = renderHook(() => useCategories())
     await waitFor(() => expect(result.current.loading).toBe(false))
 
@@ -66,7 +89,7 @@ describe('useCategories Hook + db', () => {
 
     await expect(
       act(async () => {
-        await result.current.renameCategory(idA, 'B')
+        await result.current.updateCategory(idA, 'B')
       }),
     ).rejects.toThrow('已存在')
   })

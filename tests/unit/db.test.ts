@@ -25,7 +25,7 @@ import {
   reorderBookmarkInDb,
   sortBookmarks,
   createCategoryWithUniqueName,
-  renameCategoryWithUniqueName,
+  updateCategoryWithUniqueName,
   reorderCategoriesInDb,
 } from '@/services/db'
 import type { Bookmark, Category } from '@/types'
@@ -83,7 +83,7 @@ describe('IndexedDB 服务', () => {
       ).rejects.toThrow('已存在')
     })
 
-    it('重命名校验唯一名', async () => {
+    it('更新分类时校验唯一名', async () => {
       await createCategoryWithUniqueName({
         id: 'cat-a',
         name: 'A',
@@ -94,9 +94,33 @@ describe('IndexedDB 服务', () => {
         name: 'B',
         createdAt: '2026-01-01T00:00:00Z',
       })
-      await expect(renameCategoryWithUniqueName('cat-b', 'A')).rejects.toThrow('已存在')
-      const renamed = await renameCategoryWithUniqueName('cat-b', 'C')
+      await expect(updateCategoryWithUniqueName('cat-b', 'A')).rejects.toThrow('已存在')
+      const renamed = await updateCategoryWithUniqueName('cat-b', 'C')
       expect(renamed.name).toBe('C')
+    })
+
+    it('创建、更新与清除分类图标', async () => {
+      const created = await createCategoryWithUniqueName({
+        id: 'cat-a',
+        name: 'A',
+        icon: 'https://example.com/a.png',
+        createdAt: '2026-01-01T00:00:00Z',
+      })
+      expect(created.icon).toBe('https://example.com/a.png')
+
+      // 仅更新图标,名称不变
+      const withIcon = await updateCategoryWithUniqueName('cat-a', 'A', 'https://example.com/b.png')
+      expect(withIcon.icon).toBe('https://example.com/b.png')
+
+      // 名称变更且不传 icon 时保留原图标
+      const renamed = await updateCategoryWithUniqueName('cat-a', 'B')
+      expect(renamed.name).toBe('B')
+      expect(renamed.icon).toBe('https://example.com/b.png')
+
+      // 空字符串清除图标
+      const cleared = await updateCategoryWithUniqueName('cat-a', 'B', '')
+      expect(cleared.icon).toBeUndefined()
+      expect((await getAllCategories())[0].icon).toBeUndefined()
     })
 
     it('重排分配连续 order 并补全未列出的分类', async () => {

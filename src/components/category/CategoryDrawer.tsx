@@ -11,7 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowDown, ArrowUp, Folder, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { CategoryIcon } from '@/components/category/CategoryIcon'
 import { cn } from '@/lib/utils'
 import type { Category } from '@/types'
 
@@ -142,7 +143,7 @@ function DrawerItem({
             : 'hover:bg-accent/50',
         )}
       >
-        <Folder className="h-4 w-4 shrink-0" aria-hidden />
+        <CategoryIcon category={category} fallback="folder" className="h-4 w-4" />
         <span className="flex-1 truncate text-left" title={label}>
           {label}
         </span>
@@ -163,7 +164,7 @@ function DrawerItem({
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onEdit}>
               <Pencil className="mr-2 h-4 w-4" />
-              重命名
+              编辑
             </DropdownMenuItem>
             {onMoveUp && (
               <DropdownMenuItem onClick={onMoveUp}>

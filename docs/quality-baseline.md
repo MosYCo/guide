@@ -120,7 +120,7 @@
 | --------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 浏览器          | Chrome / Edge / Firefox / Safari 最新版           | 当前 Playwright 只配置了 `chromium`(Desktop Chrome),没有 Firefox/WebKit 项目;跨浏览器验收需额外执行                                                                                                                                      |
 | 应用形态        | 纯前端 SPA,纯 CSR;不做 SSR/静态预渲染             | Vite + React 18;`src/main.tsx` 客户端挂载;命令面板通过 `React.lazy` 代码分割                                                                                                                                                             |
-| 离线与持久化    | 数据存 IndexedDB;主题偏好存 localStorage;离线可用 | 数据库 `bookmark-navigation` v1;主题键 `bookmark-theme`;折叠态键 `category-nav-collapsed`                                                                                                                                                |
+| 离线与持久化    | 数据存 IndexedDB;主题偏好存 localStorage;离线可用 | 数据库 `bookmark-navigation` v1;主题键 `bookmark-theme`;折叠态键 `category-nav-collapsed`;选中分类键 `selected-category-id`                                                                                                              |
 | 隐私/无痕模式   | 提示数据可能丢失,但提示不阻塞使用                 | `detectIncognito()` 启发式检测,顶部 warning 提示;`navigator.storage.persist()` 请求持久化存储                                                                                                                                            |
 | 外部资源        | favicon 可能来自 Google Favicon API               | 外部请求失败时降级为首字母 SVG,再降级为纯色块 SVG;不因网络失败破布局                                                                                                                                                                     |
 | 生产构建        | 生产构建后再做性能验收                            | `pnpm build` = `tsc -b && vite build`;生产 `base` 为 `/guide/`,本地开发为 `/`                                                                                                                                                            |
@@ -150,18 +150,20 @@
 
 ## 自动化覆盖对照与缺口
 
-| 基线             | 自动化入口                                                                | 覆盖情况与缺口                                                                                                             |
-| ---------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 视觉状态与对比度 | `tests/e2e/visual-walkthrough.spec.ts`                                    | 覆盖悬停阴影、暗色首帧、加载 skeleton、空状态引导;对比度只采集前景/背景字符串,没有计算比值,不能替代严格 AA 审计            |
-| 键盘流           | `tests/e2e/keyboard-flow.spec.ts`                                         | 覆盖 Tab 不跳隐藏元素、删除确认默认焦点"取消"、`Ctrl+K` 打开与 Esc 关闭;未覆盖完整增改查、分类切换、主题切换链路           |
-| 断点矩阵         | `tests/e2e/responsive-breakpoints.spec.ts`                                | 覆盖 360/640/768/1024/1280/1536 无横向溢出、减少动效降级、移动端底部 Tab 拇指可达                                          |
-| 性能             | `tests/e2e/performance-baseline.spec.ts`、`tests/e2e/performance.spec.ts` | 覆盖 500 条下的 LCP/CLS/INP(有指标才断言,dev/CI 放宽 LCP 与 INP)、100 条加载 `< 2s`、搜索 `< 500ms`;无 TTI、无生产构建测量 |
-| 主题无闪烁       | `tests/e2e/theme-fouc.spec.ts`                                            | 覆盖暗色/亮色/系统主题首帧 class 与运行时切换                                                                              |
-| 极端字段         | `tests/e2e/extreme-fields.spec.ts`                                        | 覆盖超长标题 `line-clamp-1`、favicon 失败降级、无效 URL 不破布局                                                           |
-| 虚拟滚动         | `tests/e2e/performance.spec.ts`                                           | 断言 4 列、横向条目 76px、渲染子集、滚动换行、焦点保持、根字号 20px 缩放与命令面板滚动高亮                                 |
-| 书签排序         | `tests/e2e/bookmark-reorder.spec.ts`                                      | 覆盖分类视图内拖拽插入、菜单“前移/后移”等价路径，以及刷新后的顺序持久化                                                    |
-| 触摸目标         | 无专门用例                                                                | 44×44px 需按组件清单手动量测                                                                                               |
-| 跨浏览器         | 无                                                                        | 当前只有 Chromium;目标浏览器列表中的 Firefox/Safari 需另行验收                                                             |
+| 基线             | 自动化入口                                                                | 覆盖情况与缺口                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 视觉状态与对比度 | `tests/e2e/visual-walkthrough.spec.ts`                                    | 覆盖悬停阴影、暗色首帧、加载 skeleton、空状态引导;对比度只采集前景/背景字符串,没有计算比值,不能替代严格 AA 审计             |
+| 键盘流           | `tests/e2e/keyboard-flow.spec.ts`                                         | 覆盖 Tab 不跳隐藏元素、删除确认默认焦点"取消"、`Ctrl+K` 打开与 Esc 关闭;未覆盖完整增改查、分类切换、主题切换链路            |
+| 断点矩阵         | `tests/e2e/responsive-breakpoints.spec.ts`                                | 覆盖 360/640/768/1024/1280/1536 无横向溢出、减少动效降级、移动端底部 Tab 拇指可达                                           |
+| 性能             | `tests/e2e/performance-baseline.spec.ts`、`tests/e2e/performance.spec.ts` | 覆盖 500 条下的 LCP/CLS/INP(有指标才断言,dev/CI 放宽 LCP 与 INP)、100 条加载 `< 2s`、搜索 `< 500ms`;无 TTI、无生产构建测量  |
+| 主题无闪烁       | `tests/e2e/theme-fouc.spec.ts`                                            | 覆盖暗色/亮色/系统主题首帧 class 与运行时切换                                                                               |
+| 极端字段         | `tests/e2e/extreme-fields.spec.ts`                                        | 覆盖超长标题 `line-clamp-1`、favicon 失败降级、无效 URL 不破布局                                                            |
+| 虚拟滚动         | `tests/e2e/performance.spec.ts`                                           | 断言 4 列、横向条目 76px、渲染子集、滚动换行、焦点保持、根字号 20px 缩放与命令面板滚动高亮                                  |
+| 书签排序         | `tests/e2e/bookmark-reorder.spec.ts`                                      | 覆盖分类视图内拖拽插入、菜单“前移/后移”等价路径，以及刷新后的顺序持久化                                                     |
+| 分类图标         | `tests/e2e/category-management.spec.ts`                                   | 覆盖自定义图片图标、预置图标 + 固定颜色在折叠侧栏的显示、无图标时首字符回退、刷新后的持久化，以及编辑分类图标后页面仍可交互 |
+| 分类选择         | `tests/e2e/category-management.spec.ts`                                   | 覆盖刷新后恢复选中的分类，以及失效的分类 ID 回退“全部”                                                                      |
+| 触摸目标         | 无专门用例                                                                | 44×44px 需按组件清单手动量测                                                                                                |
+| 跨浏览器         | 无                                                                        | 当前只有 Chromium;目标浏览器列表中的 Firefox/Safari 需另行验收                                                              |
 
 ## 验收判定汇总
 

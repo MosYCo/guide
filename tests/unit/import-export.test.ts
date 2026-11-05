@@ -54,7 +54,7 @@ describe('导入导出服务', () => {
 
   describe(': JSON 导出', () => {
     it('导出包含所有书签和分类', async () => {
-      const cat = makeCategory({ name: '工作' })
+      const cat = makeCategory({ name: '工作', icon: 'https://example.com/work.png' })
       await addCategory(cat)
       await addBookmark(makeBookmark({ categoryId: cat.id, name: 'B1' }))
       await addBookmark(makeBookmark({ name: 'B2', categoryId: null }))
@@ -64,7 +64,14 @@ describe('导入导出服务', () => {
       expect(data.bookmarkCount).toBe(2)
       expect(data.categoryCount).toBe(1)
       expect(data.categories[0].name).toBe('工作')
+      expect(data.categories[0].icon).toBe('https://example.com/work.png')
       expect(data.bookmarks).toHaveLength(2)
+    })
+
+    it('导出保留分类预置图标 token', async () => {
+      await addCategory(makeCategory({ name: '学习', icon: 'lucide:book-open@blue' }))
+      const data = await exportToJson()
+      expect(data.categories[0].icon).toBe('lucide:book-open@blue')
     })
 
     it('导出空数据库', async () => {
@@ -164,7 +171,10 @@ describe('导入导出服务', () => {
     })
 
     it('导入时同名分类合并到现有分类', async () => {
-      const existing = makeCategory({ name: 'Work' })
+      const existing = makeCategory({
+        name: 'Work',
+        icon: 'https://example.com/existing.png',
+      })
       await addCategory(existing)
       const exportData: ExportData = {
         version: '1.0.0',
@@ -177,6 +187,7 @@ describe('导入导出服务', () => {
             name: 'Work',
             order: 0,
             createdAt: '2026-07-28T00:00:00Z',
+            icon: 'https://example.com/imported.png',
           },
         ],
         bookmarks: [
@@ -193,8 +204,61 @@ describe('导入导出服务', () => {
       expect(result.categoryCount).toBe(0)
       const categories = await getAllCategories()
       expect(categories).toHaveLength(1)
+      // 同名分类保留现有图标,不被导入数据覆盖
+      expect(categories[0].icon).toBe('https://example.com/existing.png')
       const bookmarks = await getAllBookmarks()
       expect(bookmarks[0].categoryId).toBe(existing.id)
+    })
+
+    it('导入新分类时保留合法图标，非法协议与未知预置按未设置处理', async () => {
+      const exportData: ExportData = {
+        version: '1.0.0',
+        exportedAt: '2026-07-28T00:00:00Z',
+        bookmarkCount: 0,
+        categoryCount: 5,
+        categories: [
+          makeCategory({
+            id: 'work',
+            name: 'Work',
+            order: 0,
+            icon: 'https://example.com/work.png',
+          }),
+          makeCategory({
+            id: 'bad',
+            name: 'Bad',
+            order: 1,
+            icon: 'javascript:alert(1)',
+          }),
+          makeCategory({
+            id: 'study',
+            name: 'Study',
+            order: 2,
+            icon: 'lucide:book-open@blue',
+          }),
+          makeCategory({
+            id: 'bad-preset',
+            name: 'BadPreset',
+            order: 3,
+            icon: 'lucide:unknown',
+          }),
+          makeCategory({
+            id: 'bad-color',
+            name: 'BadColor',
+            order: 4,
+            icon: 'lucide:book-open@unknown',
+          }),
+        ],
+        bookmarks: [],
+      }
+
+      const result = await importFromJson(exportData)
+      expect(result.success).toBe(true)
+      const categories = await getAllCategories()
+      expect(categories.find((c) => c.name === 'Work')?.icon).toBe('https://example.com/work.png')
+      expect(categories.find((c) => c.name === 'Bad')?.icon).toBeUndefined()
+      expect(categories.find((c) => c.name === 'Study')?.icon).toBe('lucide:book-open@blue')
+      expect(categories.find((c) => c.name === 'BadPreset')?.icon).toBeUndefined()
+      expect(categories.find((c) => c.name === 'BadColor')?.icon).toBe('lucide:book-open')
     })
 
     it('导出并导入置顶状态，旧备份和超出名额的书签安全降级', async () => {
@@ -301,6 +365,25 @@ describe('导入导出服务', () => {
         }),
       )
       await expect(parseJsonFile(file)).rejects.toThrow('字段缺失')
+    })
+
+    it('拒绝非字符串的分类图标', async () => {
+      const file = makeFile(
+        JSON.stringify({
+          version: '1.0.0',
+          categories: [
+            {
+              id: 'c1',
+              name: 'Work',
+              order: 0,
+              createdAt: '2026-01-01T00:00:00Z',
+              icon: 123,
+            },
+          ],
+          bookmarks: [],
+        }),
+      )
+      await expect(parseJsonFile(file)).rejects.toThrow('分类数据字段缺失或类型错误')
     })
 
     it('拒绝非字符串的 name/url', async () => {

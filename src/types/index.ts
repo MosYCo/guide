@@ -33,6 +33,8 @@ export interface Category {
   id: string
   /** 分类名称（用户自定义），1-50 字符，同层级内唯一 */
   name: string
+  /** 图标：图片 URL（http/https 或 data:image）或预置 token `lucide:<key>[@<color>]`；缺省或失效时折叠态用名称首字符、展开态用 Folder 兜底 */
+  icon?: string
   /** 排序位置（从 0 开始，非负整数） */
   order: number
   /** 创建时间 (ISO 8601) */

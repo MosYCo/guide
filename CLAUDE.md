@@ -40,7 +40,7 @@
 - 删除分类必须在同一事务内把关联书签的 `categoryId` 置为 `null`;书签本身不删除。
 - 删除书签是硬删除,没有软删除、回收站或撤销。
 - JSON / HTML 导入会重新生成 ID、重新校验 URL 并重映射 `categoryId`;分类与书签在同一个跨 store 事务写入,失败时整体回滚。单次导入上限 10 MB / 50,000 条,HTML 嵌套上限 100 层。
-- 持久化契约保持兼容:IndexedDB `bookmark-navigation` v1(`bookmarks` / `categories`);`localStorage` 键 `bookmark-theme` 必须与 `index.html` 内联 FOUC 脚本一致;侧栏折叠键为 `category-nav-collapsed`。
+- 持久化契约保持兼容:IndexedDB `bookmark-navigation` v1(`bookmarks` / `categories`);`localStorage` 键 `bookmark-theme` 必须与 `index.html` 内联 FOUC 脚本一致;侧栏折叠键为 `category-nav-collapsed`;选中分类键为 `selected-category-id`(空字符串表示“全部”)。
 - 远程 favicon 默认走 Google S2;`VITE_FAVICON_REMOTE=false` 时禁用外部请求。降级链:favicon → 首字母 SVG → 纯色块。
 - 破坏性操作使用 `AlertDialog`,默认焦点落“取消”;表单失败保留已填输入并就地展示错误。
 

@@ -221,7 +221,9 @@ export function BookmarkCard({
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
-                onEdit(bookmark)
+                suppressMenuFocusRef.current = true
+                // 等菜单关闭并释放滚动锁后再开编辑框，避免 Radix 弹层锁叠加
+                setTimeout(() => onEdit(bookmark), 0)
               }}
             >
               <Pencil className="mr-2 h-4 w-4" />
