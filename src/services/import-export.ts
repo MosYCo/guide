@@ -192,6 +192,9 @@ function assertValidExportData(data: ExportData): void {
     ) {
       throw new Error('书签数据字段缺失或类型错误')
     }
+    if (b.order !== undefined && (typeof b.order !== 'number' || !Number.isFinite(b.order))) {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
   }
 }
 
@@ -275,6 +278,7 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
         createdAt: b.createdAt ?? now,
         lastVisitedAt: b.lastVisitedAt ?? null,
         pinnedAt: b.pinnedAt ?? null,
+        order: b.order ?? Date.parse(b.createdAt ?? now),
       })
     }
 
@@ -373,15 +377,17 @@ export async function parseHtmlFile(file: File): Promise<{
           skipped++
           continue
         }
+        const createdAt = parseAddDate(a.getAttribute('ADD_DATE'))
         bookmarks.push({
           id: uuidv4(),
           url: validation.normalized!,
           name: (a.textContent ?? '').trim().slice(0, 100) || validation.domain || '未命名',
           icon: '',
           categoryId: parentCategoryId,
-          createdAt: parseAddDate(a.getAttribute('ADD_DATE')),
+          createdAt,
           lastVisitedAt: null,
           pinnedAt: null,
+          order: Date.parse(createdAt),
         })
       }
     }

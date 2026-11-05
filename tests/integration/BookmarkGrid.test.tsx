@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BookmarkGrid } from '@/components/bookmark/BookmarkGrid'
 import type { Bookmark } from '@/types'
 
@@ -53,6 +54,59 @@ describe('BookmarkGrid', () => {
 
     rerender(<BookmarkGrid bookmarks={[pinned]} {...props} />)
     expect(screen.queryByRole('list', { name: '置顶书签' })).not.toBeInTheDocument()
+  })
+
+  it('主列表菜单支持前移/后移并回传相邻目标', async () => {
+    const user = userEvent.setup()
+    const onReorder = vi.fn()
+    render(
+      <BookmarkGrid
+        bookmarks={[
+          makeBookmark({ id: 'one', name: 'One' }),
+          makeBookmark({ id: 'two', name: 'Two' }),
+          makeBookmark({ id: 'three', name: 'Three' }),
+        ]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onClick={vi.fn()}
+        onReorderBookmark={onReorder}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: '更多操作：Two' }))
+    expect(screen.getByRole('menuitem', { name: '前移' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: '后移' })).toBeInTheDocument()
+    await user.click(screen.getByRole('menuitem', { name: '前移' }))
+    expect(onReorder).toHaveBeenLastCalledWith('two', 'one', 'before')
+
+    await user.click(screen.getByRole('button', { name: '更多操作：Two' }))
+    await user.click(screen.getByRole('menuitem', { name: '后移' }))
+    expect(onReorder).toHaveBeenLastCalledWith('two', 'three', 'after')
+  })
+
+  it('边界书签只显示可用的移动方向', async () => {
+    const user = userEvent.setup()
+    render(
+      <BookmarkGrid
+        bookmarks={[
+          makeBookmark({ id: 'one', name: 'One' }),
+          makeBookmark({ id: 'two', name: 'Two' }),
+        ]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onClick={vi.fn()}
+        onReorderBookmark={vi.fn()}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: '更多操作：One' }))
+    expect(screen.queryByRole('menuitem', { name: '前移' })).not.toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: '后移' })).toBeInTheDocument()
+    await user.keyboard('{Escape}')
+
+    await user.click(screen.getByRole('button', { name: '更多操作：Two' }))
+    expect(screen.getByRole('menuitem', { name: '前移' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: '后移' })).not.toBeInTheDocument()
   })
 
   it('空数据展示引导添加', () => {

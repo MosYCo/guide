@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import type { Bookmark, BookmarkFormData } from '@/types'
+import type { Bookmark, BookmarkDropPosition, BookmarkFormData } from '@/types'
 import {
   addBookmarkWithValidCategory,
   deleteBookmark,
@@ -13,6 +13,8 @@ import {
   updateBookmarkFields,
   updateLastVisited,
   setBookmarkPinned,
+  reorderBookmarkInDb,
+  sortBookmarks,
 } from '@/services/db'
 import { validateAndNormalizeUrl } from '@/utils/url'
 
@@ -28,6 +30,7 @@ export interface UseBookmarksReturn {
   refresh: (options?: { silent?: boolean }) => Promise<boolean>
   moveBookmarkToCategory: (id: string, categoryId: string | null) => Promise<void>
   toggleBookmarkPin: (id: string, pinned: boolean) => Promise<void>
+  reorderBookmark: (id: string, targetId: string, position: BookmarkDropPosition) => Promise<void>
 }
 
 export function useBookmarks(): UseBookmarksReturn {
@@ -78,9 +81,10 @@ export function useBookmarks(): UseBookmarksReturn {
       createdAt: now,
       lastVisitedAt: null,
       pinnedAt: null,
+      order: Date.now(),
     }
     const saved = await addBookmarkWithValidCategory(bookmark)
-    setBookmarks((prev) => [saved, ...prev])
+    setBookmarks((prev) => sortBookmarks([saved, ...prev]))
     return saved
   }, [])
 
@@ -149,5 +153,12 @@ export function useBookmarks(): UseBookmarksReturn {
       const updated = await setBookmarkPinned(id, pinned)
       setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
     }, []),
+    reorderBookmark: useCallback(
+      async (id: string, targetId: string, position: BookmarkDropPosition): Promise<void> => {
+        const ordered = await reorderBookmarkInDb(id, targetId, position)
+        setBookmarks(ordered)
+      },
+      [],
+    ),
   }
 }

@@ -236,6 +236,44 @@ describe('导入导出服务', () => {
       await expect(parseJsonFile(makeFile(JSON.stringify(data)))).rejects.toThrow('字段缺失')
     })
 
+    it('导出并导入手动排序，旧备份按创建时间补齐 order', async () => {
+      await addBookmark(
+        makeBookmark({ name: '低', createdAt: '2026-01-01T00:00:00Z', order: 1000 }),
+      )
+      await addBookmark(
+        makeBookmark({ name: '高', createdAt: '2026-01-02T00:00:00Z', order: 2000 }),
+      )
+
+      const exported = await exportToJson()
+      expect(exported.bookmarks.map((bookmark) => bookmark.name)).toEqual(['高', '低'])
+      expect(exported.bookmarks.map((bookmark) => bookmark.order)).toEqual([2000, 1000])
+
+      const incoming = makeBookmark({
+        name: '导入排序',
+        createdAt: '2026-01-03T00:00:00Z',
+        order: 5000,
+      })
+      await importFromJson({ ...exported, bookmarks: [incoming] })
+      expect(
+        (await getAllBookmarks()).find((bookmark) => bookmark.name === '导入排序')?.order,
+      ).toBe(5000)
+
+      const legacy = makeBookmark({ name: '旧备份排序', createdAt: '2026-03-01T00:00:00Z' })
+      await importFromJson({ ...exported, bookmarks: [legacy] })
+      expect(
+        (await getAllBookmarks()).find((bookmark) => bookmark.name === '旧备份排序')?.order,
+      ).toBe(Date.parse('2026-03-01T00:00:00Z'))
+    })
+
+    it('拒绝非数值的排序键', async () => {
+      const data = {
+        version: '1.0.0',
+        categories: [],
+        bookmarks: [{ ...makeBookmark(), order: 'first' }],
+      }
+      await expect(parseJsonFile(makeFile(JSON.stringify(data)))).rejects.toThrow('字段缺失')
+    })
+
     it('拒绝不支持的版本', async () => {
       const file = makeFile(
         JSON.stringify({

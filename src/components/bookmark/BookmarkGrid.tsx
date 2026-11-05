@@ -11,7 +11,8 @@ import { StateEmpty, StateLoading } from '@/components/ui/state-feedback'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useRootFontSize } from '@/hooks/useRootFontSize'
 import { useVirtualList } from '@/hooks/useVirtualList'
-import type { Bookmark, Category } from '@/types'
+import type { Bookmark, BookmarkDropPosition, Category } from '@/types'
+import { cn } from '@/lib/utils'
 
 // 虚拟滚动阈值——超过此数启用,否则全量渲染(小于一屏退化)
 const VIRTUAL_THRESHOLD = 60
@@ -38,6 +39,8 @@ export interface BookmarkGridProps {
   onBookmarkDragStart?: (bookmark: Bookmark) => void
   /** 书签拖拽结束/取消 */
   onBookmarkDragEnd?: () => void
+  /** 主列表内拖拽排序；未提供时禁用排序 */
+  onReorderBookmark?: (draggedId: string, targetId: string, position: BookmarkDropPosition) => void
   /** 分类列表(用于键盘/触屏“移动到分类”) */
   categories?: Category[]
   onMoveToCategory?: (bookmark: Bookmark, categoryId: string | null) => void
@@ -60,6 +63,7 @@ export function BookmarkGrid({
   onTogglePin,
   onBookmarkDragStart,
   onBookmarkDragEnd,
+  onReorderBookmark,
   categories,
   onMoveToCategory,
   loading,
@@ -70,6 +74,23 @@ export function BookmarkGrid({
   const recentWithoutPinned = recentBookmarks?.filter((bookmark) => !bookmark.pinnedAt)
   const hasRecent = recentWithoutPinned && recentWithoutPinned.length > 0
   const hasBookmarks = bookmarks.length > 0
+
+  // 排序拖拽状态提升到网格层，置顶/最近访问中的同一书签也能作为拖拽源参与排序
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const handleBookmarkDragStart = (bookmark: Bookmark) => {
+    if (onReorderBookmark) setDraggingId(bookmark.id)
+    onBookmarkDragStart?.(bookmark)
+  }
+  const handleBookmarkDragEnd = () => {
+    setDraggingId(null)
+    onBookmarkDragEnd?.()
+  }
+  // 置顶/最近访问不参与排序：拖到这些卡片上时阻止冒泡，避免被外层“移至未分类”接住
+  const blockNestedDrop = (e: React.DragEvent) => {
+    if (!draggingId) return
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   // 加载态统一为 StateLoading
   if (loading) return <StateLoading rows={12} />
@@ -105,6 +126,8 @@ export function BookmarkGrid({
                 role="listitem"
                 aria-setsize={pinnedBookmarks.length}
                 aria-posinset={index + 1}
+                onDragOver={blockNestedDrop}
+                onDrop={blockNestedDrop}
               >
                 <BookmarkCard
                   bookmark={b}
@@ -112,8 +135,8 @@ export function BookmarkGrid({
                   onDelete={onDelete}
                   onClick={onClick}
                   onTogglePin={onTogglePin}
-                  onDragStart={onBookmarkDragStart}
-                  onDragEnd={onBookmarkDragEnd}
+                  onDragStart={handleBookmarkDragStart}
+                  onDragEnd={handleBookmarkDragEnd}
                   categories={categories}
                   onMoveToCategory={onMoveToCategory}
                 />
@@ -132,6 +155,8 @@ export function BookmarkGrid({
                 role="listitem"
                 aria-setsize={recentWithoutPinned.length}
                 aria-posinset={index + 1}
+                onDragOver={blockNestedDrop}
+                onDrop={blockNestedDrop}
               >
                 <BookmarkCard
                   bookmark={b}
@@ -139,8 +164,8 @@ export function BookmarkGrid({
                   onDelete={onDelete}
                   onClick={onClick}
                   onTogglePin={onTogglePin}
-                  onDragStart={onBookmarkDragStart}
-                  onDragEnd={onBookmarkDragEnd}
+                  onDragStart={handleBookmarkDragStart}
+                  onDragEnd={handleBookmarkDragEnd}
                   categories={categories}
                   onMoveToCategory={onMoveToCategory}
                 />
@@ -158,8 +183,10 @@ export function BookmarkGrid({
             onDelete={onDelete}
             onClick={onClick}
             onTogglePin={onTogglePin}
-            onBookmarkDragStart={onBookmarkDragStart}
-            onBookmarkDragEnd={onBookmarkDragEnd}
+            onBookmarkDragStart={handleBookmarkDragStart}
+            onBookmarkDragEnd={handleBookmarkDragEnd}
+            onReorderBookmark={onReorderBookmark}
+            draggingId={draggingId}
             categories={categories}
             onMoveToCategory={onMoveToCategory}
             resetKey={resetKey}
@@ -167,6 +194,19 @@ export function BookmarkGrid({
         </section>
       )}
     </div>
+  )
+}
+
+/** 拖拽排序的插入位置指示线 */
+function DropIndicator({ position }: { position: BookmarkDropPosition }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'pointer-events-none absolute inset-x-0 z-20 h-0.5 rounded-full bg-primary',
+        position === 'before' ? '-top-1' : '-bottom-1',
+      )}
+    />
   )
 }
 
@@ -182,6 +222,8 @@ function BookmarkCardList({
   onTogglePin,
   onBookmarkDragStart,
   onBookmarkDragEnd,
+  onReorderBookmark,
+  draggingId,
   categories,
   onMoveToCategory,
   resetKey,
@@ -193,6 +235,8 @@ function BookmarkCardList({
   onTogglePin?: (b: Bookmark) => void
   onBookmarkDragStart?: (b: Bookmark) => void
   onBookmarkDragEnd?: () => void
+  onReorderBookmark?: (draggedId: string, targetId: string, position: BookmarkDropPosition) => void
+  draggingId: string | null
   categories?: Category[]
   onMoveToCategory?: (b: Bookmark, categoryId: string | null) => void
   resetKey?: string | number
@@ -273,6 +317,57 @@ function BookmarkCardList({
     if (!Number.isNaN(index)) setActiveIndex(index)
   }
 
+  const [dropTarget, setDropTarget] = useState<{
+    id: string
+    position: BookmarkDropPosition
+  } | null>(null)
+
+  // 拖拽结束或取消后清掉插入指示（拖到列表外时不会触发卡片的 drop）
+  useEffect(() => {
+    if (!draggingId) setDropTarget(null)
+  }, [draggingId])
+
+  const getDropPosition = (e: React.DragEvent<HTMLDivElement>): BookmarkDropPosition => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+  }
+
+  const handleCardDragOver = (e: React.DragEvent<HTMLDivElement>, target: Bookmark) => {
+    if (!onReorderBookmark || !draggingId) return
+    // 阻止外层内容区的“移至未分类”落点
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = 'move'
+    if (draggingId === target.id) {
+      setDropTarget(null)
+      return
+    }
+    const position = getDropPosition(e)
+    setDropTarget((prev) =>
+      prev?.id === target.id && prev.position === position ? prev : { id: target.id, position },
+    )
+  }
+
+  const handleCardDragLeave = (e: React.DragEvent<HTMLDivElement>, target: Bookmark) => {
+    // 在卡片内部移动时 relatedTarget 仍在卡片内，不应清除指示
+    if (e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget)) return
+    setDropTarget((prev) => (prev?.id === target.id ? null : prev))
+  }
+
+  const handleCardDrop = (e: React.DragEvent<HTMLDivElement>, target: Bookmark) => {
+    if (!onReorderBookmark || !draggingId) return
+    e.preventDefault()
+    e.stopPropagation()
+    if (draggingId === target.id) {
+      setDropTarget(null)
+      return
+    }
+    const position = getDropPosition(e)
+    const draggedId = draggingId
+    setDropTarget(null)
+    onReorderBookmark(draggedId, target.id, position)
+  }
+
   if (!useVirtual) {
     // 小数据量:全量渲染(退化)
     return (
@@ -286,19 +381,40 @@ function BookmarkCardList({
         className={GRID_COLUMNS_CLASS}
       >
         {bookmarks.map((b, index) => (
-          <div key={b.id} role="listitem" aria-setsize={bookmarks.length} aria-posinset={index + 1}>
+          <div
+            key={b.id}
+            role="listitem"
+            aria-setsize={bookmarks.length}
+            aria-posinset={index + 1}
+            className="relative"
+            onDragOver={(e) => handleCardDragOver(e, b)}
+            onDragLeave={(e) => handleCardDragLeave(e, b)}
+            onDrop={(e) => handleCardDrop(e, b)}
+          >
+            {dropTarget?.id === b.id && <DropIndicator position={dropTarget.position} />}
             <BookmarkCard
               bookmark={b}
               onEdit={onEdit}
               onDelete={onDelete}
               onClick={onClick}
               onTogglePin={onTogglePin}
+              onMoveEarlier={
+                onReorderBookmark && index > 0
+                  ? () => onReorderBookmark(b.id, bookmarks[index - 1].id, 'before')
+                  : undefined
+              }
+              onMoveLater={
+                onReorderBookmark && index < bookmarks.length - 1
+                  ? () => onReorderBookmark(b.id, bookmarks[index + 1].id, 'after')
+                  : undefined
+              }
               onDragStart={onBookmarkDragStart}
               onDragEnd={onBookmarkDragEnd}
               categories={categories}
               onMoveToCategory={onMoveToCategory}
               tabIndex={index === activeIndex ? 0 : -1}
               dataIndex={index}
+              className={draggingId === b.id ? 'opacity-50' : undefined}
             />
           </div>
         ))}
@@ -346,21 +462,35 @@ function BookmarkCardList({
                   role="listitem"
                   aria-setsize={bookmarks.length}
                   aria-posinset={globalIndex + 1}
-                  className="h-full"
+                  className="relative h-full"
+                  onDragOver={(e) => handleCardDragOver(e, b)}
+                  onDragLeave={(e) => handleCardDragLeave(e, b)}
+                  onDrop={(e) => handleCardDrop(e, b)}
                 >
+                  {dropTarget?.id === b.id && <DropIndicator position={dropTarget.position} />}
                   <BookmarkCard
                     bookmark={b}
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onClick={onClick}
                     onTogglePin={onTogglePin}
+                    onMoveEarlier={
+                      onReorderBookmark && globalIndex > 0
+                        ? () => onReorderBookmark(b.id, bookmarks[globalIndex - 1].id, 'before')
+                        : undefined
+                    }
+                    onMoveLater={
+                      onReorderBookmark && globalIndex < bookmarks.length - 1
+                        ? () => onReorderBookmark(b.id, bookmarks[globalIndex + 1].id, 'after')
+                        : undefined
+                    }
                     onDragStart={onBookmarkDragStart}
                     onDragEnd={onBookmarkDragEnd}
                     categories={categories}
                     onMoveToCategory={onMoveToCategory}
                     tabIndex={globalIndex === activeIndex ? 0 : -1}
                     dataIndex={globalIndex}
-                    className="h-full"
+                    className={cn('h-full', draggingId === b.id && 'opacity-50')}
                   />
                 </div>
               )

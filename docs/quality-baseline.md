@@ -159,6 +159,7 @@
 | 主题无闪烁       | `tests/e2e/theme-fouc.spec.ts`                                            | 覆盖暗色/亮色/系统主题首帧 class 与运行时切换                                                                              |
 | 极端字段         | `tests/e2e/extreme-fields.spec.ts`                                        | 覆盖超长标题 `line-clamp-1`、favicon 失败降级、无效 URL 不破布局                                                           |
 | 虚拟滚动         | `tests/e2e/performance.spec.ts`                                           | 断言 4 列、横向条目 76px、渲染子集、滚动换行、焦点保持、根字号 20px 缩放与命令面板滚动高亮                                 |
+| 书签排序         | `tests/e2e/bookmark-reorder.spec.ts`                                      | 覆盖分类视图内拖拽插入、菜单“前移/后移”等价路径，以及刷新后的顺序持久化                                                    |
 | 触摸目标         | 无专门用例                                                                | 44×44px 需按组件清单手动量测                                                                                               |
 | 跨浏览器         | 无                                                                        | 当前只有 Chromium;目标浏览器列表中的 Firefox/Safari 需另行验收                                                             |
 

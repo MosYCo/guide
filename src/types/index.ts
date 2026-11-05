@@ -20,7 +20,12 @@ export interface Bookmark {
   lastVisitedAt: string | null
   /** 置顶时间 (ISO 8601)，未置顶或旧数据可缺省 */
   pinnedAt?: string | null
+  /** 手动排序键，数值越大越靠前；缺省时回退 createdAt */
+  order?: number
 }
+
+/** 拖拽插入位置：放在目标书签之前或之后 */
+export type BookmarkDropPosition = 'before' | 'after'
 
 /** 分类实体 */
 export interface Category {

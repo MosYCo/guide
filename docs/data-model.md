@@ -18,17 +18,19 @@
 | `name`          | `string`         | 书签名称;类型注释声明 1–100 字符;添加/编辑表单用 `maxLength={100}` 限制,提交前 `trim()` 且表单要求非空;数据层与导入路径不做长度校验                           | `src/types/index.ts`、`src/components/bookmark/BookmarkForm.tsx`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`      |
 | `icon`          | `string`         | 图标 URL。仅持久化用户显式提供的图标;留空时由展示层通过 favicon provider 解析(可禁用远程请求),失败降级为首字母/纯色块。JSON/HTML 导入保留合法图标或写空字符串 | `src/services/favicon.ts`、`src/hooks/useBookmarks.ts`、`src/services/import-export.ts`、`src/components/bookmark/BookmarkCard.tsx` |
 | `categoryId`    | `string \| null` | 所属分类 ID;`null` 表示未分类。IndexedDB 无外键约束,删除分类时由应用层级联置空                                                                                | `src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                                                   |
-| `createdAt`     | `string`         | 创建时间,ISO 8601 字符串;列表按该字段倒序展示                                                                                                                 | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
+| `createdAt`     | `string`         | 创建时间,ISO 8601 字符串;`order` 缺省时作为列表排序回退                                                                                                       | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
 | `lastVisitedAt` | `string \| null` | 最后访问时间,ISO 8601;从未访问为 `null`;打开书签时更新                                                                                                        | `src/types/index.ts`、`src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                             |
 | `pinnedAt?`     | `string \| null` | 置顶时间,旧数据可缺省;`null` 表示未置顶。最多 5 个,由写入事务校验                                                                                             | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
+| `order?`        | `number`         | 手动排序键,数值越大越靠前;旧数据可缺省,此时回退到 `createdAt` 时间戳。新书签取当前时间,拖拽/前移后移写入相邻值的中点或重编号                                  | `src/types/index.ts`、`src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                             |
 
 补充事实:
 
 - 书签 URL 允许重复;`url` 索引不是唯一索引,`countByUrl` 用于统计重复数量。书签表单与导入预览会提示重复条数,但不阻止保存/导入。
 - 删除书签是硬删除(`db.delete`),没有软删除或撤销机制。
-- `getAllBookmarks()` 返回按 `createdAt` 倒序排列的数组;`getRecentBookmarks(limit = 10)` 过滤 `lastVisitedAt !== null`,按访问时间倒序截取。
+- `getAllBookmarks()` 返回按手动排序键倒序排列的数组(`order` 越大越靠前;缺省时回退 `createdAt` 时间戳;同键再按 `createdAt`、`id` 稳定排序);`getRecentBookmarks(limit = 10)` 过滤 `lastVisitedAt !== null`,按访问时间倒序截取。
 - 书签 ID 由应用生成;JSON 导入会重新生成 UUID,不复用文件中的 ID。
 - 置顶按置顶时间升序展示于首页,最多 5 个;旧记录缺少 `pinnedAt` 时视为未置顶。分类页不展示置顶区;最近访问排除置顶项,全部书签仍保留完整列表。
+- 手动排序只在主列表生效:拖拽卡片到另一张卡片的上半/下半区,或使用卡片菜单的“前移/后移”;置顶区与最近访问区不参与排序。排序键在同一个 `readwrite` 事务内写入,并通过 `BroadcastChannel` 同步到其他标签页。
 
 ### Category
 
@@ -62,14 +64,14 @@
 
 JSON 导出格式的根对象:
 
-| 字段            | 类型         | 说明                              |
-| --------------- | ------------ | --------------------------------- |
-| `version`       | `string`     | 格式版本,当前导出固定为 `"1.0.0"` |
-| `exportedAt`    | `string`     | 导出时间,ISO 8601                 |
-| `bookmarkCount` | `number`     | 导出书签数量                      |
-| `categoryCount` | `number`     | 导出分类数量                      |
-| `categories`    | `Category[]` | 全部分类,按 `order` 升序          |
-| `bookmarks`     | `Bookmark[]` | 全部书签,按 `createdAt` 倒序      |
+| 字段            | 类型         | 说明                                            |
+| --------------- | ------------ | ----------------------------------------------- |
+| `version`       | `string`     | 格式版本,当前导出固定为 `"1.0.0"`               |
+| `exportedAt`    | `string`     | 导出时间,ISO 8601                               |
+| `bookmarkCount` | `number`     | 导出书签数量                                    |
+| `categoryCount` | `number`     | 导出分类数量                                    |
+| `categories`    | `Category[]` | 全部分类,按 `order` 升序                        |
+| `bookmarks`     | `Bookmark[]` | 全部书签,按手动排序键倒序(缺省回退 `createdAt`) |
 
 ### 辅助类型
 
@@ -96,22 +98,23 @@ JSON 导出格式的根对象:
 
 主要数据操作:
 
-| 函数                                         | 行为                                             |
-| -------------------------------------------- | ------------------------------------------------ |
-| `getAllBookmarks()`                          | 读取全部书签,按 `createdAt` 倒序                 |
-| `getBookmark(id)`                            | 按主键读取单条                                   |
-| `addBookmark()` / `putBookmark()`            | 新增/更新书签;ID 已存在时 `add` 会失败           |
-| `deleteBookmark(id)`                         | 硬删除单条书签                                   |
-| `countByUrl(url)`                            | 通过 `url` 索引统计同一 URL 的书签数量           |
-| `getRecentBookmarks(limit = 10)`             | 过滤有访问时间的书签,按 `lastVisitedAt` 倒序截取 |
-| `updateLastVisited(id, visitedAt)`           | 只更新 `lastVisitedAt`,不存在时静默跳过          |
-| `setBookmarkPinned(id, pinned)`              | 同一事务中检查最多 5 个置顶并更新置顶时间        |
-| `getAllCategories()`                         | 读取全部分类,按 `order` 升序                     |
-| `addCategory()` / `putCategory()`            | 新增/更新分类                                    |
-| `deleteCategory(id)`                         | 删除分类并级联置空关联书签的 `categoryId`        |
-| `countCategoryByName(name)`                  | 统计同名分类数量(应用层唯一性检查)               |
-| `getMaxCategoryOrder()`                      | 返回最大 `order`;空库返回 `-1`                   |
-| `bulkAddBookmarks()` / `bulkAddCategories()` | 批量写入,供导入使用;可传入外部事务               |
+| 函数                                          | 行为                                                       |
+| --------------------------------------------- | ---------------------------------------------------------- |
+| `getAllBookmarks()`                           | 读取全部书签,按手动排序键倒序(缺省回退 `createdAt`)        |
+| `getBookmark(id)`                             | 按主键读取单条                                             |
+| `addBookmark()` / `putBookmark()`             | 新增/更新书签;ID 已存在时 `add` 会失败                     |
+| `deleteBookmark(id)`                          | 硬删除单条书签                                             |
+| `countByUrl(url)`                             | 通过 `url` 索引统计同一 URL 的书签数量                     |
+| `getRecentBookmarks(limit = 10)`              | 过滤有访问时间的书签,按 `lastVisitedAt` 倒序截取           |
+| `updateLastVisited(id, visitedAt)`            | 只更新 `lastVisitedAt`,不存在时静默跳过                    |
+| `setBookmarkPinned(id, pinned)`               | 同一事务中检查最多 5 个置顶并更新置顶时间                  |
+| `reorderBookmarkInDb(id, targetId, position)` | 同一事务中把书签插到目标前/后,写回排序键并返回完整排序列表 |
+| `getAllCategories()`                          | 读取全部分类,按 `order` 升序                               |
+| `addCategory()` / `putCategory()`             | 新增/更新分类                                              |
+| `deleteCategory(id)`                          | 删除分类并级联置空关联书签的 `categoryId`                  |
+| `countCategoryByName(name)`                   | 统计同名分类数量(应用层唯一性检查)                         |
+| `getMaxCategoryOrder()`                       | 返回最大 `order`;空库返回 `-1`                             |
+| `bulkAddBookmarks()` / `bulkAddCategories()`  | 批量写入,供导入使用;可传入外部事务                         |
 
 ### 分类删除级联
 
@@ -153,7 +156,8 @@ JSON 导出格式的根对象:
       "categoryId": "category-uuid",
       "createdAt": "2026-11-03T00:00:00.000Z",
       "lastVisitedAt": null,
-      "pinnedAt": "2026-11-03T00:00:00.000Z"
+      "pinnedAt": "2026-11-03T00:00:00.000Z",
+      "order": 1762128000000
     }
   ]
 }
@@ -163,7 +167,7 @@ JSON 导出格式的根对象:
 
 - `version` 是导出常量 `EXPORT_VERSION = "1.0.0"`,当前没有其他版本分支。
 - `bookmarkCount` / `categoryCount` 是导出时的数组长度,不是导入方的校验依据。
-- 导出的书签包含完整字段;分类与书签顺序分别来自 `getAllCategories()` 与 `getAllBookmarks()`。
+- 导出的书签包含完整字段;分类与书签顺序分别来自 `getAllCategories()` 与 `sortBookmarks()`,后者按手动排序键倒序排列。
 
 ## 导入行为
 
@@ -176,6 +180,7 @@ JSON 导出格式的根对象:
 - `categories` 与 `bookmarks` 都是数组;
 - 每个分类至少有 `id`、`name`、`order`,且 `order` 为数字;
 - 每个书签至少有 `id`、`url`、`name`,且 `icon` 为字符串;
+- 可选字段若存在需通过校验:`createdAt` / `lastVisitedAt` / `pinnedAt` 为可解析的日期字符串,`order` 为有限数值;
 - 任一条件不满足时抛出错误,由调用方展示错误信息。
 
 当前实现只检查 `version` 是字符串,不校验它是否等于 `1.0.0`,也没有迁移旧版本的逻辑。
@@ -186,7 +191,7 @@ JSON 导出格式的根对象:
 - 为每个书签生成新的 UUID;
 - 用 `validateAndNormalizeUrl` 重新校验书签 URL;非 `http/https` 或无法规范化的条目计入 `skipped`,不写入;
 - 根据映射改写 `categoryId`;原分类不存在或没有分类时写入 `null`;
-- 书签的其他字段(名称、图标、创建时间、最后访问时间)随展开保留;`pinnedAt` 可选,旧备份缺省时写为 `null`;导入的置顶项按文件顺序占用剩余名额,超过 5 个的部分作为普通书签导入;
+- 书签的其他字段(名称、图标、创建时间、最后访问时间、手动排序键)随展开保留;`pinnedAt` 可选,旧备份缺省时写为 `null`;`order` 缺省时用 `Date.parse(createdAt)` 补齐;导入的置顶项按文件顺序占用剩余名额,超过 5 个的部分作为普通书签导入;
 - 分类与书签在同一个跨 store 的 `readwrite` 事务中写入(`bulkImport`);任一条失败时整体回滚;
 - 分类按名称合并到现有分类(新分类 order 追加到现有 max 之后);URL 重复仅在预览中提示,不阻止导入;不自动备份;
 - 成功返回 `ImportResult` 及计数;异常被捕获后返回 `success: false`,但已写入的前一批数据不会自动回滚。
@@ -205,6 +210,7 @@ JSON 导出格式的根对象:
 - 书签名称取链接文本,空则取域名,再空则"未命名";
 - `icon` 写入空字符串,由展示层 favicon 兜底;
 - `createdAt` 解析 `ADD_DATE`(Unix 秒)并转为 ISO;缺失时使用导入时刻;
+- `order` 取 `Date.parse(createdAt)`,让导入书签按添加时间排序;
 - `lastVisitedAt` 与 `pinnedAt` 写入 `null`;
 - 找不到根 `<DL>` 时抛出错误。
 
@@ -227,6 +233,7 @@ UI 依据文件名后缀/类型区分 JSON 与 HTML:`.json` 走 JSON 路径,`.ht
 | 书签删除是硬删除             | `deleteBookmark` 直接删除记录                                                                                               | 没有软删除、回收站或撤销                                                                                                                          |
 | ID 在导入时重新生成          | JSON 导入为分类和书签生成新 UUID,并重映射 `categoryId`                                                                      | 导入不会保留原 ID,跨文件引用依赖映射                                                                                                              |
 | 分类 `order` 只保证可排序    | 新增取最大值 + 1;重排按 ID 顺序写入 0..n-1;导入新分类追加到现有 max 之后                                                    | 数据库不强制唯一,但正常写入路径保持非连续/递增                                                                                                    |
+| 书签 `order` 只保证可排序    | 新增取当前时间;拖拽写入相邻中点,间距不足时整表重编号;单事务写回                                                             | 数据库无 `order` 索引;旧数据缺省时回退 `createdAt`;导入值可能重复,排序用 `createdAt` 与 `id` 兜底                                                 |
 
 ## 展示层 token
 

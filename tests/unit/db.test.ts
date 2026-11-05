@@ -22,6 +22,8 @@ import {
   addBookmarkWithValidCategory,
   updateBookmarkFields,
   setBookmarkPinned,
+  reorderBookmarkInDb,
+  sortBookmarks,
   createCategoryWithUniqueName,
   renameCategoryWithUniqueName,
   reorderCategoriesInDb,
@@ -169,6 +171,85 @@ describe('IndexedDB 服务', () => {
       expect(second.pinnedAt).toBe(first.pinnedAt)
       await deleteBookmark(bookmark.id)
       await expect(setBookmarkPinned(bookmark.id, true)).rejects.toThrow('已被删除')
+    })
+  })
+
+  describe('书签排序', () => {
+    it('按 order 倒序排列，缺省时回退创建时间', async () => {
+      await addBookmark(makeBookmark({ id: 'a', createdAt: '2026-01-01T00:00:00Z', order: 100 }))
+      await addBookmark(makeBookmark({ id: 'b', createdAt: '2026-03-01T00:00:00Z' }))
+      await addBookmark(makeBookmark({ id: 'c', createdAt: '2026-02-01T00:00:00Z' }))
+
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['b', 'c', 'a'])
+      expect(
+        sortBookmarks([
+          makeBookmark({ id: 'same-1', createdAt: '2026-01-01T00:00:00Z', order: 100 }),
+          makeBookmark({ id: 'same-2', createdAt: '2026-01-01T00:00:00Z', order: 100 }),
+        ]).map((bookmark) => bookmark.id),
+      ).toEqual(['same-1', 'same-2'])
+    })
+
+    it('拖到目标前/后并持久化', async () => {
+      for (const [id, order] of [
+        ['a', 3000],
+        ['b', 2000],
+        ['c', 1000],
+      ] as const) {
+        await addBookmark(makeBookmark({ id, order }))
+      }
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['a', 'b', 'c'])
+
+      const movedAfter = await reorderBookmarkInDb('a', 'c', 'after')
+      expect(movedAfter.map((bookmark) => bookmark.id)).toEqual(['b', 'c', 'a'])
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['b', 'c', 'a'])
+
+      const movedBefore = await reorderBookmarkInDb('c', 'b', 'before')
+      expect(movedBefore.map((bookmark) => bookmark.id)).toEqual(['c', 'b', 'a'])
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['c', 'b', 'a'])
+    })
+
+    it('拖到列表顶部/底部', async () => {
+      for (const [id, order] of [
+        ['a', 3000],
+        ['b', 2000],
+        ['c', 1000],
+      ] as const) {
+        await addBookmark(makeBookmark({ id, order }))
+      }
+      await reorderBookmarkInDb('c', 'a', 'before')
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['c', 'a', 'b'])
+      await reorderBookmarkInDb('c', 'b', 'after')
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['a', 'b', 'c'])
+    })
+
+    it('相邻 order 间距耗尽时重排全部书签且保持顺序', async () => {
+      // 1e12 附近 double 的 ULP 约为 2^-13，取相邻两个可表示值让中点无法严格居中
+      const high = 1e12
+      const low = high - 2 ** -13
+      await addBookmark(makeBookmark({ id: 'a', order: high }))
+      await addBookmark(makeBookmark({ id: 'b', order: low }))
+      await addBookmark(makeBookmark({ id: 'c', order: low - 1000 }))
+
+      const moved = await reorderBookmarkInDb('c', 'a', 'after')
+      expect(moved.map((bookmark) => bookmark.id)).toEqual(['a', 'c', 'b'])
+      const all = await getAllBookmarks()
+      expect(all.map((bookmark) => bookmark.id)).toEqual(['a', 'c', 'b'])
+      expect(new Set(all.map((bookmark) => bookmark.order)).size).toBe(3)
+    })
+
+    it('目标书签不存在时拒绝移动', async () => {
+      await addBookmark(makeBookmark({ id: 'a', order: 1 }))
+      await expect(reorderBookmarkInDb('a', 'missing', 'before')).rejects.toThrow('不存在')
+    })
+
+    it('极端 order 无法生成更大的值时重编号', async () => {
+      await addBookmark(makeBookmark({ id: 'a', order: Number.MAX_VALUE }))
+      await addBookmark(makeBookmark({ id: 'b', order: 0 }))
+
+      const moved = await reorderBookmarkInDb('b', 'a', 'before')
+      expect(moved.map((bookmark) => bookmark.id)).toEqual(['b', 'a'])
+      expect(moved.every((bookmark) => Number.isFinite(bookmark.order))).toBe(true)
+      expect((await getAllBookmarks()).map((bookmark) => bookmark.id)).toEqual(['b', 'a'])
     })
   })
 

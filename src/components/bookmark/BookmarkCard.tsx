@@ -4,7 +4,17 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { MoreVertical, Pencil, Trash2, ExternalLink, FolderInput, Pin, PinOff } from 'lucide-react'
+import {
+  MoreVertical,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  FolderInput,
+  Pin,
+  PinOff,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +46,9 @@ export interface BookmarkCardProps {
   onDelete: (bookmarkId: string) => void
   onClick: (bookmark: Bookmark) => void
   onTogglePin?: (bookmark: Bookmark) => void
+  /** 可选：主列表内前移/后移（键盘与触屏等价路径） */
+  onMoveEarlier?: () => void
+  onMoveLater?: () => void
   /** 可选：拖拽到分类（drag to assign） */
   onDragStart?: (bookmark: Bookmark) => void
   /** 可选：拖拽结束/取消时清理状态 */
@@ -56,6 +69,8 @@ export function BookmarkCard({
   onDelete,
   onClick,
   onTogglePin,
+  onMoveEarlier,
+  onMoveLater,
   onDragStart,
   onDragEnd,
   categories,
@@ -212,6 +227,28 @@ export function BookmarkCard({
               <Pencil className="mr-2 h-4 w-4" />
               编辑
             </DropdownMenuItem>
+            {onMoveEarlier && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveEarlier()
+                }}
+              >
+                <ArrowUp className="mr-2 h-4 w-4" aria-hidden="true" />
+                前移
+              </DropdownMenuItem>
+            )}
+            {onMoveLater && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveLater()
+                }}
+              >
+                <ArrowDown className="mr-2 h-4 w-4" aria-hidden="true" />
+                后移
+              </DropdownMenuItem>
+            )}
             {onTogglePin && (
               <DropdownMenuItem
                 onClick={(e) => {

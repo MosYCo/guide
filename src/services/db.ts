@@ -4,11 +4,14 @@
  */
 
 import { openDB, type DBSchema, type IDBPDatabase, type IDBPTransaction } from 'idb'
-import type { Bookmark, Category } from '@/types'
+import type { Bookmark, BookmarkDropPosition, Category } from '@/types'
 
 export const DB_NAME = 'bookmark-navigation'
 export const DB_VERSION = 1
 export const MAX_PINNED_BOOKMARKS = 5
+
+/** 手动排序时相邻 order 的默认间距 */
+const ORDER_GAP = 1024
 
 export function upgradeBookmarkDB(db: IDBPDatabase<BookmarkNavDB>, oldVersion: number): void {
   if (oldVersion >= 1) return
@@ -83,15 +86,32 @@ export function _resetDBForTesting() {
 
 // ===== Bookmark CRUD =====
 
-function byCreatedAtDesc(a: Bookmark, b: Bookmark): number {
-  const byDate = (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
-  return byDate !== 0 ? byDate : a.id.localeCompare(b.id)
+/**
+ * 书签排序键：显式 order 优先，旧数据回退到 createdAt 时间戳。
+ * 两者都是毫秒级数值，可放在同一坐标系里比较。
+ */
+export function bookmarkOrderKey(bookmark: Bookmark): number {
+  if (typeof bookmark.order === 'number' && Number.isFinite(bookmark.order)) {
+    return bookmark.order
+  }
+  const created = Date.parse(bookmark.createdAt)
+  return Number.isNaN(created) ? 0 : created
+}
+
+/** 按手动排序键倒序排列（越大越靠前），同键回退 createdAt 与 id。 */
+export function sortBookmarks(bookmarks: Bookmark[]): Bookmark[] {
+  return [...bookmarks].sort((a, b) => {
+    const byOrder = bookmarkOrderKey(b) - bookmarkOrderKey(a)
+    if (byOrder !== 0) return byOrder
+    const byDate = (b.createdAt ?? '').localeCompare(a.createdAt ?? '')
+    return byDate !== 0 ? byDate : a.id.localeCompare(b.id)
+  })
 }
 
 export async function getAllBookmarks(): Promise<Bookmark[]> {
   const db = await getDB()
   const all = await db.getAll('bookmarks')
-  return all.sort(byCreatedAtDesc)
+  return sortBookmarks(all)
 }
 
 export async function getBookmark(id: string): Promise<Bookmark | undefined> {
@@ -156,7 +176,7 @@ export async function getAllDataForExport(): Promise<{
     tx.objectStore('categories').getAll(),
   ])
   await tx.done
-  return { bookmarks, categories }
+  return { bookmarks: sortBookmarks(bookmarks), categories }
 }
 
 export async function getAllCategories(): Promise<Category[]> {
@@ -339,6 +359,83 @@ export async function setBookmarkPinned(id: string, pinned: boolean): Promise<Bo
   await store.put(updated)
   await tx.done
   return updated
+}
+
+/**
+ * 将书签移动到目标书签之前/之后，单事务读取并写回。
+ * 新 order 取相邻两项的中点；间距耗尽时按当前顺序整表重编号。
+ * @returns 排序后的完整书签列表
+ */
+export async function reorderBookmarkInDb(
+  id: string,
+  targetId: string,
+  position: BookmarkDropPosition,
+): Promise<Bookmark[]> {
+  const db = await getDB()
+  if (id === targetId) return sortBookmarks(await db.getAll('bookmarks'))
+
+  const tx = db.transaction('bookmarks', 'readwrite')
+  const store = tx.objectStore('bookmarks')
+  const all = await store.getAll()
+  const dragged = all.find((bookmark) => bookmark.id === id)
+  if (!dragged) {
+    await tx.done
+    throw new Error('书签不存在或已被删除')
+  }
+  const target = all.find((bookmark) => bookmark.id === targetId)
+  if (!target) {
+    await tx.done
+    throw new Error('目标书签不存在或已被删除')
+  }
+
+  const ordered = sortBookmarks(all).filter((bookmark) => bookmark.id !== id)
+  const targetIndex = ordered.findIndex((bookmark) => bookmark.id === targetId)
+  const insertIndex = position === 'before' ? targetIndex : targetIndex + 1
+  const prev = ordered[insertIndex - 1]
+  const next = ordered[insertIndex]
+
+  // 精度或边界导致取不出合法 order 时，按当前顺序整表重编号并插入被拖拽项
+  const renumber = async (): Promise<Bookmark[]> => {
+    const reordered = [...ordered]
+    reordered.splice(insertIndex, 0, dragged)
+    const base = (reordered.length + 1) * ORDER_GAP
+    const numbered = reordered.map((bookmark, index) => ({
+      ...bookmark,
+      order: base - index * ORDER_GAP,
+    }))
+    for (const bookmark of numbered) {
+      await store.put(bookmark)
+    }
+    await tx.done
+    return numbered
+  }
+
+  let newOrder: number
+  if (prev && next) {
+    const prevKey = bookmarkOrderKey(prev)
+    const nextKey = bookmarkOrderKey(next)
+    const midOrder = (prevKey + nextKey) / 2
+    if (midOrder > nextKey && midOrder < prevKey) {
+      newOrder = midOrder
+    } else {
+      return await renumber()
+    }
+  } else if (next) {
+    const nextKey = bookmarkOrderKey(next)
+    const candidate = nextKey + ORDER_GAP
+    if (!Number.isFinite(candidate) || candidate <= nextKey) return await renumber()
+    newOrder = candidate
+  } else {
+    const prevKey = bookmarkOrderKey(prev!)
+    const candidate = prevKey - ORDER_GAP
+    if (!Number.isFinite(candidate) || candidate >= prevKey) return await renumber()
+    newOrder = candidate
+  }
+
+  const updated: Bookmark = { ...dragged, order: newOrder }
+  await store.put(updated)
+  await tx.done
+  return sortBookmarks(all.map((bookmark) => (bookmark.id === id ? updated : bookmark)))
 }
 
 // ===== Bulk operations（导入用）=====

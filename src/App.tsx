@@ -22,7 +22,7 @@ import {
   safeGetItem,
   safeSetItem,
 } from '@/utils/storage'
-import type { Bookmark, BookmarkFormData, Category } from '@/types'
+import type { Bookmark, BookmarkDropPosition, BookmarkFormData, Category } from '@/types'
 import { MAX_PINNED_BOOKMARKS } from '@/services/db'
 
 // 命令面板懒加载,减小首屏 JS
@@ -54,6 +54,7 @@ function AppInner() {
     recordVisit,
     moveBookmarkToCategory,
     toggleBookmarkPin,
+    reorderBookmark,
     refresh: refreshBookmarks,
   } = useBookmarks()
   const {
@@ -316,6 +317,19 @@ function AppInner() {
     [moveBookmarkToCategory, notifyChange, toast],
   )
 
+  // 拖拽/菜单调整主列表顺序
+  const handleBookmarkReorder = useCallback(
+    async (id: string, targetId: string, position: BookmarkDropPosition) => {
+      try {
+        await reorderBookmark(id, targetId, position)
+        notifyChange()
+      } catch (e) {
+        toast(e instanceof Error ? e.message : '排序失败', 'error')
+      }
+    },
+    [reorderBookmark, notifyChange, toast],
+  )
+
   // 拖拽书签到分类
   const handleCategoryDrop = useCallback(
     async (categoryId: string | null) => {
@@ -446,6 +460,9 @@ function AppInner() {
                 onAdd={handleAddBookmark}
                 onBookmarkDragStart={setDraggingBookmark}
                 onBookmarkDragEnd={() => setDraggingBookmark(null)}
+                onReorderBookmark={(id, targetId, position) => {
+                  void handleBookmarkReorder(id, targetId, position)
+                }}
                 categories={categories}
                 onMoveToCategory={(bookmark, categoryId) => {
                   void handleBookmarkMove(bookmark, categoryId)
