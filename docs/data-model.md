@@ -20,6 +20,7 @@
 | `categoryId`    | `string \| null` | 所属分类 ID;`null` 表示未分类。IndexedDB 无外键约束,删除分类时由应用层级联置空                                                                                | `src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                                                   |
 | `createdAt`     | `string`         | 创建时间,ISO 8601 字符串;列表按该字段倒序展示                                                                                                                 | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
 | `lastVisitedAt` | `string \| null` | 最后访问时间,ISO 8601;从未访问为 `null`;打开书签时更新                                                                                                        | `src/types/index.ts`、`src/services/db.ts`、`src/hooks/useBookmarks.ts`                                                             |
+| `pinnedAt?`     | `string \| null` | 置顶时间,旧数据可缺省;`null` 表示未置顶。最多 5 个,由写入事务校验                                                                                             | `src/types/index.ts`、`src/services/db.ts`                                                                                          |
 
 补充事实:
 
@@ -27,6 +28,7 @@
 - 删除书签是硬删除(`db.delete`),没有软删除或撤销机制。
 - `getAllBookmarks()` 返回按 `createdAt` 倒序排列的数组;`getRecentBookmarks(limit = 10)` 过滤 `lastVisitedAt !== null`,按访问时间倒序截取。
 - 书签 ID 由应用生成;JSON 导入会重新生成 UUID,不复用文件中的 ID。
+- 置顶按置顶时间升序展示于首页,最多 5 个;旧记录缺少 `pinnedAt` 时视为未置顶。分类页不展示置顶区;最近访问排除置顶项,全部书签仍保留完整列表。
 
 ### Category
 
@@ -103,6 +105,7 @@ JSON 导出格式的根对象:
 | `countByUrl(url)`                            | 通过 `url` 索引统计同一 URL 的书签数量           |
 | `getRecentBookmarks(limit = 10)`             | 过滤有访问时间的书签,按 `lastVisitedAt` 倒序截取 |
 | `updateLastVisited(id, visitedAt)`           | 只更新 `lastVisitedAt`,不存在时静默跳过          |
+| `setBookmarkPinned(id, pinned)`              | 同一事务中检查最多 5 个置顶并更新置顶时间        |
 | `getAllCategories()`                         | 读取全部分类,按 `order` 升序                     |
 | `addCategory()` / `putCategory()`            | 新增/更新分类                                    |
 | `deleteCategory(id)`                         | 删除分类并级联置空关联书签的 `categoryId`        |
@@ -149,7 +152,8 @@ JSON 导出格式的根对象:
       "icon": "https://www.google.com/s2/favicons?domain=example.com&sz=32",
       "categoryId": "category-uuid",
       "createdAt": "2026-11-03T00:00:00.000Z",
-      "lastVisitedAt": null
+      "lastVisitedAt": null,
+      "pinnedAt": "2026-11-03T00:00:00.000Z"
     }
   ]
 }
@@ -182,7 +186,7 @@ JSON 导出格式的根对象:
 - 为每个书签生成新的 UUID;
 - 用 `validateAndNormalizeUrl` 重新校验书签 URL;非 `http/https` 或无法规范化的条目计入 `skipped`,不写入;
 - 根据映射改写 `categoryId`;原分类不存在或没有分类时写入 `null`;
-- 书签的其他字段(名称、图标、创建时间、最后访问时间)随展开保留;
+- 书签的其他字段(名称、图标、创建时间、最后访问时间)随展开保留;`pinnedAt` 可选,旧备份缺省时写为 `null`;导入的置顶项按文件顺序占用剩余名额,超过 5 个的部分作为普通书签导入;
 - 分类与书签在同一个跨 store 的 `readwrite` 事务中写入(`bulkImport`);任一条失败时整体回滚;
 - 分类按名称合并到现有分类(新分类 order 追加到现有 max 之后);URL 重复仅在预览中提示,不阻止导入;不自动备份;
 - 成功返回 `ImportResult` 及计数;异常被捕获后返回 `success: false`,但已写入的前一批数据不会自动回滚。
@@ -201,7 +205,7 @@ JSON 导出格式的根对象:
 - 书签名称取链接文本,空则取域名,再空则"未命名";
 - `icon` 写入空字符串,由展示层 favicon 兜底;
 - `createdAt` 解析 `ADD_DATE`(Unix 秒)并转为 ISO;缺失时使用导入时刻;
-- `lastVisitedAt` 写入 `null`;
+- `lastVisitedAt` 与 `pinnedAt` 写入 `null`;
 - 找不到根 `<DL>` 时抛出错误。
 
 `importFromHtml` 将解析出的分类与书签在同一个跨 store 事务中写入;同名文件夹在解析阶段合并,解析阶段得到的 `skipped` 会透传到 `ImportResult`。
@@ -306,23 +310,23 @@ token 以 HSL 分量定义,通过 `hsl(var(--token))` 使用;亮/暗主题各一
 
 | 调用方           | 启用条件                    | 单项高度 | 可视高度 | 其他                                   |
 | ---------------- | --------------------------- | -------- | -------- | -------------------------------------- |
-| `BookmarkGrid`   | 书签数 `> 60`               | `130px`  | `600px`  | 小于等于 60 条全量渲染;占位总高防 CLS  |
+| `BookmarkGrid`   | 书签数 `> 60`               | `76px`   | `600px`  | 小于等于 60 条全量渲染;占位总高防 CLS  |
 | `CommandPalette` | `results.length * 56 > 400` | `56px`   | `400px`  | 无查询最多展示 50 条,有查询最多 200 条 |
 
-按行多列虚拟化后,1280px 下书签列表一次约渲染 60–66 张(11 行 × 6 列,含上下缓冲),命令面板约 14 项;窄屏列数减少时渲染量同步下降。目标仍是只渲染可视区及少量缓冲。
+按行多列虚拟化后,1280px 下书签列表一次约渲染 52 张(13 行 × 4 列,含上下缓冲),命令面板约 14 项;窄屏列数减少时渲染量同步下降。目标仍是只渲染可视区及少量缓冲。
 
 ## 展示层组件约束(非数据实体)
 
-| 组件                            | 当前约束                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BookmarkCard`                  | 整卡 `role="button"` + `tabIndex={0}` + `Enter`/`Space` 打开(仅卡片自身聚焦,内嵌菜单不冒泡);`window.open(url, '_blank', 'noopener,noreferrer')`;悬停 `-translate-y-0.5` + `shadow-elevation-md`;统一的 `focus-ring`;名称 `line-clamp-1` 并带 `title`;域名展示 Unicode(`displayDomain`);favicon `loading="lazy"` + `decoding="async"` + `referrerPolicy="no-referrer"`,失败降级链为 favicon → 首字母 SVG → 纯色块 SVG |
-| `StateLoading`                  | 复用 `Skeleton`,容器 `role="status"` + `aria-label="加载中"`                                                                                                                                                                                                                                                                                                                                                         |
-| `StateEmpty`                    | 文案 + 可选引导动作;书签为空时引导"添加书签",搜索无结果时引导"清除搜索"                                                                                                                                                                                                                                                                                                                                              |
-| `StateError`                    | 原因文本 + 可选重试按钮,容器 `role="alert"`,配色走 destructive                                                                                                                                                                                                                                                                                                                                                       |
-| `CommandPalette`                | `Ctrl/Cmd+K` 打开,`Esc` 关闭,`↑`/`↓` 选择,`Enter` 跳转;打开时焦点落输入框;空结果显示"新建书签"引导;结果列表可虚拟滚动                                                                                                                                                                                                                                                                                                |
-| `CategoryNav`                   | PC(`isPC`,≥1024px)侧栏可折叠,折叠态写入 `localStorage` 的 `category-nav-collapsed`;计数 badge;分类名 `truncate` + `title`;拖拽重排;非 PC 分支渲染底部固定 Tab(全部/分类/新建),点击"分类"打开左侧抽屉承载完整分类列表。当前 `isPC` 为假时都会走该分支,因此 768–1023px 也会渲染底部 Tab,平板形态需按质量基线复核                                                                                                       |
-| `CategoryDrawer`                | 复用 Radix `Dialog`,自带遮罩与焦点陷阱;分类项最小高度 `min-h-11`;选择后关闭                                                                                                                                                                                                                                                                                                                                          |
-| `BookmarkForm` / `CategoryForm` | URL 校验与错误提示;名称 `maxLength`;分类名去空格、非空、≤50;错误后已填字段保留                                                                                                                                                                                                                                                                                                                                       |
+| 组件                            | 当前约束                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BookmarkCard`                  | 整卡 `role="button"` + `tabIndex={0}` + `Enter`/`Space` 打开(仅卡片自身聚焦,内嵌菜单不冒泡);横向条目(32px 图标在左、名称和域名/路径在右,高 `4.75rem`),名称 `line-clamp-1` 并带 `title`,地址截断并保留完整 URL 的 `title`;`window.open(url, '_blank', 'noopener,noreferrer')`;边框与背景轻量分隔,悬停强调,统一的 `focus-ring`;favicon `loading="lazy"` + `decoding="async"` + `referrerPolicy="no-referrer"`,远程图标加载前先显示低饱和度的本地首字母占位,失败降级链为 favicon → 首字母 SVG → 纯色块 SVG |
+| `StateLoading`                  | 复用 `Skeleton`,容器 `role="status"` + `aria-label="加载中"`                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `StateEmpty`                    | 文案 + 可选引导动作;书签为空时引导"添加书签",搜索无结果时引导"清除搜索"                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `StateError`                    | 原因文本 + 可选重试按钮,容器 `role="alert"`,配色走 destructive                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `CommandPalette`                | `Ctrl/Cmd+K` 打开,`Esc` 关闭,`↑`/`↓` 选择,`Enter` 跳转;打开时焦点落输入框;空结果显示"新建书签"引导;结果列表可虚拟滚动                                                                                                                                                                                                                                                                                                                                                                                   |
+| `CategoryNav`                   | PC(`isPC`,≥1024px)侧栏可折叠,折叠态写入 `localStorage` 的 `category-nav-collapsed`;计数 badge;分类名 `truncate` + `title`;拖拽重排;非 PC 分支渲染底部固定 Tab(全部/分类/新建),点击"分类"打开左侧抽屉承载完整分类列表。当前 `isPC` 为假时都会走该分支,因此 768–1023px 也会渲染底部 Tab,平板形态需按质量基线复核                                                                                                                                                                                          |
+| `CategoryDrawer`                | 复用 Radix `Dialog`,自带遮罩与焦点陷阱;分类项最小高度 `min-h-11`;选择后关闭                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `BookmarkForm` / `CategoryForm` | URL 校验与错误提示;名称 `maxLength`;分类名去空格、非空、≤50;错误后已填字段保留                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ## 与原文档的差异
 

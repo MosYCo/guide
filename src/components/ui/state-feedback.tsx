@@ -13,7 +13,7 @@ export function StateLoading({ rows = 6, className }: { rows?: number; className
   return (
     <div
       className={cn(
-        'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6',
+        'mx-auto grid w-full max-w-[90rem] grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5',
         className,
       )}
       role="status"
@@ -22,7 +22,7 @@ export function StateLoading({ rows = 6, className }: { rows?: number; className
     >
       <span className="sr-only">正在加载书签</span>
       {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} className="h-28 w-full" />
+        <Skeleton key={i} className="h-[4.75rem] w-full" />
       ))}
     </div>
   )

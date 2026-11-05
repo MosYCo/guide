@@ -119,7 +119,7 @@ test.describe('极端字段', () => {
 
     // favicon <img> onError 后应降级(首字母图标是 SVG data URI)。
     // onError 是异步 setState,用会轮询的断言避免读到降级前的 src。
-    await expect(card.locator('img')).toHaveAttribute('src', /^data:image\/svg\+xml/)
+    await expect(card.getByTestId('bookmark-icon')).toHaveAttribute('src', /^data:image\/svg\+xml/)
   })
 
   test('无效 URL 不破布局', async ({ page }) => {

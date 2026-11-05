@@ -197,6 +197,45 @@ describe('导入导出服务', () => {
       expect(bookmarks[0].categoryId).toBe(existing.id)
     })
 
+    it('导出并导入置顶状态，旧备份和超出名额的书签安全降级', async () => {
+      const pinned = makeBookmark({ name: '原有置顶', pinnedAt: '2026-01-01T00:00:00Z' })
+      await addBookmark(pinned)
+      const exported = await exportToJson()
+      expect(exported.bookmarks[0].pinnedAt).toBe(pinned.pinnedAt)
+
+      const incoming = Array.from({ length: 6 }, (_, index) =>
+        makeBookmark({
+          id: `incoming-${index}`,
+          name: `导入 ${index}`,
+          pinnedAt: `2026-02-0${index + 1}T00:00:00Z`,
+        }),
+      )
+      const result = await importFromJson({ ...exported, bookmarks: incoming })
+      expect(result.success).toBe(true)
+      const all = await getAllBookmarks()
+      expect(all.filter((bookmark) => bookmark.pinnedAt)).toHaveLength(5)
+      expect(all.find((bookmark) => bookmark.id === pinned.id)?.pinnedAt).toBe(pinned.pinnedAt)
+      expect(
+        all.filter((bookmark) => bookmark.name.startsWith('导入 ') && bookmark.pinnedAt),
+      ).toHaveLength(4)
+
+      const legacy = makeBookmark({ name: '旧备份' })
+      const legacyData = { ...exported, bookmarks: [legacy] }
+      expect((await importFromJson(legacyData)).success).toBe(true)
+      expect(all.some((bookmark) => bookmark.name === '旧备份')).toBe(false)
+      const reloaded = await getAllBookmarks()
+      expect(reloaded.find((bookmark) => bookmark.name === '旧备份')?.pinnedAt).toBeNull()
+    })
+
+    it('拒绝无效的置顶时间', async () => {
+      const data = {
+        version: '1.0.0',
+        categories: [],
+        bookmarks: [{ ...makeBookmark(), pinnedAt: 'not-a-date' }],
+      }
+      await expect(parseJsonFile(makeFile(JSON.stringify(data)))).rejects.toThrow('字段缺失')
+    })
+
     it('拒绝不支持的版本', async () => {
       const file = makeFile(
         JSON.stringify({

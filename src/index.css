@@ -78,9 +78,9 @@
   }
 }
 
-/* 书签卡操作:仅精确指针 + hover 设备用 hover 揭示;
- * 触屏/粗指针设备常显,否则移动端看不到编辑/删除入口。 */
-@media (hover: hover) and (pointer: fine) {
+/* 书签条目操作:宽屏精确指针设备用 hover 揭示;
+ * 窄屏与触屏设备常显,保留编辑/删除入口。 */
+@media (hover: hover) and (pointer: fine) and (min-width: 640px) {
   .bookmark-actions {
     opacity: 0;
   }

@@ -53,14 +53,14 @@ test('>60 条书签使用多列虚拟网格', async ({ page }) => {
   expect(rendered).toBeGreaterThan(12)
   expect(rendered).toBeLessThan(100)
 
-  // 1280px 下应为 6 列,卡片高度与虚拟行高一致
+  // 1280px 下应为 4 列,横向条目高度与虚拟行高一致
   const grid = list.getByTestId('bookmark-virtual-grid')
   const columns = await grid.evaluate(
     (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length,
   )
-  expect(columns).toBe(6)
+  expect(columns).toBe(4)
   const cardHeight = await cards.first().evaluate((el) => el.getBoundingClientRect().height)
-  expect(Math.round(cardHeight)).toBe(130)
+  expect(Math.round(cardHeight)).toBe(76)
 
   // 滚动后应渲染新的行
   const firstText = (await cards.first().textContent()) ?? ''
@@ -112,10 +112,10 @@ test('根字号 20px 时虚拟度量同步缩放', async ({ page }) => {
 
   const card = page.getByRole('button', { name: /打开书签：Site \d+/ }).first()
   await expect(card).toBeVisible()
-  // 8.125rem * 20px ≈ 162.5,允许子像素取整
+  // 4.75rem * 20px = 95,允许多子像素取整
   await expect
     .poll(async () => card.evaluate((el) => el.getBoundingClientRect().height))
-    .toBeGreaterThan(150)
+    .toBeGreaterThan(90)
 
   await page.keyboard.press('Control+k')
   const option = page.getByRole('option').first()

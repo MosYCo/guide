@@ -23,6 +23,7 @@ import {
   safeSetItem,
 } from '@/utils/storage'
 import type { Bookmark, BookmarkFormData, Category } from '@/types'
+import { MAX_PINNED_BOOKMARKS } from '@/services/db'
 
 // 命令面板懒加载,减小首屏 JS
 const CommandPalette = lazy(() =>
@@ -52,6 +53,7 @@ function AppInner() {
     getRecentBookmarks,
     recordVisit,
     moveBookmarkToCategory,
+    toggleBookmarkPin,
     refresh: refreshBookmarks,
   } = useBookmarks()
   const {
@@ -132,7 +134,7 @@ function AppInner() {
     requestPersistentStorage()
       .then((ok) => {
         if (!ok) {
-          toast('浏览器未授予持久化存储，建议定期导出备份', 'warning')
+          toast('无法确认书签已受持久化存储保护，建议定期导出备份', 'warning')
         }
       })
       .catch(() => {
@@ -175,9 +177,27 @@ function AppInner() {
     return counts
   }, [bookmarks])
 
+  const pinnedBookmarks = useMemo(
+    () =>
+      selectedCategoryId === null
+        ? bookmarks
+            .filter((bookmark) => bookmark.pinnedAt)
+            .sort(
+              (a, b) =>
+                (a.pinnedAt ?? '').localeCompare(b.pinnedAt ?? '') || a.id.localeCompare(b.id),
+            )
+            .slice(0, MAX_PINNED_BOOKMARKS)
+        : [],
+    [bookmarks, selectedCategoryId],
+  )
   const recentBookmarks = useMemo(
-    () => (selectedCategoryId !== null ? [] : getRecentBookmarks(10)),
-    [selectedCategoryId, getRecentBookmarks],
+    () =>
+      selectedCategoryId !== null
+        ? []
+        : getRecentBookmarks(bookmarks.length)
+            .filter((bookmark) => !bookmark.pinnedAt)
+            .slice(0, 10),
+    [selectedCategoryId, getRecentBookmarks, bookmarks.length],
   )
 
   const handleAddBookmark = useCallback(() => {
@@ -267,6 +287,20 @@ function AppInner() {
       window.open(bm.url, '_blank', 'noopener,noreferrer')
     },
     [recordVisit, toast],
+  )
+
+  const handleBookmarkPin = useCallback(
+    async (bookmark: Bookmark) => {
+      const pinned = !bookmark.pinnedAt
+      try {
+        await toggleBookmarkPin(bookmark.id, pinned)
+        notifyChange()
+        toast(pinned ? '已置顶书签' : '已取消置顶')
+      } catch (e) {
+        toast(e instanceof Error ? e.message : '置顶操作失败', 'warning')
+      }
+    },
+    [toggleBookmarkPin, notifyChange, toast],
   )
 
   const handleBookmarkMove = useCallback(
@@ -396,7 +430,11 @@ function AppInner() {
             >
               <BookmarkGrid
                 bookmarks={filteredBookmarks}
+                pinnedBookmarks={selectedCategoryId === null ? pinnedBookmarks : undefined}
                 recentBookmarks={recentBookmarks}
+                onTogglePin={(bookmark) => {
+                  void handleBookmarkPin(bookmark)
+                }}
                 onEdit={(bm) => {
                   setEditingBookmark(bm)
                   setBookmarkFormOpen(true)

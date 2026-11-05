@@ -12,6 +12,7 @@ import {
   getAllBookmarks,
   updateBookmarkFields,
   updateLastVisited,
+  setBookmarkPinned,
 } from '@/services/db'
 import { validateAndNormalizeUrl } from '@/utils/url'
 
@@ -26,6 +27,7 @@ export interface UseBookmarksReturn {
   recordVisit: (id: string) => Promise<void>
   refresh: (options?: { silent?: boolean }) => Promise<boolean>
   moveBookmarkToCategory: (id: string, categoryId: string | null) => Promise<void>
+  toggleBookmarkPin: (id: string, pinned: boolean) => Promise<void>
 }
 
 export function useBookmarks(): UseBookmarksReturn {
@@ -75,6 +77,7 @@ export function useBookmarks(): UseBookmarksReturn {
       categoryId: data.categoryId ?? null,
       createdAt: now,
       lastVisitedAt: null,
+      pinnedAt: null,
     }
     const saved = await addBookmarkWithValidCategory(bookmark)
     setBookmarks((prev) => [saved, ...prev])
@@ -142,5 +145,9 @@ export function useBookmarks(): UseBookmarksReturn {
       },
       [],
     ),
+    toggleBookmarkPin: useCallback(async (id: string, pinned: boolean): Promise<void> => {
+      const updated = await setBookmarkPinned(id, pinned)
+      setBookmarks((prev) => prev.map((b) => (b.id === id ? updated : b)))
+    }, []),
   }
 }

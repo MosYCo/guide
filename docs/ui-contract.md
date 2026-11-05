@@ -49,15 +49,19 @@ token 集中于 `src/styles/tokens.css`,由 `src/index.css` `@import`;`tailwind.
 
 ## 书签卡片契约(BookmarkCard)
 
-| 项       | 契约                                                                       | 标签         |
-| -------- | -------------------------------------------------------------------------- | ------------ |
-| 角色     | `role="button"` + `tabIndex={0}` + `onKeyDown`(Enter/Space)                | 键盘可达     |
-| 打开     | 整卡单击 → 新标签打开(`window.open(url, '_blank', 'noopener,noreferrer')`) | 整卡打开     |
-| 悬停反馈 | `hover:-translate-y-0.5` + `shadow-elevation-md`(升降 + 阴影)              | 悬停反馈     |
-| 聚焦反馈 | 复用统一 `focus-visible:ring-2 ring-ring` 规范,不另设第二套光晕            | 焦点可见     |
-| favicon  | `<img loading="lazy" decoding="async" onError={fallbackIcon}>`             | favicon 降级 |
-| 极端字段 | `name` 用 `line-clamp-1` + `title` 全文;无效 URL 不破布局                  | 极端字段     |
-| 破坏性   | 删除 → `AlertDialog` 二次确认,默认焦点落"取消"                             | 破坏性确认   |
+| 项       | 契约                                                                                                                            | 标签         |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 角色     | `role="button"` + `tabIndex={0}` + `onKeyDown`(Enter/Space)                                                                     | 键盘可达     |
+| 打开     | 整卡单击 → 新标签打开(`window.open(url, '_blank', 'noopener,noreferrer')`)                                                      | 整卡打开     |
+| 布局     | 横向条目:32px 图标在左,名称和域名/路径在右;高度 `4.75rem`(76px),名称一行截断并保留 `title`,地址单行截断且完整 URL 在 `title` 中 | 书签条目     |
+| 悬停反馈 | 使用 `border-border/80` 与 `bg-card` 形成轻边界;悬停强调边框、背景与轻阴影,焦点复用 `focus-ring`                                | 悬停反馈     |
+| 聚焦反馈 | 复用统一 `focus-visible:ring-2 ring-ring` 规范,不另设第二套光晕                                                                 | 焦点可见     |
+| favicon  | 远程图标加载前显示低饱和度的本地首字母占位;`<img loading="lazy" decoding="async" onError={fallbackIcon}>`                       | favicon 降级 |
+| 极端字段 | `name` 用 `line-clamp-1` + `title` 全文;无效 URL 不破布局                                                                       | 极端字段     |
+| 破坏性   | 删除 → `AlertDialog` 二次确认,默认焦点落"取消"                                                                                  | 破坏性确认   |
+| 置顶操作 | 更多菜单提供带图标的“置顶/取消置顶”;置顶超过 5 个时显示原因,不修改原状态                                                        | 快速访问     |
+
+首页“置顶书签”最多展示 5 条,按置顶时间先后排列,仅“全部”视图可见;“最近访问”过滤已置顶书签,而“全部书签”保留全部条目。置顶状态随书签写入 IndexedDB,刷新和跨标签页同步后仍保留。
 
 ## 命令面板契约(CommandPalette)
 
@@ -134,13 +138,13 @@ token 集中于 `src/styles/tokens.css`,由 `src/index.css` `@import`;`tailwind.
 
 ## 响应式断点契约
 
-| 断点 | 宽度    | 行为                                    |
-| ---- | ------- | --------------------------------------- |
-| sm   | ≥640px  | 单列→双列网格                           |
-| md   | ≥768px  | 平板分支(补全中间档)                    |
-| lg   | ≥1024px | PC 侧栏布局(`useMediaQuery` 现有切换点) |
-| xl   | ≥1280px | 网格列数增加                            |
-| 2xl  | ≥1536px | 最大容器                                |
+| 断点 | 宽度    | 行为                                          |
+| ---- | ------- | --------------------------------------------- |
+| sm   | ≥640px  | 横向条目 2 列(基础单列)                       |
+| md   | ≥768px  | 平板侧栏;横向条目 2 列                        |
+| lg   | ≥1024px | PC 侧栏布局;横向条目 3 列                     |
+| xl   | ≥1280px | 横向条目 4 列                                 |
+| 2xl  | ≥1536px | 横向条目 5 列;列表最大宽度 `90rem`,超宽屏居中 |
 
 **约束**:各断点无横向溢出、无错位,布局平滑切换;横竖屏靠宽度驱动,不监听 `orientation`。
 

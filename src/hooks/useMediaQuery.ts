@@ -9,12 +9,16 @@ import { useEffect, useState } from 'react'
 const PC_QUERY = '(min-width: 1024px)'
 const TABLET_QUERY = '(min-width: 768px)'
 const SM_QUERY = '(min-width: 640px)'
+const XL_QUERY = '(min-width: 1280px)'
+const XXL_QUERY = '(min-width: 1536px)'
 
 export interface UseMediaQueryReturn {
   isSm: boolean
   isPC: boolean
   isTablet: boolean
   isMobile: boolean
+  isXl: boolean
+  is2xl: boolean
 }
 
 export function useMediaQuery(): UseMediaQueryReturn {
@@ -29,6 +33,14 @@ export function useMediaQuery(): UseMediaQueryReturn {
   const [isTablet, setIsTablet] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true
     return window.matchMedia(TABLET_QUERY).matches
+  })
+  const [isXl, setIsXl] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia(XL_QUERY).matches
+  })
+  const [is2xl, setIs2xl] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia(XXL_QUERY).matches
   })
 
   useEffect(() => {
@@ -55,5 +67,21 @@ export function useMediaQuery(): UseMediaQueryReturn {
     return () => mql.removeEventListener('change', handler)
   }, [])
 
-  return { isSm, isPC, isTablet, isMobile: !isTablet }
+  useEffect(() => {
+    const mql = window.matchMedia(XL_QUERY)
+    const handler = (e: MediaQueryListEvent) => setIsXl(e.matches)
+    setIsXl(mql.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+
+  useEffect(() => {
+    const mql = window.matchMedia(XXL_QUERY)
+    const handler = (e: MediaQueryListEvent) => setIs2xl(e.matches)
+    setIs2xl(mql.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+
+  return { isSm, isPC, isTablet, isMobile: !isTablet, isXl, is2xl }
 }

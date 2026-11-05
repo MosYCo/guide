@@ -8,6 +8,7 @@ import type { Bookmark, Category } from '@/types'
 
 export const DB_NAME = 'bookmark-navigation'
 export const DB_VERSION = 1
+export const MAX_PINNED_BOOKMARKS = 5
 
 export function upgradeBookmarkDB(db: IDBPDatabase<BookmarkNavDB>, oldVersion: number): void {
   if (oldVersion >= 1) return
@@ -313,6 +314,33 @@ export async function updateBookmarkFields(
   return updated
 }
 
+/** 在单个事务内检查置顶名额并写入，防止多标签页同时超过上限。 */
+export async function setBookmarkPinned(id: string, pinned: boolean): Promise<Bookmark> {
+  const db = await getDB()
+  const tx = db.transaction('bookmarks', 'readwrite')
+  const store = tx.objectStore('bookmarks')
+  const existing = await store.get(id)
+  if (!existing) {
+    await tx.done
+    throw new Error('书签不存在或已被删除')
+  }
+  if (Boolean(existing.pinnedAt) === pinned) {
+    await tx.done
+    return existing
+  }
+  if (pinned) {
+    const all = await store.getAll()
+    if (all.filter((bookmark) => bookmark.pinnedAt).length >= MAX_PINNED_BOOKMARKS) {
+      await tx.done
+      throw new Error(`最多置顶 ${MAX_PINNED_BOOKMARKS} 个书签，请先取消一个`)
+    }
+  }
+  const updated: Bookmark = { ...existing, pinnedAt: pinned ? new Date().toISOString() : null }
+  await store.put(updated)
+  await tx.done
+  return updated
+}
+
 // ===== Bulk operations（导入用）=====
 
 export async function bulkAddBookmarks(
@@ -352,9 +380,17 @@ export async function bulkImport(categories: Category[], bookmarks: Bookmark[]):
   const bookmarkStore = tx.objectStore('bookmarks')
   // 同步排队所有请求;任一失败时事务整体 abort,分类与书签一起回滚
   try {
+    const existing = await bookmarkStore.getAll()
+    let availablePins = Math.max(
+      0,
+      MAX_PINNED_BOOKMARKS - existing.filter((b) => b.pinnedAt).length,
+    )
     const requests: Promise<unknown>[] = []
     for (const c of categories) requests.push(categoryStore.add(c))
-    for (const b of bookmarks) requests.push(bookmarkStore.add(b))
+    for (const b of bookmarks) {
+      const pinnedAt = b.pinnedAt && availablePins-- > 0 ? b.pinnedAt : null
+      requests.push(bookmarkStore.add({ ...b, pinnedAt }))
+    }
     await Promise.all(requests)
     await tx.done
   } catch (error) {

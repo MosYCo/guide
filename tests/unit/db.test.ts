@@ -21,6 +21,7 @@ import {
   bulkImport,
   addBookmarkWithValidCategory,
   updateBookmarkFields,
+  setBookmarkPinned,
   createCategoryWithUniqueName,
   renameCategoryWithUniqueName,
   reorderCategoriesInDb,
@@ -141,6 +142,33 @@ describe('IndexedDB 服务', () => {
 
       await deleteBookmark(bookmark.id)
       await expect(updateBookmarkFields(bookmark.id, { name: '复活' })).rejects.toThrow('已被删除')
+    })
+  })
+
+  describe('书签置顶', () => {
+    it('限制最多 5 个并在取消后释放名额，刷新仍保留状态', async () => {
+      const bookmarks = Array.from({ length: 6 }, (_, index) =>
+        makeBookmark({ id: `pin-${index}`, name: `Pin ${index}` }),
+      )
+      for (const bookmark of bookmarks) await addBookmark(bookmark)
+      for (const bookmark of bookmarks.slice(0, 5)) {
+        expect((await setBookmarkPinned(bookmark.id, true)).pinnedAt).toEqual(expect.any(String))
+      }
+      await expect(setBookmarkPinned(bookmarks[5].id, true)).rejects.toThrow('最多置顶 5 个书签')
+      expect((await getAllBookmarks()).filter((bookmark) => bookmark.pinnedAt)).toHaveLength(5)
+      await setBookmarkPinned(bookmarks[0].id, false)
+      expect((await setBookmarkPinned(bookmarks[5].id, true)).pinnedAt).toEqual(expect.any(String))
+      expect((await getAllBookmarks()).filter((bookmark) => bookmark.pinnedAt)).toHaveLength(5)
+    })
+
+    it('已置顶重复操作不消耗名额，已删除书签无法置顶', async () => {
+      const bookmark = makeBookmark()
+      await addBookmark(bookmark)
+      const first = await setBookmarkPinned(bookmark.id, true)
+      const second = await setBookmarkPinned(bookmark.id, true)
+      expect(second.pinnedAt).toBe(first.pinnedAt)
+      await deleteBookmark(bookmark.id)
+      await expect(setBookmarkPinned(bookmark.id, true)).rejects.toThrow('已被删除')
     })
   })
 

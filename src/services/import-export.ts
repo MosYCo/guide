@@ -185,6 +185,13 @@ function assertValidExportData(data: ExportData): void {
     if (b.categoryId !== undefined && b.categoryId !== null && typeof b.categoryId !== 'string') {
       throw new Error('书签数据字段缺失或类型错误')
     }
+    if (
+      b.pinnedAt !== undefined &&
+      b.pinnedAt !== null &&
+      (typeof b.pinnedAt !== 'string' || Number.isNaN(Date.parse(b.pinnedAt)))
+    ) {
+      throw new Error('书签数据字段缺失或类型错误')
+    }
   }
 }
 
@@ -267,6 +274,7 @@ export async function importFromJson(data: ExportData): Promise<ImportResult> {
         categoryId: b.categoryId ? (categoryIdMap.get(b.categoryId) ?? null) : null,
         createdAt: b.createdAt ?? now,
         lastVisitedAt: b.lastVisitedAt ?? null,
+        pinnedAt: b.pinnedAt ?? null,
       })
     }
 
@@ -373,6 +381,7 @@ export async function parseHtmlFile(file: File): Promise<{
           categoryId: parentCategoryId,
           createdAt: parseAddDate(a.getAttribute('ADD_DATE')),
           lastVisitedAt: null,
+          pinnedAt: null,
         })
       }
     }

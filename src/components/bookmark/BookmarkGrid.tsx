@@ -12,14 +12,16 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useRootFontSize } from '@/hooks/useRootFontSize'
 import { useVirtualList } from '@/hooks/useVirtualList'
 import type { Bookmark, Category } from '@/types'
-import { cn } from '@/lib/utils'
 
 // 虚拟滚动阈值——超过此数启用,否则全量渲染(小于一屏退化)
 const VIRTUAL_THRESHOLD = 60
-// 以下尺寸用 rem,与 Tailwind 的 h-14/gap-3 等同源,根字号变化时同步缩放
-const CARD_HEIGHT_REM = 8.125 // 130px @ 16px root
+// 以下尺寸用 rem,与条目高度和 gap-3 同源,根字号变化时同步缩放
+const CARD_HEIGHT_REM = 4.75 // 76px @ 16px root
 const GRID_GAP_REM = 0.75 // gap-3
 const VIRTUAL_VIEWPORT_REM = 37.5 // 600px @ 16px root
+// 列数与 BookmarkCardList 的 JS columns 一致;超宽屏由容器最大宽度限制条目宽度。
+const GRID_COLUMNS_CLASS =
+  'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
 
 export interface BookmarkGridProps {
   bookmarks: Bookmark[]
@@ -27,8 +29,11 @@ export interface BookmarkGridProps {
   onDelete: (bookmarkId: string) => void
   onClick: (bookmark: Bookmark) => void
   emptyMessage?: string
+  /** 仅首页展示的置顶快捷入口 */
+  pinnedBookmarks?: Bookmark[]
   /** 可选：在网格上方渲染最近访问区域 */
   recentBookmarks?: Bookmark[]
+  onTogglePin?: (bookmark: Bookmark) => void
   /** 书签拖拽开始（用于拖到分类） */
   onBookmarkDragStart?: (bookmark: Bookmark) => void
   /** 书签拖拽结束/取消 */
@@ -50,7 +55,9 @@ export function BookmarkGrid({
   onDelete,
   onClick,
   emptyMessage = '暂无书签',
+  pinnedBookmarks,
   recentBookmarks,
+  onTogglePin,
   onBookmarkDragStart,
   onBookmarkDragEnd,
   categories,
@@ -59,7 +66,9 @@ export function BookmarkGrid({
   onAdd,
   resetKey,
 }: BookmarkGridProps) {
-  const hasRecent = recentBookmarks && recentBookmarks.length > 0
+  const hasPinned = pinnedBookmarks && pinnedBookmarks.length > 0
+  const recentWithoutPinned = recentBookmarks?.filter((bookmark) => !bookmark.pinnedAt)
+  const hasRecent = recentWithoutPinned && recentWithoutPinned.length > 0
   const hasBookmarks = bookmarks.length > 0
 
   // 加载态统一为 StateLoading
@@ -85,20 +94,16 @@ export function BookmarkGrid({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {hasRecent && (
+    <div className="mx-auto flex w-full max-w-[90rem] flex-col gap-8">
+      {hasPinned && (
         <section>
-          <h2 className="text-h1 mb-2 text-muted-foreground">最近访问</h2>
-          <div
-            role="list"
-            aria-label="最近访问"
-            className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6')}
-          >
-            {recentBookmarks!.map((b, index) => (
+          <h2 className="text-h1 mb-2 text-muted-foreground">置顶书签</h2>
+          <div role="list" aria-label="置顶书签" className={GRID_COLUMNS_CLASS}>
+            {pinnedBookmarks.map((b, index) => (
               <div
                 key={b.id}
                 role="listitem"
-                aria-setsize={recentBookmarks!.length}
+                aria-setsize={pinnedBookmarks.length}
                 aria-posinset={index + 1}
               >
                 <BookmarkCard
@@ -106,6 +111,34 @@ export function BookmarkGrid({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onClick={onClick}
+                  onTogglePin={onTogglePin}
+                  onDragStart={onBookmarkDragStart}
+                  onDragEnd={onBookmarkDragEnd}
+                  categories={categories}
+                  onMoveToCategory={onMoveToCategory}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+      {hasRecent && (
+        <section>
+          <h2 className="text-h1 mb-2 text-muted-foreground">最近访问</h2>
+          <div role="list" aria-label="最近访问" className={GRID_COLUMNS_CLASS}>
+            {recentWithoutPinned.map((b, index) => (
+              <div
+                key={b.id}
+                role="listitem"
+                aria-setsize={recentWithoutPinned.length}
+                aria-posinset={index + 1}
+              >
+                <BookmarkCard
+                  bookmark={b}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onClick={onClick}
+                  onTogglePin={onTogglePin}
                   onDragStart={onBookmarkDragStart}
                   onDragEnd={onBookmarkDragEnd}
                   categories={categories}
@@ -124,6 +157,7 @@ export function BookmarkGrid({
             onEdit={onEdit}
             onDelete={onDelete}
             onClick={onClick}
+            onTogglePin={onTogglePin}
             onBookmarkDragStart={onBookmarkDragStart}
             onBookmarkDragEnd={onBookmarkDragEnd}
             categories={categories}
@@ -145,6 +179,7 @@ function BookmarkCardList({
   onEdit,
   onDelete,
   onClick,
+  onTogglePin,
   onBookmarkDragStart,
   onBookmarkDragEnd,
   categories,
@@ -155,15 +190,16 @@ function BookmarkCardList({
   onEdit: (b: Bookmark) => void
   onDelete: (id: string) => void
   onClick: (b: Bookmark) => void
+  onTogglePin?: (b: Bookmark) => void
   onBookmarkDragStart?: (b: Bookmark) => void
   onBookmarkDragEnd?: () => void
   categories?: Category[]
   onMoveToCategory?: (b: Bookmark, categoryId: string | null) => void
   resetKey?: string | number
 }) {
-  const { isPC, isTablet, isSm } = useMediaQuery()
+  const { isPC, isSm, isXl, is2xl } = useMediaQuery()
   const rootFontSize = useRootFontSize()
-  const columns = isPC ? 6 : isTablet ? 4 : isSm ? 3 : 2
+  const columns = is2xl ? 5 : isXl ? 4 : isPC ? 3 : isSm ? 2 : 1
   const useVirtual = bookmarks.length > VIRTUAL_THRESHOLD
   const cardHeight = CARD_HEIGHT_REM * rootFontSize
   const gridGap = GRID_GAP_REM * rootFontSize
@@ -247,7 +283,7 @@ function BookmarkCardList({
         aria-label="全部书签"
         onKeyDown={handleListKeyDown}
         onFocusCapture={handleFocusCapture}
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+        className={GRID_COLUMNS_CLASS}
       >
         {bookmarks.map((b, index) => (
           <div key={b.id} role="listitem" aria-setsize={bookmarks.length} aria-posinset={index + 1}>
@@ -256,6 +292,7 @@ function BookmarkCardList({
               onEdit={onEdit}
               onDelete={onDelete}
               onClick={onClick}
+              onTogglePin={onTogglePin}
               onDragStart={onBookmarkDragStart}
               onDragEnd={onBookmarkDragEnd}
               categories={categories}
@@ -316,6 +353,7 @@ function BookmarkCardList({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onClick={onClick}
+                    onTogglePin={onTogglePin}
                     onDragStart={onBookmarkDragStart}
                     onDragEnd={onBookmarkDragEnd}
                     categories={categories}

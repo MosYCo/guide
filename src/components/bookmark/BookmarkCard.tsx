@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { MoreVertical, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { MoreVertical, Pencil, Trash2, ExternalLink, FolderInput, Pin, PinOff } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -36,6 +35,7 @@ export interface BookmarkCardProps {
   onEdit: (bookmark: Bookmark) => void
   onDelete: (bookmarkId: string) => void
   onClick: (bookmark: Bookmark) => void
+  onTogglePin?: (bookmark: Bookmark) => void
   /** 可选：拖拽到分类（drag to assign） */
   onDragStart?: (bookmark: Bookmark) => void
   /** 可选：拖拽结束/取消时清理状态 */
@@ -55,6 +55,7 @@ export function BookmarkCard({
   onEdit,
   onDelete,
   onClick,
+  onTogglePin,
   onDragStart,
   onDragEnd,
   categories,
@@ -67,16 +68,27 @@ export function BookmarkCard({
     () => bookmark.icon || resolveIcon(bookmark.url, bookmark.name),
   )
   const [iconFailedOnce, setIconFailedOnce] = useState(false)
+  const [iconLoaded, setIconLoaded] = useState(false)
 
   // 编辑保存后同一个卡片实例会复用,图标 state 必须跟随 bookmark 更新
   useEffect(() => {
     setIconSrc(bookmark.icon || resolveIcon(bookmark.url, bookmark.name))
     setIconFailedOnce(false)
+    setIconLoaded(false)
   }, [bookmark.icon, bookmark.url, bookmark.name])
   const [deleteOpen, setDeleteOpen] = useState(false)
   const suppressMenuFocusRef = useRef(false)
   const menuTriggerRef = useRef<HTMLButtonElement>(null)
   const domain = displayDomain(bookmark.url)
+  let address = domain || '无效地址'
+  if (domain) {
+    try {
+      const path = new URL(bookmark.url).pathname
+      if (path !== '/') address += path
+    } catch {
+      // 旧数据可能含无效 URL;仍展示可识别的域名。
+    }
+  }
 
   const handleClick = () => onClick(bookmark)
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -90,7 +102,7 @@ export function BookmarkCard({
   }
 
   return (
-    <Card
+    <div
       role="button"
       tabIndex={tabIndex}
       data-card-index={dataIndex}
@@ -104,54 +116,67 @@ export function BookmarkCard({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       aria-label={`打开书签：${bookmark.name}`}
+      title={bookmark.url}
       className={cn(
-        'group relative cursor-pointer transition-all',
-        'hover:-translate-y-0.5 hover:shadow-elevation-md',
+        'group relative flex h-[4.75rem] min-w-0 cursor-pointer items-center gap-3 rounded-lg border border-border/80 bg-card px-3 pr-12 transition-[background-color,border-color,box-shadow]',
+        'hover:border-primary/40 hover:bg-accent/60 hover:shadow-elevation-sm focus-visible:bg-accent/60',
         'focus-ring',
         className,
       )}
     >
-      <div className="flex flex-col items-center gap-2 p-3">
-        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded">
-          {/* favicon 原生懒加载 + 解码异步 + onError 二次降级
-           * 降级链:favicon 失败 → 首字母图标(getLetterIcon via fallbackIcon)→ 首字母也失败 → 纯色块(getPlaceholderIcon) */}
-          <img
-            src={iconSrc}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            referrerPolicy="no-referrer"
-            className="h-8 w-8"
-            onError={() => {
-              if (!iconFailedOnce) {
-                // 一次降级:首字母图标
-                setIconSrc(fallbackIcon(bookmark.name))
-                setIconFailedOnce(true)
-              } else {
-                // 二次降级:纯色块(首字母图标也失败)
-                setIconSrc(getPlaceholderIcon())
-              }
-            }}
-          />
-        </div>
-        <p className="text-body line-clamp-1 w-full text-center font-medium" title={bookmark.name}>
+      <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-md">
+        {/* 本地首字母图标先显示:远程 favicon 挂起/被墙时也不会留下空白图标位 */}
+        <img
+          src={fallbackIcon(bookmark.name)}
+          alt=""
+          aria-hidden
+          className={cn(
+            'absolute inset-0 h-8 w-8 transition-opacity',
+            iconLoaded ? 'opacity-0' : 'opacity-100',
+          )}
+        />
+        {/* favicon 原生懒加载 + 解码异步 + onError 二次降级
+         * 降级链:favicon 失败 → 首字母图标(getLetterIcon via fallbackIcon)→ 首字母也失败 → 纯色块(getPlaceholderIcon) */}
+        <img
+          src={iconSrc}
+          alt=""
+          data-testid="bookmark-icon"
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          className="relative h-8 w-8"
+          onLoad={() => setIconLoaded(true)}
+          onError={() => {
+            if (!iconFailedOnce) {
+              // 一次降级:首字母图标
+              setIconSrc(fallbackIcon(bookmark.name))
+              setIconFailedOnce(true)
+            } else {
+              // 二次降级:纯色块(首字母图标也失败)
+              setIconSrc(getPlaceholderIcon())
+            }
+          }}
+        />
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+        <p
+          className="text-body line-clamp-1 w-full font-semibold text-foreground"
+          title={bookmark.name}
+        >
           {bookmark.name}
         </p>
-        <p
-          className="text-caption line-clamp-1 w-full text-center text-muted-foreground"
-          title={domain}
-        >
-          {domain}
+        <p className="text-caption truncate text-muted-foreground" title={bookmark.url}>
+          {address}
         </p>
       </div>
-      <div className="bookmark-actions absolute right-1 top-1 transition-opacity">
+      <div className="bookmark-actions absolute right-2 top-1/2 z-10 -translate-y-1/2 transition-opacity">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               ref={menuTriggerRef}
               variant="ghost"
               size="icon"
-              className="focus-ring h-7 w-7 min-h-11 min-w-11 md:min-h-7 md:min-w-7"
+              className="focus-ring relative h-8 w-8 before:absolute before:-inset-1.5 before:content-['']"
               aria-label={`更多操作：${bookmark.name}`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -187,9 +212,27 @@ export function BookmarkCard({
               <Pencil className="mr-2 h-4 w-4" />
               编辑
             </DropdownMenuItem>
+            {onTogglePin && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onTogglePin(bookmark)
+                }}
+              >
+                {bookmark.pinnedAt ? (
+                  <PinOff className="mr-2 h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <Pin className="mr-2 h-4 w-4" aria-hidden="true" />
+                )}
+                {bookmark.pinnedAt ? '取消置顶' : '置顶'}
+              </DropdownMenuItem>
+            )}
             {categories && onMoveToCategory && (
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger>移动到分类</DropdownMenuSubTrigger>
+                <DropdownMenuSubTrigger>
+                  <FolderInput className="mr-2 h-4 w-4" aria-hidden="true" />
+                  移动到分类
+                </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
                   <DropdownMenuItem
                     onClick={(e) => {
@@ -259,6 +302,6 @@ export function BookmarkCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   )
 }

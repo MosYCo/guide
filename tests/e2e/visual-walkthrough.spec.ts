@@ -21,7 +21,19 @@ async function resetDB(page: Page) {
 }
 
 test.describe('视觉走查', () => {
-  test('亮色主题:卡片悬停反馈一致', async ({ page }) => {
+  test('浏览器不支持持久化存储时准确提示备份', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'storage', { configurable: true, value: undefined })
+    })
+    await page.goto('/')
+    await expect(
+      page
+        .getByRole('alert')
+        .filter({ hasText: '无法确认书签已受持久化存储保护，建议定期导出备份' }),
+    ).toBeVisible()
+  })
+
+  test('亮色主题:书签条目悬停反馈一致', async ({ page }) => {
     await resetDB(page)
     await page.addInitScript(() => {
       localStorage.setItem('bookmark-theme', 'light')
@@ -31,11 +43,12 @@ test.describe('视觉走查', () => {
     await addBookmark(page, 'https://example.com', '示例站')
     const card = page.getByRole('button', { name: '打开书签：示例站' })
     await expect(card).toBeVisible()
-    // 悬停态有阴影 elevation(token 落地验证)
+    // 横向书签条目悬停时背景高亮,保留清晰的交互反馈
+    const beforeHover = await card.evaluate((el) => getComputedStyle(el).backgroundColor)
     await card.hover()
-    const boxShadow = await card.evaluate((el) => getComputedStyle(el).boxShadow)
-    // 非空阴影(悬停态有反馈)
-    expect(boxShadow.length).toBeGreaterThan(0)
+    await expect
+      .poll(async () => card.evaluate((el) => getComputedStyle(el).backgroundColor))
+      .not.toBe(beforeHover)
   })
 
   test('暗色主题:无 FOUC,首帧即 dark class', async ({ page }) => {

@@ -18,6 +18,8 @@ export interface Bookmark {
   createdAt: string
   /** 最后访问时间 (ISO 8601)，未访问时为 null */
   lastVisitedAt: string | null
+  /** 置顶时间 (ISO 8601)，未置顶或旧数据可缺省 */
+  pinnedAt?: string | null
 }
 
 /** 分类实体 */

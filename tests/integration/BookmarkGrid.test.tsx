@@ -35,6 +35,26 @@ describe('BookmarkGrid', () => {
     expect(screen.getByRole('button', { name: '打开书签：Two' })).toBeInTheDocument()
   })
 
+  it('仅在首页显示置顶并从最近访问去重，全部书签仍保留', () => {
+    const pinned = makeBookmark({ id: 'pinned', name: 'Pinned', pinnedAt: '2026-01-02T00:00:00Z' })
+    const recent = makeBookmark({ id: 'recent', name: 'Recent' })
+    const props = { onEdit: vi.fn(), onDelete: vi.fn(), onClick: vi.fn() }
+    const { rerender } = render(
+      <BookmarkGrid
+        bookmarks={[pinned, recent]}
+        pinnedBookmarks={[pinned]}
+        recentBookmarks={[pinned, recent]}
+        {...props}
+      />,
+    )
+    expect(screen.getByRole('list', { name: '置顶书签' })).toHaveTextContent('Pinned')
+    expect(screen.getByRole('list', { name: '最近访问' })).not.toHaveTextContent('Pinned')
+    expect(screen.getByRole('list', { name: '全部书签' })).toHaveTextContent('Pinned')
+
+    rerender(<BookmarkGrid bookmarks={[pinned]} {...props} />)
+    expect(screen.queryByRole('list', { name: '置顶书签' })).not.toBeInTheDocument()
+  })
+
   it('空数据展示引导添加', () => {
     render(
       <BookmarkGrid

@@ -41,22 +41,46 @@ test('PC 端使用侧边栏', async ({ page }) => {
   await expect(page.locator('aside')).toBeVisible()
 })
 
-test('移动端书签卡片每行 2 个', async ({ browser }) => {
-  const context = await browser.newContext({
-    viewport: { width: 375, height: 667 },
-  })
+test('移动端书签单列展示名称和地址', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 375, height: 667 } })
   const page = await context.newPage()
   await page.addInitScript(() => {
     indexedDB.deleteDatabase('bookmark-navigation')
   })
   await page.goto('/')
   await page.waitForSelector('text=书签导航')
+  await addBookmark(page, 'https://example.com/docs/start', '文档入口')
 
-  for (let i = 0; i < 4; i++) {
-    await addBookmark(page, `https://m${i}.com`, `Mobile${i}`)
-  }
+  const grid = page.getByRole('list', { name: '全部书签' })
+  const columns = await grid.evaluate(
+    (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length,
+  )
+  expect(columns).toBe(1)
+  const bookmark = grid.getByRole('button', { name: '打开书签：文档入口' })
+  await expect(bookmark).toContainText('example.com/docs/start')
+  await expect(bookmark.getByRole('button', { name: '更多操作：文档入口' })).toBeVisible()
+  await context.close()
+})
 
-  const grid = page.locator('.grid').first()
-  await expect(grid).toHaveClass(/grid-cols-2/)
+test('超宽屏书签保持可读宽度而非拉满整屏', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 2560, height: 1440 } })
+  const page = await context.newPage()
+  await page.addInitScript(() => {
+    indexedDB.deleteDatabase('bookmark-navigation')
+  })
+  await page.goto('/')
+  await page.waitForSelector('text=书签导航')
+  await addBookmark(page, 'https://example.com', '宽屏测试')
+
+  const grid = page.getByRole('list', { name: '全部书签' })
+  const columns = await grid.evaluate(
+    (el) => getComputedStyle(el).gridTemplateColumns.split(' ').length,
+  )
+  const cardWidth = await grid
+    .getByRole('button', { name: '打开书签：宽屏测试' })
+    .evaluate((el) => el.getBoundingClientRect().width)
+  expect(columns).toBe(5)
+  expect(cardWidth).toBeGreaterThan(240)
+  expect(cardWidth).toBeLessThan(300)
   await context.close()
 })
