@@ -197,14 +197,23 @@ export function BookmarkGrid({
   )
 }
 
-/** 拖拽排序的插入位置指示线 */
-function DropIndicator({ position }: { position: BookmarkDropPosition }) {
+/** 拖拽排序的插入位置指示线：多列网格用竖线，单列列表用横线 */
+function DropIndicator({
+  position,
+  orientation,
+}: {
+  position: BookmarkDropPosition
+  orientation: 'horizontal' | 'vertical'
+}) {
+  const isVertical = orientation === 'vertical'
   return (
     <span
       aria-hidden="true"
       className={cn(
-        'pointer-events-none absolute inset-x-0 z-20 h-0.5 rounded-full bg-primary',
-        position === 'before' ? '-top-1' : '-bottom-1',
+        'pointer-events-none absolute z-20 rounded-full bg-primary',
+        isVertical
+          ? cn('inset-y-0 w-0.5', position === 'before' ? '-left-1' : '-right-1')
+          : cn('inset-x-0 h-0.5', position === 'before' ? '-top-1' : '-bottom-1'),
       )}
     />
   )
@@ -327,8 +336,15 @@ function BookmarkCardList({
     if (!draggingId) setDropTarget(null)
   }, [draggingId])
 
-  const getDropPosition = (e: React.DragEvent<HTMLDivElement>): BookmarkDropPosition => {
+  const getDropPosition = (
+    e: React.DragEvent<HTMLDivElement>,
+    columns: number,
+  ): BookmarkDropPosition => {
     const rect = e.currentTarget.getBoundingClientRect()
+    // 多列网格按左右半区判断，单列列表按上下半区判断
+    if (columns > 1) {
+      return e.clientX < rect.left + rect.width / 2 ? 'before' : 'after'
+    }
     return e.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
   }
 
@@ -342,7 +358,7 @@ function BookmarkCardList({
       setDropTarget(null)
       return
     }
-    const position = getDropPosition(e)
+    const position = getDropPosition(e, columns)
     setDropTarget((prev) =>
       prev?.id === target.id && prev.position === position ? prev : { id: target.id, position },
     )
@@ -362,7 +378,7 @@ function BookmarkCardList({
       setDropTarget(null)
       return
     }
-    const position = getDropPosition(e)
+    const position = getDropPosition(e, columns)
     const draggedId = draggingId
     setDropTarget(null)
     onReorderBookmark(draggedId, target.id, position)
@@ -391,7 +407,12 @@ function BookmarkCardList({
             onDragLeave={(e) => handleCardDragLeave(e, b)}
             onDrop={(e) => handleCardDrop(e, b)}
           >
-            {dropTarget?.id === b.id && <DropIndicator position={dropTarget.position} />}
+            {dropTarget?.id === b.id && (
+              <DropIndicator
+                position={dropTarget.position}
+                orientation={columns > 1 ? 'vertical' : 'horizontal'}
+              />
+            )}
             <BookmarkCard
               bookmark={b}
               onEdit={onEdit}
@@ -467,7 +488,12 @@ function BookmarkCardList({
                   onDragLeave={(e) => handleCardDragLeave(e, b)}
                   onDrop={(e) => handleCardDrop(e, b)}
                 >
-                  {dropTarget?.id === b.id && <DropIndicator position={dropTarget.position} />}
+                  {dropTarget?.id === b.id && (
+                    <DropIndicator
+                      position={dropTarget.position}
+                      orientation={columns > 1 ? 'vertical' : 'horizontal'}
+                    />
+                  )}
                   <BookmarkCard
                     bookmark={b}
                     onEdit={onEdit}

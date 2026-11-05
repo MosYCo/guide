@@ -1,5 +1,7 @@
 import { test, expect, type Page } from '@playwright/test'
 
+test.use({ viewport: { width: 1280, height: 720 } })
+
 async function addCategory(page: Page, name: string) {
   await page.getByRole('button', { name: '新建分类' }).first().click()
   const dialog = page.getByRole('dialog')
@@ -39,13 +41,14 @@ test('分类内可拖拽排序，菜单提供等价路径，刷新后保留', as
   await page.locator('aside').getByRole('button', { name: /^Work/ }).click()
   await expect.poll(() => bookmarkNames(page)).toEqual(['Work C', 'Work B', 'Work A'])
 
-  // 把第一张拖到最后一张下半区 → 插到其后方
+  // 多列网格：把第一张拖到最后一张右半区 → 插到其后方
   const list = page.getByRole('list', { name: '全部书签' })
-  await list
-    .getByRole('button', { name: '打开书签：Work C' })
-    .dragTo(list.getByRole('button', { name: '打开书签：Work A' }), {
-      targetPosition: { x: 20, y: 60 },
-    })
+  const target = list.getByRole('button', { name: '打开书签：Work A' })
+  const targetBox = await target.boundingBox()
+  if (!targetBox) throw new Error('未找到拖拽目标')
+  await list.getByRole('button', { name: '打开书签：Work C' }).dragTo(target, {
+    targetPosition: { x: targetBox.width - 12, y: targetBox.height / 2 },
+  })
   await expect.poll(() => bookmarkNames(page)).toEqual(['Work B', 'Work A', 'Work C'])
 
   // 键盘/触屏等价路径：菜单“前移”
