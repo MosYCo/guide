@@ -3,7 +3,7 @@
  * 添加、URL 验证、编辑、图标自动获取
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -85,8 +85,9 @@ export function BookmarkForm({
     }
   }, [url, bookmark])
 
-  // 预填充（编辑模式）;新增时默认选中当前筛选分类
-  useEffect(() => {
+  // 预填充（编辑模式）;新增时默认选中当前筛选分类。
+  // 用 layout effect 在绘制前完成重置,避免用户/自动化刚输入就被预填充覆盖。
+  useLayoutEffect(() => {
     if (open) {
       setUrl(bookmark?.url ?? '')
       setName(bookmark?.name ?? '')
